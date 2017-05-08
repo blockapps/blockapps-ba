@@ -1,0 +1,7 @@
+@import '../../../node_modules/react-md/src/scss/react-md';
+@import '../../../node_modules/react-md/dist/react-md.indigo-pink.min.css';
+
+$md-primary-color: $md-indigo-500 !default;
+$md-secondary-color: $md-pink-a-200 !default;
+
+@include react-md-everything;

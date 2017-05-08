@@ -1,0 +1,19 @@
+{
+  "name": "blockapps-ba",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blockapps/blockapps-ba.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blockapps/blockapps-ba/issues"
+  },
+  "homepage": "https://github.com/blockapps/blockapps-ba#readme"
+}
