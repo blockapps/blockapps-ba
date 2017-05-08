@@ -4,7 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "blockapps-rest": "git+https://github.com/blockapps/blockapps-rest#develop",
+    "body-parser": "^1.15.2",
+    "chai": "^3.2.0",
+    "cors": "^2.8.1",
+    "expect": "latest",
+    "express": "^4.14.0"
   },
   "repository": {
     "type": "git",
