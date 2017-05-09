@@ -51,10 +51,10 @@ function createUser(adminName, username, pwHash) {
       .then(function(scope) {
         // returns ErrorCodes
         const result = scope.contracts[contractName].calls[method];
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', result);
         if (result != ErrorCodes.SUCCESS) {
-          throw new Error({error:result, method:method});
+          throw new Error(result);
         }
+        // store new user
         if (scope.users[username] === undefined) scope.users[username] = {};
         return scope;
       });

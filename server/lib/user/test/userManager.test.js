@@ -9,6 +9,7 @@ const Promise = common.Promise;
 
 const user = require('../user');
 const userManager = require('../userManager');
+const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -53,7 +54,7 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Test exists()', function(done) {
+  it('Test exists()', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
@@ -78,32 +79,47 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
+  it.only('Create Duplicate User', function(done) {
+    const username = util.uid('User');
+    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
-  // it.only('Create Duplicate User', function(done) {
-  //   const username = util.uid('User');
-  //   const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-  //
-  //   rest.setScope(scope)
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, pwHash))
-  //     .then(function(scope) {
-  //       // create a duplicate
-  //       userManager.createUser(adminName, username, pwHash)(scope)
-  //       .then(function(scope) {
-  //         console.log('1111111111111111', scope);
-  //       })
-  //       .catch(function(error) {
-  //         console.log('22222222222222', error);
-  //       });
-  //     })
-  //     .then(function(scope) {
-  //       console.log(scope);
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
+    scope.error = undefined;
+
+    rest.setScope(scope)
+      // create user
+      .then(userManager.createUser(adminName, username, pwHash))
+      .then(function(scope) {
+        // create a duplicate - should FAIL
+        return rest.setScope(scope)
+          .then( userManager.createUser(adminName, username, pwHash))
+          .then(function(scope) {
+            // did not FAIL - that is an error
+            scope.error = 'Duplicate username was not detected: ' + username;
+            return scope
+          })
+          .catch(function(error) {
+            const errorCode = error.message;
+            // error should be EXISTS
+            if (errorCode == ErrorCodes.EXISTS) {
+              return scope;
+            }
+            // different error thrown - not good
+            console.log('-------------------- different error - not good');
+            scope.error = errorCode;
+            return scope
+          });
+      })
+      .then(function(scope) {
+        // check error for the previous step
+        if (scope.error !== undefined)
+          throw(new Error('userManager.createUser: threw: ' + scope.error));
+        // all good
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 
   // it('Get User', function(done) {
   //   const username = util.uid('User');
