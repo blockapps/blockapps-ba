@@ -7,18 +7,14 @@ const path = require('path');
 const serverPath = './server';
 const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
 
-const deploy = {
-  adminName: 'admin',
-  adminPassword: '1234'
-};
-
 const loginController = {
   login: function(req, res) {
+    const deploy = req.app.get('deploy');
     const username = req.body.username;
     const password = req.body.password;
 
-    rest.setScope()
-      // .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
       .then(dapp.login(deploy.adminName, username, password))
       .then(scope => {
         util.response.status200(res, {

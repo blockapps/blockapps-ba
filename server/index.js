@@ -11,11 +11,12 @@ const util = common.util;
 const fsutil = common.fsutil;
 const cors = require('cors');
 
-// const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
-// console.log('Deploy:', deploy);
-// if (deploy === undefined) throw new Error('Deploy config.deployFilename not found ', config.deployFilename);
-//
-// app.set('deploy', deploy);
+// read the app deployment file
+const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+console.log('Deploy:', deploy);
+if (deploy === undefined) throw new Error('Deploy config.deployFilename not found ', config.deployFilename);
+app.set('deploy', deploy);
+
 /**
  * Config to handle POSTs to API
  *  - Parse JSON and URL encode

@@ -1,10 +1,9 @@
 apiDebug: true
 password: '1234'
 timeout: 600000
-contractsPath: ./contracts/
-libPath: ./lib
-dataFilename: ./config/demo-data.yaml
-deployFilename: ./config/192.deploy.yaml
+libPath: ./server/lib
+dataFilename: ./server/config/demo-data.yaml
+deployFilename: ./server/config/192.deploy.yaml
 
 # WARNING - extra strict syntax
 # DO NOT change the nodes order
