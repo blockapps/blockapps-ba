@@ -15,4 +15,8 @@ contract User is ErrorCodes, Version {
     id = _id;
     version = 1;
   }
+
+  function authenticate(bytes32 _pwHash) returns (bool) {
+    return pwHash == _pwHash;
+  }
 }

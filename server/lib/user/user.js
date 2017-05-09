@@ -34,9 +34,33 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
+
+function authenticate(adminName, pwHash) {
+  return function(scope) {
+    rest.verbose('authenticate', pwHash);
+    // function authenticate(bytes32 _pwHash) return (bool) {
+    const method = 'authenticate';
+    const args = {
+      _pwHash: pwHash,
+    };
+
+    return rest.setScope(scope)
+      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(function(scope) {
+        // returns bool
+        const result = scope.contracts[contractName].calls[method];
+        scope.result = (result == 'true');
+        return scope;
+      });
+  }
+}
+
+
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
   contractName: contractName,
+  // business logic
+  authenticate: authenticate,
 };
