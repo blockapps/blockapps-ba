@@ -1,0 +1,16 @@
+apiDebug: true
+password: '1234'
+timeout: 600000
+contractsPath: ./contracts/
+dataFilename: ./config/demo-data.yaml
+deployFilename: ./config/40.deploy.yaml
+
+# WARNING - extra strict syntax
+# DO NOT change the nodes order
+# node 0 is the default url for all single node api calls
+nodes:
+  - id: 0
+    explorerUrl: 'http://40.71.192.229:9000'
+    stratoUrl: 'http://40.71.192.229/strato-api'
+    blocUrl: 'http://40.71.192.229/bloc'
+    searchUrl: 'http://40.71.192.229/cirrus'
