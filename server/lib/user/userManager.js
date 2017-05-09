@@ -101,6 +101,33 @@ function getUser(adminName, username) {
   }
 }
 
+function getUsers(adminName) {
+  return function(scope) {
+    rest.verbose('getUsers');
+
+    return rest.setScope(scope)
+      .then(rest.getState(contractName))
+      .then(function (scope) {
+        const state = scope.states[contractName];
+        const users = state.users;
+        const trimmed = trimArray(users); // trim leading zeros due to bug in cirrus
+        const csv = util.toCsv(trimmed); // generate csv string
+        return rest.query(`User?address=in.${csv}`)(scope);
+      })
+      .then(function (scope) {
+        scope.result = scope.query.slice(-1)[0];
+        return scope;
+      });
+  }
+}
+
+function trimArray(array) {
+  return array.map(function(member) {
+    return util.trimLeadingZeros(member);
+  });
+}
+
+
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
@@ -109,4 +136,5 @@ module.exports = {
   createUser: createUser,
   exists: exists,
   getUser: getUser,
+  getUsers: getUsers,
 };
