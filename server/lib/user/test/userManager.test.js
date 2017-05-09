@@ -79,7 +79,7 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Create Duplicate User', function(done) {
+  it('Create Duplicate User', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
@@ -121,35 +121,35 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  // it('Get User', function(done) {
-  //   const username = util.uid('User');
-  //   const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-  //
-  //   rest.setScope(scope)
-  //     // get user - should not exist
-  //     .then(userManager.getUser(username))
-  //     .then(function(scope) {
-  //       const result = scope.result;
-  //       console.log(result);
-  //       assert.equal(result, 123, 'should not be found');
-  //     })
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, pwHash))
-  //     // query the contracts existence
-  //     .then(rest.waitQuery(`${user.contractName}?username=eq.${username}`, 1))
-  //     .then(function(scope) {
-  //       const resultArray = scope.query.slice(-1)[0];
-  //       const result = resultArray[0];
-  //       console.log(result);
-  //
-  //       assert.equal(result.username, username, 'username');
-  //       assert.equal(result.pwHash, pwHash, 'pwHash');
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
+  it.only('Get User', function(done) {
+    const username = util.uid('User');
+    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+
+    rest.setScope(scope)
+      // get user - should not exist
+      .then(userManager.getUser(username))
+      .then(function(scope) {
+        const result = scope.result;
+        console.log(result);
+        assert.equal(result, 123, 'should not be found');
+      })
+      // create user
+      .then(userManager.createUser(adminName, username, pwHash))
+      // query the contracts existence
+      .then(rest.waitQuery(`${user.contractName}?username=eq.${username}`, 1))
+      .then(function(scope) {
+        const resultArray = scope.query.slice(-1)[0];
+        const result = resultArray[0];
+        console.log(result);
+
+        assert.equal(result.username, username, 'username');
+        assert.equal(result.pwHash, pwHash, 'pwHash');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 
 });
 
