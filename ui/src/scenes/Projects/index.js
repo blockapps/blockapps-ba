@@ -60,7 +60,10 @@ class Projects extends Component {
           </TableColumn>
         <TableColumn>{project.name}</TableColumn>
         <TableColumn>
-          <FormattedNumber value={project.priceDesired} style={"currency"} currency="USD" />
+          <FormattedNumber
+            value={project.priceDesired}
+            style="currency" //eslint-disable-line
+            currency="USD" />
         </TableColumn>
         <TableColumn>
           <FormattedDate
