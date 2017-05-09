@@ -1,4 +1,4 @@
-contract ErrorCodesEnum {
+contract ErrorCodes {
 
     enum ErrorCodes {
         NULL,

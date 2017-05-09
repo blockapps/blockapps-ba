@@ -52,4 +52,5 @@ describe('User tests', function() {
         done();
       }).catch(done);
   });
+
 });

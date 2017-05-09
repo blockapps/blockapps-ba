@@ -1,0 +1,41 @@
+import "./User.sol";
+import "../../common/ErrorCodesEnum.sol";
+import "../../common/Util.sol";
+
+/**
+* Interface for User data contracts
+*/
+contract UserManager is ErrorCodes, Util {
+  User[] users;
+  mapping (bytes32 => uint) usernameToIdMap;
+
+  /**
+  * Constructor
+  */
+  function UserManager() {
+    users.length = 1;
+  }
+
+  function exists(string username) returns (bool) {
+    return usernameToIdMap[b32(username)] != 0;
+  }
+
+  function getUser(string username) returns (address) {
+    uint userId = usernameToIdMap[b32(username)];
+    return users[userId];
+  }
+
+  function getUsers() returns (User[]) {
+    return users;
+  }
+
+  function createUser(string username, bytes32 pwHash) returns (ErrorCodesEnum) {
+    // fail if username exists
+    if (exists(username)) return ErrorCodesEnum.USERNAME_EXISTS;
+    // add user
+    uint userId = users.length;
+    usernameToIdMap[b32(username)] = userId;
+    users.push(new User(username, pwHash, userId));
+    return ErrorCodesEnum.SUCCESS;
+  }
+}
