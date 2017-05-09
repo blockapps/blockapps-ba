@@ -1,5 +1,5 @@
 import "./User.sol";
-import "../../common/ErrorCodesEnum.sol";
+import "../../common/ErrorCodes.sol";
 import "../../common/Util.sol";
 
 /**
@@ -29,13 +29,13 @@ contract UserManager is ErrorCodes, Util {
     return users;
   }
 
-  function createUser(string username, bytes32 pwHash) returns (ErrorCodesEnum) {
+  function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
     // fail if username exists
-    if (exists(username)) return ErrorCodesEnum.USERNAME_EXISTS;
+    if (exists(username)) return ErrorCodes.EXISTS;
     // add user
     uint userId = users.length;
     usernameToIdMap[b32(username)] = userId;
     users.push(new User(username, pwHash, userId));
-    return ErrorCodesEnum.SUCCESS;
+    return ErrorCodes.SUCCESS;
   }
 }

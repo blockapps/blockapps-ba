@@ -34,30 +34,9 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
-
-function test32(adminName) {
-  return function (scope) {
-    // function test(string s, bytes32 b) returns(bool) {
-    const method = 'test';
-    const args = {
-      s: 'abcd',
-      b: util.toBytes32('abcd'),
-    };
-    return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function (scope) {
-        scope.result = scope.contracts[contractName].calls[method];
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>', scope.result);
-        return scope;
-      })
-  }
-}
-
-
-
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
-  test32: test32,
+  contractName: contractName,
 };

@@ -1,30 +1,18 @@
 import "../../common/ErrorCodes.sol";
 import "../../common/Version.sol";
-import "../../common/Util.sol";
 
 /**
  * User data contract
  */
-contract User is ErrorCodes, Version, Util {
+contract User is ErrorCodes, Version {
   string public username;
   bytes32 public pwHash;
+  uint id;
 
-  string _s;
-  bytes32 _b;
-  bytes32 _converted;
-
-  function User(string _username, bytes32 _pwHash) {
+  function User(string _username, bytes32 _pwHash, uint _id) {
     username = _username;
     pwHash = _pwHash;
+    id = _id;
     version = 1;
-    test('a', 0);
-  }
-
-  function test(string s, bytes32 b) returns(bool) {
-    _s = s;
-    _b = b;
-    _converted = b32(s);
-    if (_converted == b) return true;
-    return false;
   }
 }

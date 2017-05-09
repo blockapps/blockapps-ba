@@ -26,12 +26,14 @@ describe('User tests', function() {
   });
 
   it('Create Contract', function(done) {
-    const username = util.uid('User');
+    const id = 123;
+    const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
     const args = {
       _username: username,
       _pwHash: pwHash,
+      _id: id,
     };
 
     // create the user with constructor args
