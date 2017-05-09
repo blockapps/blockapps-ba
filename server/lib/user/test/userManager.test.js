@@ -121,29 +121,51 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Get User', function(done) {
+  it('Get User', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
     rest.setScope(scope)
       // get user - should not exist
-      .then(userManager.getUser(username))
+      .then(userManager.getUser(adminName, username))
       .then(function(scope) {
         const result = scope.result;
-        console.log(result);
-        assert.equal(result, 123, 'should not be found');
+        assert.equal(result, 0, 'should not be found');
+        return scope;
       })
       // create user
       .then(userManager.createUser(adminName, username, pwHash))
-      // query the contracts existence
-      .then(rest.waitQuery(`${user.contractName}?username=eq.${username}`, 1))
+      // get user - should exist
+      .then(userManager.getUser(adminName, username))
       .then(function(scope) {
-        const resultArray = scope.query.slice(-1)[0];
-        const result = resultArray[0];
-        console.log(result);
+        const result = scope.result;
+        assert.notEqual(result, 0, 'address should be found');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+  
+  it('Get User', function(done) {
+    const username = util.uid('User');
+    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
-        assert.equal(result.username, username, 'username');
-        assert.equal(result.pwHash, pwHash, 'pwHash');
+    rest.setScope(scope)
+      // get user - should not exist
+      .then(userManager.getUser(adminName, username))
+      .then(function(scope) {
+        const result = scope.result;
+        assert.equal(result, 0, 'should not be found');
+        return scope;
+      })
+      // create user
+      .then(userManager.createUser(adminName, username, pwHash))
+      // get user - should exist
+      .then(userManager.getUser(adminName, username))
+      .then(function(scope) {
+        const result = scope.result;
+        assert.notEqual(result, 0, 'address should be found');
         return scope;
       })
       .then(function(scope) {

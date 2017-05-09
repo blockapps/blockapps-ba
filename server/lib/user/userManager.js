@@ -81,6 +81,26 @@ function exists(adminName, username) {
   }
 }
 
+function getUser(adminName, username) {
+  return function(scope) {
+    rest.verbose('getUser', username);
+    // function getUser(string username) returns (address) {
+    const method = 'getUser';
+    const args = {
+      username: username,
+    };
+
+    return rest.setScope(scope)
+      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(function(scope) {
+        // returns address
+        const result = scope.contracts[contractName].calls[method];
+        scope.result = result;
+        return scope;
+      });
+  }
+}
+
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
@@ -88,4 +108,5 @@ module.exports = {
 
   createUser: createUser,
   exists: exists,
+  getUser: getUser,
 };
