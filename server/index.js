@@ -40,12 +40,12 @@ app.use('/', routes);
 // get the intended port number, use port 3000 if not provided
 const port = process.env.PORT || 3000;
 
-app.listen(port, (err) => {
+const server = app.listen(port, (err) => {
   if (err) {
     console.log((err.message));
   } else {
-    console.log('Example app listening on port 3000!');
+    console.log('App listening on port ' + port);
   }
 });
 
-module.exports = app;
+module.exports = server;

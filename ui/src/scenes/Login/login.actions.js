@@ -11,11 +11,11 @@ export const userLoginSubmit = function(username, password) {
 }
 
 
-export const userLoginSuccess = function(address, roles) {
+export const userLoginSuccess = function(username, role) {
   return {
     type: USER_LOGIN_SUCCESS,
-    address: address,
-    roles: roles
+    username: username,
+    role: role
   }
 }
 
