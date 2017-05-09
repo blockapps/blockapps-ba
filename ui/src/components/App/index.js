@@ -40,13 +40,13 @@ class App extends Component {
     const navItems = [];
     const location = this.props.location;
     const routes = this.props.routes;
-
+    console.log('>>>> routes >>>>', routes);
     if(this.props.authenticated
       && routes
       && routes.length > 0
-      && routes[0].childRoutes
-      && routes[0].childRoutes.length > 0) {
-      routes[0].childRoutes.forEach(function(route){
+      && routes[1].childRoutes
+      && routes[1].childRoutes.length > 0) {
+      routes[1].childRoutes.forEach(function(route){
         //only add route if there is a name property
         if(!route.name) { return; }
         navItems.push({
