@@ -7,13 +7,18 @@ import "../../common/Util.sol";
 */
 contract UserManager is ErrorCodes, Util {
   User[] users;
+  /*
+    note on mapping to array index:
+    a non existing mapping will return 0, so 0 should not be a valid value in a map,
+    otherwise exists() will not work
+  */
   mapping (bytes32 => uint) usernameToIdMap;
 
   /**
   * Constructor
   */
   function UserManager() {
-    users.length = 1;
+    users.length = 1; // see above note
   }
 
   function exists(string username) returns (bool) {

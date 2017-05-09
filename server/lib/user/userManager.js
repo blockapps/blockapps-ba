@@ -121,6 +121,18 @@ function getUsers(adminName) {
   }
 }
 
+function login(adminName, username, password) {
+  return function(scope) {
+    rest.verbose('login', username, password);
+    scope.user = {
+      username: 'Supplier1',
+      role: 'Supplier'
+    };
+    return scope;
+  }
+}
+
+
 function trimArray(array) {
   return array.map(function(member) {
     return util.trimLeadingZeros(member);
@@ -137,4 +149,5 @@ module.exports = {
   exists: exists,
   getUser: getUser,
   getUsers: getUsers,
+  login: login,
 };
