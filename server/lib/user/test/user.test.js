@@ -55,4 +55,37 @@ describe('User tests', function() {
       }).catch(done);
   });
 
+  it.only('Auth', function(done) {
+    const id = 123;
+    const username = util.uid('User'+id);
+    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+
+    const args = {
+      _username: username,
+      _pwHash: pwHash,
+      _id: id,
+    };
+
+    // create the user with constructor args
+    rest.setScope(scope)
+      .then(user.uploadContract(adminName, adminPassword, args))
+      .then(user.authenticate(adminName, pwHash))
+      .then(function(scope) {
+        const result = scope.result;
+        console.log(result);
+        assert.isOk(result, 'authenticated');
+        return scope;
+      })
+      .then(user.authenticate(adminName, util.toBytes32('666')))
+      .then(function(scope) {
+        const result = scope.result;
+        console.log(result);
+        assert.isNotOk(result, 'not authenticated');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
 });
