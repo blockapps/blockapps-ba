@@ -43,8 +43,6 @@ describe('UserManager tests', function() {
       .then(function(scope) {
         const resultArray = scope.query.slice(-1)[0];
         const result = resultArray[0];
-        console.log(result);
-
         assert.equal(result.username, username, 'username');
         assert.equal(result.pwHash, pwHash, 'pwHash');
         return scope;
@@ -104,15 +102,14 @@ describe('UserManager tests', function() {
               return scope;
             }
             // different error thrown - not good
-            console.log('-------------------- different error - not good');
-            scope.error = errorCode;
+            scope.error = 'userManager.createUser: threw:' + errorCode;
             return scope
           });
       })
       .then(function(scope) {
         // check error for the previous step
         if (scope.error !== undefined)
-          throw(new Error('userManager.createUser: threw: ' + scope.error));
+          throw(new Error(scope.error));
         // all good
         return scope;
       })
@@ -146,26 +143,28 @@ describe('UserManager tests', function() {
         done();
       }).catch(done);
   });
-  
-  it('Get User', function(done) {
+
+  it('Get Users', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
 
     rest.setScope(scope)
-      // get user - should not exist
-      .then(userManager.getUser(adminName, username))
+      // get users - should not exist
+      .then(userManager.getUsers(adminName))
       .then(function(scope) {
         const result = scope.result;
-        assert.equal(result, 0, 'should not be found');
         return scope;
       })
       // create user
       .then(userManager.createUser(adminName, username, pwHash))
       // get user - should exist
-      .then(userManager.getUser(adminName, username))
+      .then(userManager.getUsers(adminName))
       .then(function(scope) {
-        const result = scope.result;
-        assert.notEqual(result, 0, 'address should be found');
+        const users = scope.result;
+        const found = users.filter(function(user) {
+          return user.username === username;
+        });
+        assert.equal(found.length, 1, 'user list should contain ' + username);
         return scope;
       })
       .then(function(scope) {
@@ -174,10 +173,3 @@ describe('UserManager tests', function() {
   });
 
 });
-
-
-
-// FIXME move to rest
-function MethodError(contract, method, result) { // FIXME move to rest
-  return new Error('Call to ' + contract + '.' + method + '() returned ' + result);
-}

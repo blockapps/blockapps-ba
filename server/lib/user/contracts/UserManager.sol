@@ -25,10 +25,6 @@ contract UserManager is ErrorCodes, Util {
     return users[userId];
   }
 
-  function getUsers() returns (User[]) {
-    return users;
-  }
-
   function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
     // fail if username exists
     if (exists(username)) return ErrorCodes.EXISTS;
