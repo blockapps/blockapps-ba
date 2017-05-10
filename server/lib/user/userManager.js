@@ -8,11 +8,12 @@ const contractFilename = `${config.libPath}/user/contracts/UserManager.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+const userContractName = require('./user').contractName;
 
 function compileSearch() {
   return function(scope) {
-    const searchable = [contractName];
     const user = require('./user');
+    const searchable = [contractName];
     return rest.setScope(scope)
       .then(user.compileSearch())
       .then(rest.compileSearch(searchable, contractName, contractFilename));
@@ -106,23 +107,19 @@ function getUser(adminName, username) {
       .then(function(scope) {
         // returns address
         const result = scope.contracts[contractName].calls[method];
-        return rest.waitQuery(`User?address=eq.${result}`, 1)(scope);
-      })
-      .then(function(scope) {
-        const resultArray = scope.query.slice(-1)[0];
-        // none found
-        if (resultArray.length === 0) {
+        // if not found
+        if (result == 0) {
           scope.result = undefined;
           return scope;
         }
-        // error - multiple found
-        if (resultArray.length > 1) {
-          throw new Error('Multiple entries for username ' + username);
-        }
-        // OK - 1 user found
-        scope.result = resultArray[0];
-        return scope;
-      })
+        // found - query for the full user record
+        return rest.waitQuery(`${userContractName}?address=eq.${result}`, 1)(scope)
+          .then(function(scope) {
+            const resultArray = scope.query.slice(-1)[0];
+            scope.result = resultArray[0];
+            return scope;
+          });
+      });
   }
 }
 
@@ -137,7 +134,7 @@ function getUsers(adminName) {
         const users = state.users;
         const trimmed = trimArray(users); // trim leading zeros due to bug in cirrus
         const csv = util.toCsv(trimmed); // generate csv string
-        return rest.query(`User?address=in.${csv}`)(scope);
+        return rest.query(`${userContractName}?address=in.${csv}`)(scope);
       })
       .then(function (scope) {
         scope.result = scope.query.slice(-1)[0];
