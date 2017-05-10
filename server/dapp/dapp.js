@@ -78,12 +78,12 @@ function getAdminInterface(address) {
   }
 }
 
-// function compileSearch() {
-//   return function (scope) {
-//     return nop(scope)
-//       .then(userManager.compileSearch());
-//   }
-// }
+function compileSearch() {
+  return function (scope) {
+    return nop(scope)
+      .then(userManager.compileSearch());
+  }
+}
 
 // ========== util ==========
 
@@ -135,7 +135,7 @@ module.exports = function (libPath) {
 
   return {
     AI: AI,
-//    compileSearch: compileSearch,
+    compileSearch: compileSearch,
     getAdminInterface: getAdminInterface,
     setAdmin: setAdmin,
     setAdminInterface: setAdminInterface,

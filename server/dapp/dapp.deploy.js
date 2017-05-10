@@ -36,7 +36,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   it('should upload the contracts', function (done) {
     dapp.setScope(scope)
     // compile search
-      /////////////////.then(dapp.compileSearch())   FIXME what to do ?
+      .then(dapp.compileSearch())
       // set admin interface
       .then(dapp.setAdminInterface(adminName, adminPassword))
       // sanity check - get the freshly set admin interface

@@ -12,7 +12,9 @@ const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).
 function compileSearch() {
   return function(scope) {
     const searchable = [contractName];
+    const user = require('./user');
     return rest.setScope(scope)
+      .then(user.compileSearch())
       .then(rest.compileSearch(searchable, contractName, contractFilename));
   }
 }
@@ -104,7 +106,7 @@ function getUser(adminName, username) {
       .then(function(scope) {
         // returns address
         const result = scope.contracts[contractName].calls[method];
-        return rest.query(`User?address=eq.${result}`)(scope)
+        return rest.waitQuery(`User?address=eq.${result}`, 1)(scope);
       })
       .then(function(scope) {
         const resultArray = scope.query.slice(-1)[0];
