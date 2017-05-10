@@ -10,6 +10,7 @@ const Promise = common.Promise;
 const user = require('../user');
 const userManager = require('../userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -34,17 +35,18 @@ describe('UserManager tests', function() {
   it('Create User', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
       // create user
-      .then(userManager.createUser(adminName, username, pwHash))
-      // query the contracts existence
-      .then(rest.waitQuery(`${user.contractName}?username=eq.${username}`, 1))
+      .then(userManager.createUser(adminName, username, pwHash, role))
+      // returns the user from search
       .then(function(scope) {
         const resultArray = scope.query.slice(-1)[0];
         const result = resultArray[0];
         assert.equal(result.username, username, 'username');
         assert.equal(result.pwHash, pwHash, 'pwHash');
+        assert.equal(result.role, UserRole[role], 'role');
         return scope;
       })
       .then(function(scope) {
@@ -55,17 +57,19 @@ describe('UserManager tests', function() {
   it('Test exists()', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
       // should not exists
       .then(userManager.exists(adminName, username))
       .then(function(scope) {
         const result = scope.result;
-        assert.equal(result, false, 'should not exist');
+        assert.isDefined(result, 'should be defined');
+        assert.isNotOk(result, 'should not exist');
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash))
+      .then(userManager.createUser(adminName, username, pwHash, role))
       // should exist
       .then(userManager.exists(adminName, username))
       .then(function(scope) {
@@ -80,16 +84,17 @@ describe('UserManager tests', function() {
   it('Create Duplicate User', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = UserRole.SUPPLIER;
 
     scope.error = undefined;
 
     rest.setScope(scope)
       // create user
-      .then(userManager.createUser(adminName, username, pwHash))
+      .then(userManager.createUser(adminName, username, pwHash, role))
       .then(function(scope) {
         // create a duplicate - should FAIL
         return rest.setScope(scope)
-          .then( userManager.createUser(adminName, username, pwHash))
+          .then( userManager.createUser(adminName, username, pwHash, role))
           .then(function(scope) {
             // did not FAIL - that is an error
             scope.error = 'Duplicate username was not detected: ' + username;
@@ -121,22 +126,23 @@ describe('UserManager tests', function() {
   it('Get User', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
       // get user - should not exist
       .then(userManager.getUser(adminName, username))
       .then(function(scope) {
         const result = scope.result;
-        assert.equal(result, 0, 'should not be found');
+        assert.isUndefined(result, 'should not be found');
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash))
+      .then(userManager.createUser(adminName, username, pwHash, role))
       // get user - should exist
       .then(userManager.getUser(adminName, username))
       .then(function(scope) {
         const result = scope.result;
-        assert.notEqual(result, 0, 'address should be found');
+        assert.equal(result.username, username, 'username should be found');
         return scope;
       })
       .then(function(scope) {
@@ -147,16 +153,21 @@ describe('UserManager tests', function() {
   it('Get Users', function(done) {
     const username = util.uid('User');
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
       // get users - should not exist
       .then(userManager.getUsers(adminName))
       .then(function(scope) {
-        const result = scope.result;
+        const users = scope.result;
+        const found = users.filter(function(user) {
+          return user.username === username;
+        });
+        assert.equal(found.length, 0, 'user list should NOT contain ' + username);
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash))
+      .then(userManager.createUser(adminName, username, pwHash, role))
       // get user - should exist
       .then(userManager.getUsers(adminName))
       .then(function(scope) {
@@ -172,23 +183,26 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  it.only('User Login', function(done) {
+  it('User Login', function(done) {
     const username = util.uid('User');
-    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const password = '1234';
+    const pwHash = util.toBytes32(password); // FIXME this is not a hash
+    const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
-      // create user
-      .then(userManager.createUser(adminName, username, pwHash))
-      // wait for the user to make it into cirrus
-      .then(rest.waitQuery(`User?username=eq.${username}`, 1))
-      // auth
-      .then(userManager.login(adminName, username, '1234'))
+      // auth non-existing - should fail
+      .then(userManager.login(adminName, username, password))
       .then(function(scope) {
-        // get back the user properties
-        const authenticate = scope.result.authenticate;
-        assert.equal(authenticate, true, 'auth');
-        const user = scope.result.user;
-        assert.equal(user.username, username, 'username');
+        assert.isDefined(scope.result, 'auth result should be defined');
+        assert.isNotOk(scope.result, 'auth should fail');
+        return scope;
+      })
+      // create user
+      .then(userManager.createUser(adminName, username, pwHash, role))
+      // auth
+      .then(userManager.login(adminName, username, password))
+      .then(function(scope) {
+        assert.isOk(scope.result, 'auth should be ok');
         return scope;
       })
       .then(function(scope) {

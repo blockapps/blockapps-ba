@@ -7,6 +7,7 @@ const contractName = 'UserManager';
 const contractFilename = `${config.libPath}/user/contracts/UserManager.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 function compileSearch() {
   return function(scope) {
@@ -36,7 +37,9 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
-function createUser(adminName, username, pwHash) {
+// throws: ErrorCodes
+// returns: user record from search
+function createUser(adminName, username, pwHash, role) {
   return function(scope) {
     rest.verbose('createUser', username, pwHash);
     // function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
@@ -44,6 +47,7 @@ function createUser(adminName, username, pwHash) {
     const args = {
       username: username,
       pwHash: pwHash,
+      role: role,
     };
 
     return rest.setScope(scope)
@@ -57,7 +61,9 @@ function createUser(adminName, username, pwHash) {
         // store new user
         if (scope.users[username] === undefined) scope.users[username] = {};
         return scope;
-      });
+      })
+      // block until the data shows up in search
+      .then(rest.waitQuery(`User?username=eq.${username}`, 1));
   }
 }
 
@@ -95,8 +101,23 @@ function getUser(adminName, username) {
       .then(function(scope) {
         // returns address
         const result = scope.contracts[contractName].calls[method];
-        return rest.query(`User?address=eq.${result}`)(scope);
-      });
+        return rest.query(`User?address=eq.${result}`)(scope)
+      })
+      .then(function(scope) {
+        const resultArray = scope.query.slice(-1)[0];
+        // none found
+        if (resultArray.length === 0) {
+          scope.result = undefined;
+          return scope;
+        }
+        // error - multiple found
+        if (resultArray.length > 1) {
+          throw new Error('Multiple entries for username ' + username);
+        }
+        // OK - 1 user found
+        scope.result = resultArray[0];
+        return scope;
+      })
   }
 }
 
@@ -139,22 +160,7 @@ function login(adminName, username, password) {
         const result = scope.contracts[contractName].calls[method];
         scope.result = (result == 'true');
         return scope;
-      })
-      .then(function(scope) {
-        // auth failed
-        if (!scope.result) {
-          scope.result = {authenticate: false};
-          return scope;
-        }
-        // auth OK
-        return rest.query(`User?username=eq.${username}`)(scope)
-          .then(function(scope) {
-            const resultArray = scope.query.slice(-1)[0];
-            const user = resultArray[0];
-            scope.result = {authenticate: true, user: user};
-            return scope;
-          })
-      })
+      });
   }
 }
 
