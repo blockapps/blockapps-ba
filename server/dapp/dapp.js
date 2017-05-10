@@ -110,7 +110,21 @@ function nop(scope) {
 function login(adminName, username, password) {
   return function(scope) {
     return setScope(scope)
-      .then(userManager.login(username, password));
+      .then(userManager.login(username, password))
+      .then(function(scope) {
+        // auth failed
+        if (!scope.result) {
+          scope.result = {authenticate: false};
+          return scope;
+        }
+        // auth OK
+        return userManager.getUser(username)(scope)
+          .then(function(scope) {
+            const user = scope.result;
+            scope.result = {authenticate: true, user: user};
+            return scope;
+          })
+      });
   }
 }
 
