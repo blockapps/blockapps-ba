@@ -17,6 +17,12 @@ const dapp = require('./dapp')(config.libPath);
 const AI = dapp.AI;
 assert.isDefined(AI.subContractsNames['UserManager']);
 
+assert.isDefined(config.dataFilename, 'Data argument missing. Set in config, or use --data <path>');
+const presetData = fsutil.yamlSafeLoadSync(config.dataFilename);
+assert.isDefined(presetData, 'Demo data read failed');
+assert.isDefined(presetData.users, 'Users data undefined');
+console.log('Preset data', JSON.stringify(presetData, null, 2));
+
 const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
 
 describe('Supply Chain Demo App - deploy contracts', function () {
@@ -30,7 +36,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   it('should upload the contracts', function (done) {
     dapp.setScope(scope)
     // compile search
-      /////////////////.then(dapp.compileSearch())   FIXME what to do ?
+      .then(dapp.compileSearch())
       // set admin interface
       .then(dapp.setAdminInterface(adminName, adminPassword))
       // sanity check - get the freshly set admin interface
@@ -40,9 +46,10 @@ describe('Supply Chain Demo App - deploy contracts', function () {
         return dapp.getAdminInterface(address)(scope);
       })
       // create preset users
-      .then(createPresetUsers(adminName))
+      .then(createPresetUsers(adminName, presetData.users))
       // write the deployment data to file
       .then(function (scope) {
+        const users = scope.users;
         const object = {
           url: config.getBlocUrl(),
           adminName: adminName,
@@ -50,6 +57,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
           AdminInterface: {
             address: scope.contracts[AI.contractName].address,
           },
+          users: presetData.users,
         };
         console.log(config.deployFilename);
         console.log(fsutil.yamlSafeDumpSync(object));
@@ -59,21 +67,17 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   });
 });
 
-const presetUsers = [
-  {username: 'Supplier1', password: '1234'},
-  {username: 'Supplier2', password: '1234'},
-  {username: 'Buyer1', password: '1234'},
-  {username: 'Buyer2', password: '1234'},
-];
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function createPresetUsers(adminName) {
+function createPresetUsers(adminName, users) {
   return function(scope) {
     return rest.setScope(scope)
       // add all users
       .then(function(scope) {
-        return Promise.each(presetUsers, function(user) { // for each user
+        return Promise.each(users, function(user) { // for each user
           const pwHash = util.toBytes32(user.password);
-          return (userManager.createUser(adminName, user.username, pwHash)(scope)); // create user
+          const role = UserRole[user.role];
+          return (userManager.createUser(adminName, user.username, pwHash, role)(scope)); // create user
         }).then(function() { // all done
           return scope;
         });
@@ -81,7 +85,7 @@ function createPresetUsers(adminName) {
       // query for all the users
       .then(userManager.getUsers())
       .then(function(scope) {
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', scope.result);
+        scope.users = scope.result;
         return scope;
       });
   }

@@ -78,12 +78,12 @@ function getAdminInterface(address) {
   }
 }
 
-// function compileSearch() {
-//   return function (scope) {
-//     return nop(scope)
-//       .then(userManager.compileSearch());
-//   }
-// }
+function compileSearch() {
+  return function (scope) {
+    return nop(scope)
+      .then(userManager.compileSearch());
+  }
+}
 
 // ========== util ==========
 
@@ -109,8 +109,23 @@ function nop(scope) {
 
 function login(adminName, username, password) {
   return function(scope) {
+    rest.verbose('dapp: login', {username, password});
     return setScope(scope)
-      .then(userManager.login(username, password));
+      .then(userManager.login(adminName, username, password))
+      .then(function(scope) {
+        // auth failed
+        if (!scope.result) {
+          scope.result = {authenticate: false};
+          return scope;
+        }
+        // auth OK
+        return userManager.getUser(adminName, username)(scope)
+          .then(function(scope) {
+            const user = scope.result;
+            scope.result = {authenticate: true, user: user};
+            return scope;
+          })
+      });
   }
 }
 
@@ -120,7 +135,7 @@ module.exports = function (libPath) {
 
   return {
     AI: AI,
-//    compileSearch: compileSearch,
+    compileSearch: compileSearch,
     getAdminInterface: getAdminInterface,
     setAdmin: setAdmin,
     setAdminInterface: setAdminInterface,

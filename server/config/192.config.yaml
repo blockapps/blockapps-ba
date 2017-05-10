@@ -2,7 +2,7 @@ apiDebug: true
 password: '1234'
 timeout: 600000
 libPath: ./server/lib
-dataFilename: ./server/config/demo-data.yaml
+dataFilename: ./server/dapp/dapp.presets.yaml
 deployFilename: ./server/config/192.deploy.yaml
 
 # WARNING - extra strict syntax

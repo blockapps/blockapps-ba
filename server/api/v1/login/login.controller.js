@@ -19,7 +19,7 @@ const loginController = {
       .then(scope => {
         util.response.status200(res, {
           authenticate: true,
-          user: scope.user
+          user: scope.result.user
         });
       })
       .catch(err => {

@@ -41,8 +41,8 @@ describe("Login Test", function(){
     chai.request(server)
       .post('/api/v1/login')
       .send({
-        username,
-        password
+        username: username,
+        password: password,
       })
       .end((err, res) => {
         assert_noerr(err);
@@ -51,9 +51,10 @@ describe("Login Test", function(){
         const data = res.body.data;
         const authenticate = data.authenticate;
         const user = data.user;
+
         assert.isOk(authenticate, 'Should be authenticated');
         assert.equal(user.username, username, 'Username should be ' + username);
-        assert.equal(user.role, "Supplier", 'Role should be Supplier');
+        assert.equal(user.role, "SUPPLIER", 'Role should be Supplier');
         done();
       });
   });

@@ -1,11 +1,12 @@
 import "./User.sol";
+import "./UserRole.sol";
 import "../../common/ErrorCodes.sol";
 import "../../common/Util.sol";
 
 /**
 * Interface for User data contracts
 */
-contract UserManager is ErrorCodes, Util {
+contract UserManager is ErrorCodes, Util, UserRole {
   User[] users;
   /*
     note on mapping to array index:
@@ -30,13 +31,13 @@ contract UserManager is ErrorCodes, Util {
     return users[userId];
   }
 
-  function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
+  function createUser(string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
     // fail if username exists
     if (exists(username)) return ErrorCodes.EXISTS;
     // add user
     uint userId = users.length;
     usernameToIdMap[b32(username)] = userId;
-    users.push(new User(username, pwHash, userId));
+    users.push(new User(username, pwHash, userId, role));
     return ErrorCodes.SUCCESS;
   }
 
