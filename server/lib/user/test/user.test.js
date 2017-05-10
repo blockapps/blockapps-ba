@@ -55,7 +55,7 @@ describe('User tests', function() {
       }).catch(done);
   });
 
-  it.only('Auth', function(done) {
+  it('Auth', function(done) {
     const id = 123;
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
