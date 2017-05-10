@@ -18,7 +18,7 @@ const reducer = function loginReducer (state = initialState, action) {
       return initialState;
     case USER_LOGIN_SUCCESS:
       return {
-        address: action.username,
+        username: action.username,
         roles: action.role,
         error: null,
         authenticated: true,
@@ -26,7 +26,7 @@ const reducer = function loginReducer (state = initialState, action) {
       }
     case USER_LOGIN_FAILURE:
       return {
-        address: null,
+        username: null,
         roles: null,
         error: action.error,
         authenticated: false,
