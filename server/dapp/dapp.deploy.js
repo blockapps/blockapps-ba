@@ -59,11 +59,13 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   });
 });
 
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
 const presetUsers = [
-  {username: 'Supplier1', password: '1234'},
-  {username: 'Supplier2', password: '1234'},
-  {username: 'Buyer1', password: '1234'},
-  {username: 'Buyer2', password: '1234'},
+  {username: 'Supplier1', password: '1234', role: UserRole.SUPPLIER},
+  {username: 'Supplier2', password: '1234', role: UserRole.SUPPLIER},
+  {username: 'Buyer1', password: '1234', role: UserRole.BUYER},
+  {username: 'Buyer2', password: '1234', role: UserRole.BUYER},
 ];
 
 function createPresetUsers(adminName) {
@@ -73,7 +75,7 @@ function createPresetUsers(adminName) {
       .then(function(scope) {
         return Promise.each(presetUsers, function(user) { // for each user
           const pwHash = util.toBytes32(user.password);
-          return (userManager.createUser(adminName, user.username, pwHash)(scope)); // create user
+          return (userManager.createUser(adminName, user.username, pwHash, user.role)(scope)); // create user
         }).then(function() { // all done
           return scope;
         });
