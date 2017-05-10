@@ -1,0 +1,16 @@
+admin:
+  name: adomino
+  password: password
+users:
+  - username: 'Supplier1'
+    password: '1234'
+    role: SUPPLIER
+  - username: 'Supplier2'
+    password: '1234'
+    role: SUPPLIER
+  - username: 'Buyer1'
+    password: '1234'
+    role: BUYER
+  - username: 'Buyer2'
+    password: '1234'
+    role: BUYER

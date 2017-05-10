@@ -109,8 +109,9 @@ function nop(scope) {
 
 function login(adminName, username, password) {
   return function(scope) {
+    rest.verbose('dapp: login', {username, password});
     return setScope(scope)
-      .then(userManager.login(username, password))
+      .then(userManager.login(adminName, username, password))
       .then(function(scope) {
         // auth failed
         if (!scope.result) {
@@ -118,7 +119,7 @@ function login(adminName, username, password) {
           return scope;
         }
         // auth OK
-        return userManager.getUser(username)(scope)
+        return userManager.getUser(adminName, username)(scope)
           .then(function(scope) {
             const user = scope.result;
             scope.result = {authenticate: true, user: user};

@@ -94,7 +94,7 @@ describe('UserManager tests', function() {
       .then(function(scope) {
         // create a duplicate - should FAIL
         return rest.setScope(scope)
-          .then( userManager.createUser(adminName, username, pwHash, role))
+          .then(userManager.createUser(adminName, username, pwHash, role))
           .then(function(scope) {
             // did not FAIL - that is an error
             scope.error = 'Duplicate username was not detected: ' + username;
@@ -107,7 +107,7 @@ describe('UserManager tests', function() {
               return scope;
             }
             // different error thrown - not good
-            scope.error = 'userManager.createUser: threw:' + errorCode;
+            scope.error = 'userManager.createUser: threw: ' + errorCode;
             return scope
           });
       })
