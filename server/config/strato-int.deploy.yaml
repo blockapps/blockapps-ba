@@ -1,0 +1,18 @@
+url: 'http://strato-int.centralus.cloudapp.azure.com/bloc/'
+adminName: Admin_52342_1728812997
+adminPassword: '1234'
+AdminInterface:
+  address: 2bb1289787074d871ab7fac92b7fb546ca4313ab
+users:
+  - username: Supplier1
+    password: '1234'
+    role: SUPPLIER
+  - username: Supplier2
+    password: '1234'
+    role: SUPPLIER
+  - username: Buyer1
+    password: '1234'
+    role: BUYER
+  - username: Buyer2
+    password: '1234'
+    role: BUYER
