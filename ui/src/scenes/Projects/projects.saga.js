@@ -26,10 +26,10 @@ function getProjectsMock() {
         {
           id: 132,
           created: '2017-05-09T16:47:49.016Z',
-          buyerId: 5,
-          name: 'T-Shirts with logo', // todo: do we need name?
+          buyer: 'buyer1',
+          name: 'T-Shirts with logo',
           description: 'The T-Shirts with our company\'s logo on the chest, Qty: 50',
-          priceDesired: 800,
+          priceDesired: 800.10,
           desiredDeliveryDate: '2017-05-20T16:47:49.016Z',
           deliveryAddress: {
             street: '109 S 5th street',
@@ -37,36 +37,51 @@ function getProjectsMock() {
             state: 'New York',
             zip: '11249'
           },
-          // todo: do we need contacts? phone, email?
-          specFileURL: 'http://bucket.s3.amazonaws.com/specs/132',
-          contractName: '45003a173bc74ee7c25c7798e6748a106fac4a72',
-          status: {
-            id: 1,
-            name: 'open'
-          }, // todo: statuses ?
-          acceptedBidId: null
+          specFileURL: 'http://bucket.s3.amazonaws.com/specs/7878u7e4hf83h28fh83uehr83uh8eujf',
+          status: 'open',
+          deliveredDate: null,
+          bids: [
+            {
+              price: 790,
+              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/ij93ij9ij39irjf9ie3jrfvg9i39r',
+              accepted: false
+            },
+            {
+              price: 795,
+              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/asdasdqa3rf2erg3rhedfgh4th4r',
+              accepted: false
+            }
+          ]
         },
         {
-          id: 14,
-          created: '2017-05-08T13:42:45.016Z',
-          buyerId: 5,
-          name: 'NY Yankees sleeve fast',
+          id: 1431,
+          created: '2017-05-09T16:47:49.016Z',
+          buyer: 'buyer2',
+          name: 'NY Yankees sleeve',
           description: 'Sleeve with New York Yankees logos all over it',
-          priceDesired: 10.1,
-          desiredDeliveryDate: '2017-05-18T12:00:00.000Z',
+          priceDesired: 10.2,
+          desiredDeliveryDate: '2017-05-17T10:32:01.016Z',
           deliveryAddress: {
-            street: '109 S 5th st.',
+            street: '109 South 5th st.',
             city: 'Brooklyn',
             state: 'NY',
             zip: '11249'
           },
-          specFileURL: 'http://bucket.s3.amazonaws.com/specs/14',
-          contractName: '32003a173bc74ee7c25c7798e6748a106fac4a14',
-          status: {
-            id: 1,
-            name: 'processing'
-          },
-          acceptedBidId: 12
+          specFileURL: 'http://bucket.s3.amazonaws.com/specs/1431',
+          status: 'closed',
+          deliveredDate: '2017-05-18T12:35:00.000Z',
+          bids: [
+            {
+              price: 10.2,
+              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/sdfswerf3rgv3wrfwfgh3ed',
+              accepted: true
+            },
+            {
+              price: 10,
+              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/qwasdqasdf2erg3rhedfgh4th4r',
+              accepted: false
+            }
+          ]
         }
       ]
     );
