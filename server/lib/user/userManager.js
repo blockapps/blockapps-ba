@@ -53,17 +53,20 @@ function createUser(adminName, username, pwHash, role) {
     return rest.setScope(scope)
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
-        // returns ErrorCodes
-        const result = scope.contracts[contractName].calls[method];
-        if (result != ErrorCodes.SUCCESS) {
-          throw new Error(result);
+        // returns (ErrorCodes)
+        const errorCode = scope.contracts[contractName].calls[method];
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
         }
-        // store new user
-        if (scope.users[username] === undefined) scope.users[username] = {};
         return scope;
       })
-      // block until the data shows up in search
-      .then(rest.waitQuery(`User?username=eq.${username}`, 1));
+      .then(getUser(adminName, username))
+      .then(function(scope) {
+        const user = scope.result;
+        // store new user
+        scope.users[username] = {address: user.address};
+        return scope;
+      })
   }
 }
 
@@ -143,7 +146,7 @@ function getUsers(adminName) {
 
 function login(adminName, username, password) {
   return function(scope) {
-    rest.verbose('login', username, password);
+    rest.verbose('login', {username, password});
 
     // function login(string username, password) returns (bool) {
     const method = 'login';
