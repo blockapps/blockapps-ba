@@ -5,8 +5,8 @@ import {
 } from './login.actions';
 
 const initialState = {
-  address: null,
-  roles: null,
+  username: null,
+  role: null,
   error: null,
   authenticated: false,
   loginFailed: false
@@ -18,15 +18,15 @@ const reducer = function loginReducer (state = initialState, action) {
       return initialState;
     case USER_LOGIN_SUCCESS:
       return {
-        address: action.address,
-        roles: action.roles,
+        username: action.username,
+        roles: action.role,
         error: null,
         authenticated: true,
         loginFailed: false
       }
     case USER_LOGIN_FAILURE:
       return {
-        address: null,
+        username: null,
         roles: null,
         error: action.error,
         authenticated: false,

@@ -7,7 +7,7 @@ import { browserHistory } from 'react-router';
 
 function* submitLogin() {
   // MOCK LOGIN
-  yield put(userLoginSuccess('ff4bed658b6c69297f8b76aa5800eb40ef2fd8d7', "Supplier"));
+  yield put(userLoginSuccess('Supplier1', "Supplier"));
   browserHistory.push('/dashboard');
 
 }

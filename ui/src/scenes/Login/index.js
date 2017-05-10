@@ -39,6 +39,8 @@ class Login extends Component {
                 <div className="md-cell--2" />
                 <Field
                   id="username"
+                  name="username"
+                  type="text"
                   label="Enter Username"
                   className="md-cell--8 md-cell--top"
                   component={renderTextField} />
