@@ -39,4 +39,13 @@ contract UserManager is ErrorCodes, Util {
     users.push(new User(username, pwHash, userId));
     return ErrorCodes.SUCCESS;
   }
+
+  function login(string username, bytes32 pwHash) returns (bool) {
+    // fail if username doesnt exists
+    if (!exists(username)) return false;
+    // get the user
+    address a = getUser(username);
+    User user = User(a);
+    return user.authenticate(pwHash);
+  }
 }

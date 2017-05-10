@@ -172,4 +172,29 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
+  it.only('User Login', function(done) {
+    const username = util.uid('User');
+    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+
+    rest.setScope(scope)
+      // create user
+      .then(userManager.createUser(adminName, username, pwHash))
+      // wait for the user to make it into cirrus
+      .then(rest.waitQuery(`User?username=eq.${username}`, 1))
+      // auth
+      .then(userManager.login(adminName, username, '1234'))
+      .then(function(scope) {
+        // get back the user properties
+        const authenticate = scope.result.authenticate;
+        assert.equal(authenticate, true, 'auth');
+        const user = scope.result.user;
+        assert.equal(user.username, username, 'username');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+
 });

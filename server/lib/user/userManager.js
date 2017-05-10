@@ -95,8 +95,7 @@ function getUser(adminName, username) {
       .then(function(scope) {
         // returns address
         const result = scope.contracts[contractName].calls[method];
-        scope.result = result;
-        return scope;
+        return rest.query(`User?address=eq.${result}`)(scope);
       });
   }
 }
@@ -124,14 +123,40 @@ function getUsers(adminName) {
 function login(adminName, username, password) {
   return function(scope) {
     rest.verbose('login', username, password);
-    scope.user = {
-      username: 'Supplier1',
-      role: 'Supplier'
+
+    // function login(string username, password) returns (bool) {
+    const method = 'login';
+    const args = {
+      username: username,
+      pwHash: util.toBytes32(password),
     };
-    return scope;
+
+    return rest.setScope(scope)
+      // login
+      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(function(scope) {
+        // returns bool
+        const result = scope.contracts[contractName].calls[method];
+        scope.result = (result == 'true');
+        return scope;
+      })
+      .then(function(scope) {
+        // auth failed
+        if (!scope.result) {
+          scope.result = {authenticate: false};
+          return scope;
+        }
+        // auth OK
+        return rest.query(`User?username=eq.${username}`)(scope)
+          .then(function(scope) {
+            const resultArray = scope.query.slice(-1)[0];
+            const user = resultArray[0];
+            scope.result = {authenticate: true, user: user};
+            return scope;
+          })
+      })
   }
 }
-
 
 function trimArray(array) {
   return array.map(function(member) {
