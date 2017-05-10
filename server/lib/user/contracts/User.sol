@@ -1,18 +1,22 @@
 import "../../common/ErrorCodes.sol";
 import "../../common/Version.sol";
+import "./UserRole.sol";
 
 /**
  * User data contract
  */
-contract User is ErrorCodes, Version {
+contract User is ErrorCodes, Version, UserRole {
+  // NOTE: members must be public to be indexed for search
   string public username;
   bytes32 public pwHash;
-  uint id;
+  uint public id;
+  UserRole public role;
 
-  function User(string _username, bytes32 _pwHash, uint _id) {
+  function User(string _username, bytes32 _pwHash, uint _id, UserRole _role) {
     username = _username;
     pwHash = _pwHash;
     id = _id;
+    role = _role;
     version = 1;
   }
 

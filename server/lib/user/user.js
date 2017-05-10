@@ -6,6 +6,9 @@ const config = ba.common.config;
 const contractName = 'User';
 const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 
+const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
 function compileSearch() {
   return function(scope) {
     const searchable = [contractName];
@@ -60,7 +63,11 @@ module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
+  // constants
   contractName: contractName,
+  ErrorCodes: ErrorCodes,
+  UserRole: UserRole,
+
   // business logic
   authenticate: authenticate,
 };
