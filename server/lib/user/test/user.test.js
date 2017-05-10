@@ -29,11 +29,13 @@ describe('User tests', function() {
     const id = 123;
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = user.UserRole.SUPPLIER;
 
     const args = {
       _username: username,
       _pwHash: pwHash,
       _id: id,
+      _role: role,
     };
 
     // create the user with constructor args
@@ -43,9 +45,11 @@ describe('User tests', function() {
       .then(function(scope) {
         const result = scope.result;
 
-        console.log(result);
         assert.equal(result.username, username, 'username');
         assert.equal(util.fixBytes(result.pwHash), pwHash, 'pwHash');
+        assert.equal(result.id, id, 'id');
+        assert.equal(result.role.value, role, 'role');
+
         return scope;
       })
       .then(rest.waitQuery(`User?username=eq.${username}`, 1))
@@ -55,15 +59,17 @@ describe('User tests', function() {
       }).catch(done);
   });
 
-  it.only('Auth', function(done) {
+  it('Auth', function(done) {
     const id = 123;
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const role = user.UserRole.SUPPLIER;
 
     const args = {
       _username: username,
       _pwHash: pwHash,
       _id: id,
+      _role: role,
     };
 
     // create the user with constructor args
@@ -72,14 +78,12 @@ describe('User tests', function() {
       .then(user.authenticate(adminName, pwHash))
       .then(function(scope) {
         const result = scope.result;
-        console.log(result);
         assert.isOk(result, 'authenticated');
         return scope;
       })
       .then(user.authenticate(adminName, util.toBytes32('666')))
       .then(function(scope) {
         const result = scope.result;
-        console.log(result);
         assert.isNotOk(result, 'not authenticated');
         return scope;
       })
