@@ -229,6 +229,7 @@ describe('ProjectManager tests', function() {
         assert.equal(bid.amount, amount, 'amount');
         return scope;
       })
+      // search by bid id
       .then(function(scope) {
         const bid = scope.result;
         return projectManager.getBid(bid.id)(scope)
@@ -237,7 +238,14 @@ describe('ProjectManager tests', function() {
             assert.equal(bid.name, name, 'name');
             assert.equal(bid.supplier, supplier, 'supplier');
             assert.equal(bid.amount, amount, 'amount');
+            return scope;
           });
+      })
+      // search by project name
+      .then(projectManager.getBidsByName(name))
+      .then(function(scope) {
+        const bids = scope.result;
+        assert.equal(bids.length, 1, 'one and only one');
       })
       .then(function(scope) {
         done();

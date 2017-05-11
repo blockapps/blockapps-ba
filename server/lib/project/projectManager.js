@@ -109,7 +109,22 @@ function createBid(adminName, name, supplier, amount) {
 function getBid(bidId) {
   return function(scope) {
     rest.verbose('getBid', bidId);
-    return rest.query(`Bid?id=eq.${bidId}`)(scope);
+    return rest.query(`Bid?id=eq.${bidId}`)(scope)
+      .then(function(scope) {
+        scope.result = scope.query.slice(-1)[0][0];
+        return scope;
+      });
+  }
+}
+
+function getBidsByName(name) {
+  return function(scope) {
+    rest.verbose('getBidsByName', name);
+    return rest.query(`Bid?name=eq.${name}`)(scope)
+    .then(function(scope) {
+      scope.result = scope.query.slice(-1)[0];
+      return scope;
+    });
   }
 }
 
@@ -227,6 +242,7 @@ module.exports = {
   createBid: createBid,
   exists: exists,
   getBid: getBid,
+  getBidsByName: getBidsByName,
   getProject: getProject,
   getProjects: getProjects,
   handleEvent: handleEvent,
