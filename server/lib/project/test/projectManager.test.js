@@ -230,6 +230,16 @@ describe('ProjectManager tests', function() {
         return scope;
       })
       .then(function(scope) {
+        const bid = scope.result;
+        return projectManager.getBid(bid.id)(scope)
+          .then(function(scope) {
+            const bid = scope.result;
+            assert.equal(bid.name, name, 'name');
+            assert.equal(bid.supplier, supplier, 'supplier');
+            assert.equal(bid.amount, amount, 'amount');
+          });
+      })
+      .then(function(scope) {
         done();
       }).catch(done);
   });

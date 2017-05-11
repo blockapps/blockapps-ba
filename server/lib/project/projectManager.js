@@ -95,7 +95,7 @@ function createBid(adminName, name, supplier, amount) {
         if (errorCode != ErrorCodes.SUCCESS) {
           throw new Error(errorCode);
         }
-        // get the contract data from search
+        // block until the contract shows up in search
         return rest.waitQuery(`Bid?id=eq.${bidId}`, 1)(scope)
           .then(function(scope) {
             const resultArray = scope.query.slice(-1)[0];
@@ -106,14 +106,12 @@ function createBid(adminName, name, supplier, amount) {
   }
 }
 
-// function getBid(adminName, bidId) {
-//   return function(scope) {
-//     rest.verbose('getBid', bidId);
-//
-//     return rest.query(`Bid?id=eq.${bidId}`)(scope);
-//   }
-// }
-//
+function getBid(bidId) {
+  return function(scope) {
+    rest.verbose('getBid', bidId);
+    return rest.query(`Bid?id=eq.${bidId}`)(scope);
+  }
+}
 
 function exists(adminName, name) {
   return function(scope) {
@@ -228,6 +226,7 @@ module.exports = {
   createProject: createProject,
   createBid: createBid,
   exists: exists,
+  getBid: getBid,
   getProject: getProject,
   getProjects: getProjects,
   handleEvent: handleEvent,
