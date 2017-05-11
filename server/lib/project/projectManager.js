@@ -67,21 +67,21 @@ function createProject(adminName, id, buyer) {
   }
 }
 
-function exists(adminName, username) {
+function exists(adminName, id) {
   return function(scope) {
-    rest.verbose('exists', username);
-    // function exists(string username) returns (bool) {
+    rest.verbose('exists', id);
+    // function exists(uint id) returns (bool) {
     const method = 'exists';
     const args = {
-      username: username,
+      id: id,
     };
 
     return rest.setScope(scope)
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result === 'true'); // return value is a string
+        const exists = scope.contracts[contractName].calls[method];
+        scope.result = (exists === 'true'); // return value is a string
         return scope;
       });
   }
@@ -173,7 +173,7 @@ module.exports = {
   uploadContract: uploadContract,
 
   createProject: createProject,
-  // exists: exists,
+  exists: exists,
   // getUser: getUser,
   // getUsers: getUsers,
   // login: login,

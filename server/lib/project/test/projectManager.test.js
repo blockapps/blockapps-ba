@@ -32,7 +32,7 @@ describe('ProjectManager tests', function() {
   });
 
   it('Create Project', function(done) {
-    const id = new Date().getTime();
+    const id = fakeId();
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
@@ -50,4 +50,35 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it('Test exists()', function(done) {
+    const id = fakeId();
+    const buyer = 'Buyer1';
+
+    rest.setScope(scope)
+      // should not exists
+      .then(projectManager.exists(adminName, id))
+      .then(function(scope) {
+        const exists = scope.result;
+        assert.isDefined(exists, 'should be defined');
+        assert.isNotOk(exists, 'should not exist');
+        return scope;
+      })
+      // create user
+      .then(projectManager.createProject(adminName, id, buyer))
+      // should exist
+      .then(projectManager.exists(adminName, id))
+      .then(function(scope) {
+        const exists = scope.result;
+        assert.equal(exists, true, 'should exist')
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+
 });
+
+function fakeId() {
+  return new Date().getTime();
+}
