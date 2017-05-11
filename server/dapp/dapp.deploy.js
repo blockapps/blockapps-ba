@@ -49,7 +49,6 @@ describe('Supply Chain Demo App - deploy contracts', function () {
       .then(createPresetUsers(adminName, presetData.users))
       // write the deployment data to file
       .then(function (scope) {
-        const users = scope.users;
         const object = {
           url: config.getBlocUrl(),
           adminName: adminName,
@@ -85,7 +84,7 @@ function createPresetUsers(adminName, users) {
       // query for all the users
       .then(userManager.getUsers())
       .then(function(scope) {
-        scope.users = scope.result;
+        // TODO test the users are all in
         return scope;
       });
   }

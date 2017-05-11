@@ -1,19 +1,21 @@
 import "./Project.sol";
 import "./ProjectState.sol";
-import "../bid/contracts/BidState.sol";
+import "./ProjectEvent.sol";
+import "../../bid/contracts/BidState.sol";
 import "../../common/ErrorCodes.sol";
+import "../../common/Util.sol";
 
 /**
 * Interface for Project data contracts
 */
-contract ProjectManager is ErrorCodes, ProjectState, ProjectEvent {
+contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent {
   Project[] projects;
   /*
     note on mapping to array index:
     a non existing mapping will return 0, so 0 should not be a valid value in a map,
     otherwise exists() will not work
   */
-  mapping (uint => uint) projectidToIndexMap;
+  mapping (bytes32 => uint) nameToIndexMap;
 
   /**
   * Constructor
@@ -22,22 +24,22 @@ contract ProjectManager is ErrorCodes, ProjectState, ProjectEvent {
     projects.length = 1; // see above note
   }
 
-  function exists(uint id) returns (bool) {
-    return projectidToIndexMap[id] != 0;
+  function exists(string name) returns (bool) {
+    return nameToIndexMap[b32(name)] != 0;
   }
 
-  function getProject(uint id) returns (address) {
-    uint index = projectidToIndexMap[id];
+  function getProject(string name) returns (address) {
+    uint index = nameToIndexMap[b32(name)];
     return projects[index];
   }
 
-  function createProject(uint id, string buyer) returns (ErrorCodes) {
+  function createProject(string name, string buyer) returns (ErrorCodes) {
     // fail if username exists
-    if (exists(id)) return ErrorCodes.EXISTS;
+    if (exists(name)) return ErrorCodes.EXISTS;
     // add project
     uint index = projects.length;
-    projectidToIndexMap[id] = index;
-    projects.push(new Project(id, buyer));
+    nameToIndexMap[b32(name)] = index;
+    projects.push(new Project(name, buyer));
     return ErrorCodes.SUCCESS;
   }
 

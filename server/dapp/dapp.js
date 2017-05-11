@@ -32,6 +32,7 @@ const AI = {
   libPath: undefined,
   subContractsNames: {
     UserManager: 'UserManager',
+    ProjectManager: 'ProjectManager',
   },
   contractName: 'AdminInterface',
   contractFilename: '/admin/AdminInterface.sol',
@@ -132,26 +133,29 @@ function login(adminName, username, password) {
   }
 }
 
-function createProject(adminName, id, buyer) {
-  return function(scope) {
-    rest.verbose('dapp: createProject', {id, buyer});
-    return setScope(scope)
-      // create the project
-      .then(projectManager.createProject(adminName, id, buyer))
-      // returns the record from search
-      .then(function(scope) {
-        const project = scope.result;
-        assert.equal(project.id, id, 'id');
-        assert.equal(project.buyer, buyer, 'buyer');
-        return scope;
-      });
-  }
-}
 // function createProject(adminName, id, buyer) {
 //   return function(scope) {
-//     return scope;
+//     rest.verbose('dapp: createProject', {id, buyer});
+//     return setScope(scope)
+//       // create the project
+//       .then(projectManager.createProject(adminName, id, buyer))
+//       // returns the record from search
+//       .then(function(scope) {
+//         const project = scope.result;
+//         assert.equal(project.id, id, 'id');
+//         assert.equal(project.buyer, buyer, 'buyer');
+//         return scope;
+//       });
 //   }
 // }
+
+function createProject(adminName, id, buyer) {
+  return function(scope) {
+    rest.verbose('dapp: createProject', {adminName, id, buyer});
+    return setScope(scope)
+      .then(projectManager.createProject(adminName, id, buyer));
+  }
+}
 
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
