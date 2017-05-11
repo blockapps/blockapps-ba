@@ -11,8 +11,6 @@ import { handleApiError } from '../../lib/apiErrorHandler';
 const loginUrl = API_URL + '/login';
 
 function loginApiCall(username,password) {
-  console.log('>>>> user >>>>', username);
-  console.log('>>>> password >>>>', password);
   return fetch(loginUrl, {
     method: 'POST',
     headers: {
@@ -33,9 +31,9 @@ function loginApiCall(username,password) {
 function* submitLogin(action) {
   try {
     const response = yield call(loginApiCall, action.username, action.password);
-
-    if(response.authenticate) {
-      yield put(userLoginSuccess(response.user.username, response.user.role));
+    console.log('>>>> response >>>>',response);
+    if(response.data.authenticate) {
+      yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
       browserHistory.push('/dashboard');
     }
   }
