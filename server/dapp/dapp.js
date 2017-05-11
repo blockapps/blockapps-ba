@@ -5,6 +5,7 @@ const config = ba.common.config;
 const Promise = ba.common.Promise;
 
 const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
+const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
 const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 
 // ========== Admin (super user) ==========
@@ -133,7 +134,7 @@ function login(adminName, username, password) {
 
 function createProject(adminName, id, buyer) {
   return function(scope) {
-    rest.verbose('dapp: login', {username, password});
+    rest.verbose('dapp: createProject', {id, buyer});
     return setScope(scope)
       // create the project
       .then(projectManager.createProject(adminName, id, buyer))
@@ -146,6 +147,11 @@ function createProject(adminName, id, buyer) {
       });
   }
 }
+// function createProject(adminName, id, buyer) {
+//   return function(scope) {
+//     return scope;
+//   }
+// }
 
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
