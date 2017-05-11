@@ -35,7 +35,7 @@ function assert_apiSuccess(res) {
 describe("Projects Test", function() {
   const projectName = "Project1";
   const buyer = "Buyer1";
-  const projectId = 1;
+  const projectId = 2;
 
   it('should create a project', function(done) {
     this.timeout(config.timeout);
@@ -50,9 +50,11 @@ describe("Projects Test", function() {
         assert_noerr(err);
         assert_apiSuccess(res);
         res.body.should.have.property('data');
-        const project = res.body.data;
+        const data = res.body.data;
+        const project = data.project;
+        assert.isDefined(project, 'should return new project');
         // todo: the created project returns the created project
-        assert.equal(project.buyer, buyer);
+        assert.equal(project.buyer, buyer, 'new project should contain buyer');
         done();
       });
   });

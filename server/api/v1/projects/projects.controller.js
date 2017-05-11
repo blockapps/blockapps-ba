@@ -14,17 +14,19 @@ const projectsController = {
     const buyer = req.body.buyer;
     const projectId = req.body.projectId;
 
+    console.log('deploy', deploy.adminName, deploy.adminPassword);
+    const scope = {};
+
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
       .then(dapp.createProject(
         deploy.adminName,
-        buyer,
-        projectId
+        projectId,
+        buyer
       ))
       .then(scope => {
         util.response.status200(res, {
-          authenticate: true,
-          user: scope.result.user
+          project: scope.result
         });
       })
       .catch(err => {

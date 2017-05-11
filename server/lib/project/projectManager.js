@@ -44,8 +44,8 @@ function uploadContract(adminName, adminPassword, args) {
 function createProject(adminName, id, buyer) {
   return function(scope) {
     rest.verbose('createProject', {id, buyer});
-    // function createPtoject(uint id, string buyer) returns (ErrorCodes) {
-    const method = 'createPtoject';
+    // function createProject(uint id, string buyer) returns (ErrorCodes) {
+    const method = 'createProject';
     const args = {
       id: id,
       buyer: buyer,

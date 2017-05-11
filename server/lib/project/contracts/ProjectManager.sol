@@ -1,6 +1,7 @@
 import "./Project.sol";
 import "./ProjectState.sol";
-import "../bid/contracts/BidState.sol";
+import "./ProjectEvent.sol";
+import "../../bid/contracts/BidState.sol";
 import "../../common/ErrorCodes.sol";
 
 /**
