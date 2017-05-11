@@ -4,7 +4,7 @@ timeout: 600000
 libPath: ./server/lib
 contractsPath: ./contracts/
 dataFilename: ./config/demo-data.yaml
-deployFilename: ./config/40.deploy.yaml
+deployFilename: ./config/bayar4a.deploy.yaml
 
 # WARNING - extra strict syntax
 # DO NOT change the nodes order
