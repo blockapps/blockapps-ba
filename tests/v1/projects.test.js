@@ -33,18 +33,16 @@ function assert_apiSuccess(res) {
 }
 
 describe("Projects Test", function() {
-  const projectName = "Project1";
+  const name = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
-  const projectId = 2;
 
   it('should create a project', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects')
       .send({
-        projectName: projectName,
-        buyer: buyer,
-        projectId: projectId,
+        name: name,
+        buyer: buyer
       })
       .end((err, res) => {
         assert_noerr(err);

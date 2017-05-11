@@ -6,12 +6,12 @@ import "./ProjectState.sol";
  */
 contract Project is ErrorCodes, ProjectState {
   // NOTE: members must be public to be indexed for search
+  string public name;
   string public buyer;
-  uint public id;
   ProjectState public state;
 
-  function Project(uint _id, string _buyer) {
-    id = _id;
+  function Project(string _name, string _buyer) {
+    name = _name;
     buyer = _buyer;
     state = ProjectState.OPEN;
   }

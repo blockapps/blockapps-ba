@@ -34,16 +34,16 @@ describe('ProjectManager tests', function() {
   });
 
   it('Create Project', function(done) {
-    const id = fakeId();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
       // create user
-      .then(projectManager.createProject(adminName, id, buyer))
+      .then(projectManager.createProject(adminName, name, buyer))
       // returns the record from search
       .then(function(scope) {
         const project = scope.result;
-        assert.equal(project.id, id, 'id');
+        assert.equal(project.name, name, 'name');
         assert.equal(project.buyer, buyer, 'buyer');
         return scope;
       })
@@ -53,12 +53,12 @@ describe('ProjectManager tests', function() {
   });
 
   it('Test exists()', function(done) {
-    const id = fakeId();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
       // should not exists
-      .then(projectManager.exists(adminName, id))
+      .then(projectManager.exists(adminName, name))
       .then(function(scope) {
         const exists = scope.result;
         assert.isDefined(exists, 'should be defined');
@@ -66,9 +66,9 @@ describe('ProjectManager tests', function() {
         return scope;
       })
       // create user
-      .then(projectManager.createProject(adminName, id, buyer))
+      .then(projectManager.createProject(adminName, name, buyer))
       // should exist
-      .then(projectManager.exists(adminName, id))
+      .then(projectManager.exists(adminName, name))
       .then(function(scope) {
         const exists = scope.result;
         assert.equal(exists, true, 'should exist')
@@ -79,21 +79,21 @@ describe('ProjectManager tests', function() {
   });
 
   it('Create Duplicate Project', function(done) {
-    const id = fakeId();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     scope.error = undefined;
 
     rest.setScope(scope)
       // create project
-      .then(projectManager.createProject(adminName, id, buyer))
+      .then(projectManager.createProject(adminName, name, buyer))
       .then(function(scope) {
         // create a duplicate - should FAIL
         return rest.setScope(scope)
-          .then(projectManager.createProject(adminName, id, buyer))
+          .then(projectManager.createProject(adminName, name, buyer))
           .then(function(scope) {
             // did not FAIL - that is an error
-            scope.error = 'Duplicate project-id was not detected: ' + id;
+            scope.error = 'Duplicate project-name was not detected: ' + name;
             return scope
           })
           .catch(function(error) {
@@ -120,24 +120,24 @@ describe('ProjectManager tests', function() {
   });
 
   it('Get Project', function(done) {
-    const id = fakeId();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
       // get project - should not exist
-      .then(projectManager.getProject(adminName, id))
+      .then(projectManager.getProject(adminName, name))
       .then(function(scope) {
         const project = scope.result;
         assert.isUndefined(project, 'should not be found');
         return scope;
       })
       // create project
-      .then(projectManager.createProject(adminName, id, buyer))
+      .then(projectManager.createProject(adminName, name, buyer))
       // get it - should exist
-      .then(projectManager.getProject(adminName, id))
+      .then(projectManager.getProject(adminName, name))
       .then(function(scope) {
         const project = scope.result;
-        assert.equal(project.id, id, 'id should be found');
+        assert.equal(project.name, name, 'should have a name');
         return scope;
       })
       .then(function(scope) {
@@ -146,7 +146,7 @@ describe('ProjectManager tests', function() {
   });
 
   it('Get Projects', function(done) {
-    const id = fakeId();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
@@ -155,21 +155,21 @@ describe('ProjectManager tests', function() {
       .then(function(scope) {
         const projects = scope.result;
         const found = projects.filter(function(project) {
-          return project.id === id;
+          return project.name === name;
         });
-        assert.equal(found.length, 0, 'project list should NOT contain ' + id);
+        assert.equal(found.length, 0, 'project list should NOT contain ' + name);
         return scope;
       })
       // create project
-      .then(projectManager.createProject(adminName, id, buyer))
+      .then(projectManager.createProject(adminName, name, buyer))
       // get projects - should exist
       .then(projectManager.getProjects(adminName))
       .then(function(scope) {
         const projects = scope.result;
         const found = projects.filter(function(project) {
-          return project.id === id;
+          return project.name === name;
         });
-        assert.equal(found.length, 1, 'project list should contain ' + id);
+        assert.equal(found.length, 1, 'project list should contain ' + name);
         return scope;
       })
       .then(function(scope) {
@@ -178,19 +178,19 @@ describe('ProjectManager tests', function() {
   });
 
   it('ACCEPT an OPEN project - change to PRODUCTION', function(done) {
-    const id = fakeId();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
       // create a project
-      .then(projectManager.createProject(adminName, id, buyer))
+      .then(projectManager.createProject(adminName, name, buyer))
       .then(function(scope) {
         const project = scope.result;
-        assert.equal(project.id, id, 'id');
+        assert.equal(project.name, name, 'name');
         return scope;
       })
       // set the state
-      .then(projectManager.handleEvent(adminName, id, ProjectEvent.ACCEPT))
+      .then(projectManager.handleEvent(adminName, name, ProjectEvent.ACCEPT))
       .then(function(scope) {
         const result = scope.result;
         assert.equal(result.errorCode, ErrorCodes.SUCCESS, 'handleEvent should return ErrorCodes.SUCCESS');
@@ -198,7 +198,7 @@ describe('ProjectManager tests', function() {
         return scope;
       })
       // check the new state
-      .then(rest.waitQuery(`Project?id=eq.${id}`, 1))
+      .then(rest.waitQuery(`${project.contractName}?name=eq.${name}`, 1))
       .then(function(scope) {
         const resultsArray = scope.query.slice(-1)[0];
         assert.equal(resultsArray.length, 1, 'one and only one');
@@ -211,9 +211,3 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 });
-
-
-function fakeId() {
-  const nano = process.hrtime()[1];
-  return nano;
-}

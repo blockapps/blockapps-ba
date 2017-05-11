@@ -41,13 +41,13 @@ function uploadContract(adminName, adminPassword, args) {
 
 // throws: ErrorCodes
 // returns: record from search
-function createProject(adminName, id, buyer) {
+function createProject(adminName, name, buyer) {
   return function(scope) {
-    rest.verbose('createProject', {id, buyer});
-    // function createProject(uint id, string buyer) returns (ErrorCodes) {
+    rest.verbose('createProject', {name, buyer});
+    // function createProject(string name, string buyer) returns (ErrorCodes) {
     const method = 'createProject';
     const args = {
-      id: id,
+      name: name,
       buyer: buyer,
     };
 
@@ -62,17 +62,17 @@ function createProject(adminName, id, buyer) {
         return scope;
       })
       // get the contract data from search
-      .then(getProject(adminName, id));
+      .then(getProject(adminName, name));
   }
 }
 
-function exists(adminName, id) {
+function exists(adminName, name) {
   return function(scope) {
-    rest.verbose('exists', id);
-    // function exists(uint id) returns (bool) {
+    rest.verbose('exists', name);
+    // function exists(string name) returns (bool) {
     const method = 'exists';
     const args = {
-      id: id,
+      name: name,
     };
 
     return rest.setScope(scope)
@@ -86,13 +86,13 @@ function exists(adminName, id) {
   }
 }
 
-function getProject(adminName, id) {
+function getProject(adminName, name) {
   return function(scope) {
-    rest.verbose('getProject', id);
-    // function getProject(string id) returns (address) {
+    rest.verbose('getProject', name);
+    // function getProject(string name) returns (address) {
     const method = 'getProject';
     const args = {
-      id: id,
+      name: name,
     };
 
     return rest.setScope(scope)
@@ -137,14 +137,14 @@ function getProjects(adminName) {
   }
 }
 
-function handleEvent(adminName, id, projectEvent) {
+function handleEvent(adminName, name, projectEvent) {
   return function(scope) {
-    rest.verbose('handleEvent', {id, projectEvent});
+    rest.verbose('handleEvent', {name, projectEvent});
 
     const method = 'handleEvent';
 
     return rest.setScope(scope)
-      .then( getProject(adminName, id) )
+      .then( getProject(adminName, name) )
       .then(function (scope) {
         // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
         const projectAddress = scope.result.address;

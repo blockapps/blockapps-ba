@@ -26,11 +26,11 @@ describe('Project tests', function() {
   });
 
   it('Create Contract', function(done) {
-    const id = new Date().getTime();
+    const name = util.uid('Project');
     const buyer = 'Buyer1';
 
     const args = {
-      _id: id,
+      _name: name,
       _buyer: buyer,
     };
 
@@ -41,10 +41,10 @@ describe('Project tests', function() {
       .then(function(scope) {
         const project = scope.result;
         assert.equal(project.buyer, buyer, 'buyer');
-        assert.equal(project.id, id, 'id');
+        assert.equal(project.name, name, 'name');
         return scope;
       })
-      .then(rest.waitQuery(`${project.contractName}?id=eq.${id}`, 1))
+      .then(rest.waitQuery(`${project.contractName}?name=eq.${name}`, 1))
       .then(function(scope) {
         done();
       }).catch(done);
