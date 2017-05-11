@@ -57,8 +57,7 @@ function createProject(adminName, id, buyer) {
         // returns (ErrorCodes)
         const errorCode = scope.contracts[contractName].calls[method];
         if (errorCode != ErrorCodes.SUCCESS) {
-          const string = ErrorCodes[errorCode] || '';
-          throw new Error(errorCode + ' ' + string + ' id:' + id);
+          throw new Error(errorCode);
         }
         return scope;
       })
@@ -107,7 +106,8 @@ function getProject(adminName, id) {
           return scope;
         }
         // found - query for the full record
-        return rest.waitQuery(`${projectContractName}?address=eq.${address}`, 1)(scope)
+        const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
+        return rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1)(scope)
           .then(function(scope) {
             const resultArray = scope.query.slice(-1)[0];
             scope.result = resultArray[0];
@@ -117,44 +117,21 @@ function getProject(adminName, id) {
   }
 }
 
-function getUsers(adminName) {
+function getProjects(adminName) {
   return function(scope) {
-    rest.verbose('getUsers');
+    rest.verbose('getProjects');
 
     return rest.setScope(scope)
       .then(rest.getState(contractName))
       .then(function (scope) {
         const state = scope.states[contractName];
-        const users = state.users;
-        const trimmed = trimArray(users); // trim leading zeros due to bug in cirrus
+        const projects = state.projects;
+        const trimmed = trimArray(projects); // FIXME leading zeros bug
         const csv = util.toCsv(trimmed); // generate csv string
-        return rest.query(`${userContractName}?address=in.${csv}`)(scope);
+        return rest.query(`${projectContractName}?address=in.${csv}`)(scope);
       })
       .then(function (scope) {
         scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
-  }
-}
-
-function login(adminName, username, password) {
-  return function(scope) {
-    rest.verbose('login', {username, password});
-
-    // function login(string username, password) returns (bool) {
-    const method = 'login';
-    const args = {
-      username: username,
-      pwHash: util.toBytes32(password),
-    };
-
-    return rest.setScope(scope)
-      // login
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result == 'true');
         return scope;
       });
   }
@@ -174,7 +151,6 @@ module.exports = {
 
   createProject: createProject,
   exists: exists,
-  // getUser: getUser,
-  // getUsers: getUsers,
-  // login: login,
+  getProject: getProject,
+  getProjects: getProjects,
 };

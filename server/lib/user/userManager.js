@@ -106,14 +106,15 @@ function getUser(adminName, username) {
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns address
-        const result = scope.contracts[contractName].calls[method];
+        const address = scope.contracts[contractName].calls[method];
         // if not found
-        if (result == 0) {
+        if (address == 0) {
           scope.result = undefined;
           return scope;
         }
         // found - query for the full user record
-        return rest.waitQuery(`${userContractName}?address=eq.${result}`, 1)(scope)
+        const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
+        return rest.waitQuery(`${userContractName}?address=eq.${trimmed}`, 1)(scope)
           .then(function(scope) {
             const resultArray = scope.query.slice(-1)[0];
             scope.result = resultArray[0];

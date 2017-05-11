@@ -76,9 +76,108 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it('Create Duplicate Project', function(done) {
+    const id = fakeId();
+    const buyer = 'Buyer1';
+
+    scope.error = undefined;
+
+    rest.setScope(scope)
+      // create project
+      .then(projectManager.createProject(adminName, id, buyer))
+      .then(function(scope) {
+        // create a duplicate - should FAIL
+        return rest.setScope(scope)
+          .then(projectManager.createProject(adminName, id, buyer))
+          .then(function(scope) {
+            // did not FAIL - that is an error
+            scope.error = 'Duplicate project-id was not detected: ' + id;
+            return scope
+          })
+          .catch(function(error) {
+            const errorCode = error.message;
+            // error should be EXISTS
+            if (errorCode == ErrorCodes.EXISTS) {
+              return scope;
+            }
+            // different error thrown - not good
+            scope.error = 'projectManager.createProject: threw: ' + errorCode;
+            return scope
+          });
+      })
+      .then(function(scope) {
+        // check error for the previous step
+        if (scope.error !== undefined)
+          throw(new Error(scope.error));
+        // all good
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+  it('Get Project', function(done) {
+    const id = fakeId();
+    const buyer = 'Buyer1';
+
+    rest.setScope(scope)
+      // get project - should not exist
+      .then(projectManager.getProject(adminName, id))
+      .then(function(scope) {
+        const project = scope.result;
+        assert.isUndefined(project, 'should not be found');
+        return scope;
+      })
+      // create project
+      .then(projectManager.createProject(adminName, id, buyer))
+      // get it - should exist
+      .then(projectManager.getProject(adminName, id))
+      .then(function(scope) {
+        const project = scope.result;
+        assert.equal(project.id, id, 'id should be found');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+  it('Get Projects', function(done) {
+    const id = fakeId();
+    const buyer = 'Buyer1';
+
+    rest.setScope(scope)
+      // get projects - should not exist
+      .then(projectManager.getProjects(adminName))
+      .then(function(scope) {
+        const projects = scope.result;
+        const found = projects.filter(function(project) {
+          return project.id === id;
+        });
+        assert.equal(found.length, 0, 'project list should NOT contain ' + id);
+        return scope;
+      })
+      // create project
+      .then(projectManager.createProject(adminName, id, buyer))
+      // get projects - should exist
+      .then(projectManager.getProjects(adminName))
+      .then(function(scope) {
+        const projects = scope.result;
+        const found = projects.filter(function(project) {
+          return project.id === id;
+        });
+        assert.equal(found.length, 1, 'project list should contain ' + id);
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 
 });
 
 function fakeId() {
-  return new Date().getTime();
+  const nano = process.hrtime()[1];
+  return nano;
 }
