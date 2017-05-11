@@ -160,5 +160,6 @@ module.exports = function (libPath) {
     setScope: setScope,
     // business functions
     login: login,
+    createProject: createProject,
   };
 };

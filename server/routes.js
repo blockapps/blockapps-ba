@@ -1,9 +1,11 @@
 const routes = require('express').Router();
 const heartbeat = require('./api/v1/heartbeat');
 const login = require('./api/v1/login');
+const projects = require('./api/v1/projects');
 
 routes.use('/api/v1/heartbeat', heartbeat);
 routes.use('/api/v1/login', login);
+routes.use('/api/v1/projects', projects);
 /**
  * Serve the docs for the api
  */

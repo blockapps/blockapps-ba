@@ -38,7 +38,7 @@ function getProjectMock(projectId) {
         },
         specFileURL: 'http://bucket.s3.amazonaws.com/specs/7878u7e4hf83h28fh83uehr83uh8eujf',
         status: 'open',
-        deliveredDate: null,
+        deliveredDate: '2017-05-20T16:47:49.016Z',
         bids: [
           {
             price: 790,
