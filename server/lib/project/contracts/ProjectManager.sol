@@ -1,6 +1,7 @@
 import "./Project.sol";
 import "./ProjectState.sol";
 import "./ProjectEvent.sol";
+import "../../bid/contracts/Bid.sol";
 import "../../bid/contracts/BidState.sol";
 import "../../common/ErrorCodes.sol";
 import "../../common/Util.sol";
@@ -9,7 +10,10 @@ import "../../common/Util.sol";
 * Interface for Project data contracts
 */
 contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent {
+
   Project[] projects;
+  uint bidId; // unique identifier for bids
+
   /*
     note on mapping to array index:
     a non existing mapping will return 0, so 0 should not be a valid value in a map,
@@ -22,6 +26,7 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent {
   */
   function ProjectManager() {
     projects.length = 1; // see above note
+    bidId = block.number;
   }
 
   function exists(string name) returns (bool) {
@@ -41,6 +46,15 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent {
     nameToIndexMap[b32(name)] = index;
     projects.push(new Project(name, buyer));
     return ErrorCodes.SUCCESS;
+  }
+
+  function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
+    // fail if project name not found
+    if (!exists(name)) return (ErrorCodes.NOT_FOUND, 0);
+    // create bid
+    bidId++; // increment the unique id
+    Bid bid = new Bid(bidId, name, supplier, amount);
+    return (ErrorCodes.SUCCESS, bidId);
   }
 
   /**

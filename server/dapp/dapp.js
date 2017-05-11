@@ -149,11 +149,11 @@ function login(adminName, username, password) {
 //   }
 // }
 
-function createProject(adminName, id, buyer) {
+function createProject(adminName, name, buyer) {
   return function(scope) {
-    rest.verbose('dapp: createProject', {adminName, id, buyer});
+    rest.verbose('dapp: createProject', {adminName, name, buyer});
     return setScope(scope)
-      .then(projectManager.createProject(adminName, id, buyer));
+      .then(projectManager.createProject(adminName, name, buyer));
   }
 }
 

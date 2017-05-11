@@ -11,10 +11,14 @@ const projectContractName = require('./project').contractName;
 
 function compileSearch() {
   return function(scope) {
-    const user = require('./user');
+    const user = require('../user/user');
+    const bid = require('../bid/bid');
+    const project = require('./project');
     const searchable = [contractName];
     return rest.setScope(scope)
+      .then(bid.compileSearch())
       .then(user.compileSearch())
+      .then(project.compileSearch())
       .then(rest.compileSearch(searchable, contractName, contractFilename));
   }
 }
@@ -63,6 +67,64 @@ function createProject(adminName, name, buyer) {
       })
       // get the contract data from search
       .then(getProject(adminName, name));
+  }
+}
+
+// throws: ErrorCodes
+// returns: record from search
+function createBid(adminName, name, supplier, amount) {
+  return function(scope) {
+    rest.verbose('createBid', {name, supplier, amount});
+    // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
+    const method = 'createBid';
+    const args = {
+      name: name,
+      supplier: supplier,
+      amount: amount,
+    };
+
+    return rest.setScope(scope)
+      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(function(scope) {
+        // returns (ErrorCodes, uint)
+        const tuppleString = scope.contracts[contractName].calls[method];
+        const tuppleArray = tuppleString.split(',');
+        const errorCode = tuppleArray[0];
+        const bidId = tuppleArray[1];
+
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
+        }
+        // block until the contract shows up in search
+        return rest.waitQuery(`Bid?id=eq.${bidId}`, 1)(scope)
+          .then(function(scope) {
+            const resultArray = scope.query.slice(-1)[0];
+            scope.result = resultArray[0];
+            return scope;
+          })
+      });
+  }
+}
+
+function getBid(bidId) {
+  return function(scope) {
+    rest.verbose('getBid', bidId);
+    return rest.query(`Bid?id=eq.${bidId}`)(scope)
+      .then(function(scope) {
+        scope.result = scope.query.slice(-1)[0][0];
+        return scope;
+      });
+  }
+}
+
+function getBidsByName(name) {
+  return function(scope) {
+    rest.verbose('getBidsByName', name);
+    return rest.query(`Bid?name=eq.${name}`)(scope)
+    .then(function(scope) {
+      scope.result = scope.query.slice(-1)[0];
+      return scope;
+    });
   }
 }
 
@@ -177,7 +239,10 @@ module.exports = {
   uploadContract: uploadContract,
 
   createProject: createProject,
+  createBid: createBid,
   exists: exists,
+  getBid: getBid,
+  getBidsByName: getBidsByName,
   getProject: getProject,
   getProjects: getProjects,
   handleEvent: handleEvent,
