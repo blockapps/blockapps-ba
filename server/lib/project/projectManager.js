@@ -11,10 +11,14 @@ const projectContractName = require('./project').contractName;
 
 function compileSearch() {
   return function(scope) {
-    const user = require('./user');
+    const user = require('../user/user');
+    const bid = require('../bid/bid');
+    const project = require('./project');
     const searchable = [contractName];
     return rest.setScope(scope)
+      .then(bid.compileSearch())
       .then(user.compileSearch())
+      .then(project.compileSearch())
       .then(rest.compileSearch(searchable, contractName, contractFilename));
   }
 }
@@ -65,6 +69,51 @@ function createProject(adminName, name, buyer) {
       .then(getProject(adminName, name));
   }
 }
+
+// throws: ErrorCodes
+// returns: record from search
+function createBid(adminName, name, supplier, amount) {
+  return function(scope) {
+    rest.verbose('createBid', {name, supplier, amount});
+    // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
+    const method = 'createBid';
+    const args = {
+      name: name,
+      supplier: supplier,
+      amount: amount,
+    };
+
+    return rest.setScope(scope)
+      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(function(scope) {
+        // returns (ErrorCodes, uint)
+        const tuppleString = scope.contracts[contractName].calls[method];
+        const tuppleArray = tuppleString.split(',');
+        const errorCode = tuppleArray[0];
+        const bidId = tuppleArray[1];
+
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
+        }
+        // get the contract data from search
+        return rest.waitQuery(`Bid?id=eq.${bidId}`, 1)(scope)
+          .then(function(scope) {
+            const resultArray = scope.query.slice(-1)[0];
+            scope.result = resultArray[0];
+            return scope;
+          })
+      });
+  }
+}
+
+// function getBid(adminName, bidId) {
+//   return function(scope) {
+//     rest.verbose('getBid', bidId);
+//
+//     return rest.query(`Bid?id=eq.${bidId}`)(scope);
+//   }
+// }
+//
 
 function exists(adminName, name) {
   return function(scope) {
@@ -177,6 +226,7 @@ module.exports = {
   uploadContract: uploadContract,
 
   createProject: createProject,
+  createBid: createBid,
   exists: exists,
   getProject: getProject,
   getProjects: getProjects,
