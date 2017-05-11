@@ -31,7 +31,7 @@ contract ProjectManager is ErrorCodes, ProjectState, ProjectEvent {
     return projects[index];
   }
 
-  function createPtoject(uint id, string buyer) returns (ErrorCodes) {
+  function createProject(uint id, string buyer) returns (ErrorCodes) {
     // fail if username exists
     if (exists(id)) return ErrorCodes.EXISTS;
     // add project

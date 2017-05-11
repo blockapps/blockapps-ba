@@ -131,6 +131,22 @@ function login(adminName, username, password) {
   }
 }
 
+function createProject(adminName, id, buyer) {
+  return function(scope) {
+    rest.verbose('dapp: login', {username, password});
+    return setScope(scope)
+      // create the project
+      .then(projectManager.createProject(adminName, id, buyer))
+      // returns the record from search
+      .then(function(scope) {
+        const project = scope.result;
+        assert.equal(project.id, id, 'id');
+        assert.equal(project.buyer, buyer, 'buyer');
+        return scope;
+      });
+  }
+}
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.libPath = libPath;
