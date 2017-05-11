@@ -7,12 +7,12 @@ const should = common.should;
 const assert = common.assert;
 const Promise = common.Promise;
 
-const project = require('../project');
+const bid = require('../bid');
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
 
-describe('Project tests', function() {
+describe('Bid tests', function() {
   this.timeout(config.timeout);
 
   const scope = {};
@@ -27,24 +27,24 @@ describe('Project tests', function() {
 
   it('Create Contract', function(done) {
     const id = new Date().getTime();
-    const buyer = 'Buyer1';
+    const supplier = 'Supplier1';
 
     const args = {
       _id: id,
-      _buyer: buyer,
+      _supplier: supplier,
     };
 
     // create with constructor args
     rest.setScope(scope)
-      .then(project.uploadContract(adminName, adminPassword, args))
-      .then(project.getState())
+      .then(bid.uploadContract(adminName, adminPassword, args))
+      .then(bid.getState())
       .then(function(scope) {
-        const project = scope.result;
-        assert.equal(project.buyer, buyer, 'buyer');
-        assert.equal(project.id, id, 'id');
+        const bid = scope.result;
+        assert.equal(bid.id, id, 'id');
+        assert.equal(bid.supplier, supplier, 'supplier');
         return scope;
       })
-      .then(rest.waitQuery(`${project.contractName}?id=eq.${id}`, 1))
+      .then(rest.waitQuery(`${bid.contractName}?id=eq.${id}`, 1))
       .then(function(scope) {
         done();
       }).catch(done);

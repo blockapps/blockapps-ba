@@ -5,6 +5,7 @@ const config = ba.common.config;
 const Promise = ba.common.Promise;
 
 const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
+const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 
 // ========== Admin (super user) ==========
 
@@ -81,6 +82,7 @@ function getAdminInterface(address) {
 function compileSearch() {
   return function (scope) {
     return nop(scope)
+      .then(bid.compileSearch())
       .then(userManager.compileSearch());
   }
 }
