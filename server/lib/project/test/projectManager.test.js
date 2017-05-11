@@ -10,6 +10,8 @@ const Promise = common.Promise;
 const project = require('../project');
 const projectManager = require('../projectManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const ProjectState = rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
+const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -175,7 +177,41 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it('ACCEPT an OPEN project - change to PRODUCTION', function(done) {
+    const id = fakeId();
+    const buyer = 'Buyer1';
+
+    rest.setScope(scope)
+      // create a project
+      .then(projectManager.createProject(adminName, id, buyer))
+      .then(function(scope) {
+        const project = scope.result;
+        assert.equal(project.id, id, 'id');
+        return scope;
+      })
+      // set the state
+      .then(projectManager.handleEvent(adminName, id, ProjectEvent.ACCEPT))
+      .then(function(scope) {
+        const result = scope.result;
+        assert.equal(result.errorCode, ErrorCodes.SUCCESS, 'handleEvent should return ErrorCodes.SUCCESS');
+        assert.equal(result.state, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
+        return scope;
+      })
+      // check the new state
+      .then(rest.waitQuery(`Project?id=eq.${id}`, 1))
+      .then(function(scope) {
+        const resultsArray = scope.query.slice(-1)[0];
+        assert.equal(resultsArray.length, 1, 'one and only one');
+        const project = resultsArray[0];
+        assert.equal(project.state, ProjectState[ProjectState.PRODUCTION], 'ACCEPTED project should be in PRODUCTION');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 });
+
 
 function fakeId() {
   const nano = process.hrtime()[1];

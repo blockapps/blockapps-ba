@@ -1,10 +1,12 @@
 import "./Project.sol";
+import "./ProjectState.sol";
+import "./ProjectEvent.sol";
 import "../../common/ErrorCodes.sol";
 
 /**
 * Interface for Project data contracts
 */
-contract ProjectManager is ErrorCodes {
+contract ProjectManager is ErrorCodes, ProjectState, ProjectEvent {
   Project[] projects;
   /*
     note on mapping to array index:
@@ -38,4 +40,44 @@ contract ProjectManager is ErrorCodes {
     projects.push(new Project(id, buyer));
     return ErrorCodes.SUCCESS;
   }
+
+  /**
+   * handleEvent - transition project to a new state based on incoming event
+   */
+  function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
+    Project project = Project(projectAddress);
+    ProjectState state = project.getState();
+    // check transition
+    var (errorCode, newState) = fsm(state, projectEvent);
+    // event is not valid in current state
+    if (errorCode != ErrorCodes.SUCCESS) {
+      return (errorCode, state);
+    }
+    // use the new state
+    project.setState(newState);
+    return (ErrorCodes.SUCCESS, newState);
+  }
+
+  function fsm(ProjectState state, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
+    // NULL
+    if (state == ProjectState.NULL)
+      return (ErrorCodes.ERROR, state);
+    // OPEN
+    if (state == ProjectState.OPEN) {
+      if (projectEvent == ProjectEvent.ACCEPT)
+        return (ErrorCodes.SUCCESS, ProjectState.PRODUCTION);
+    }
+    // PRODUCTION
+    if (state == ProjectState.PRODUCTION) {
+      if (projectEvent == ProjectEvent.DELIVER)
+        return (ErrorCodes.SUCCESS, ProjectState.INTRANSIT);
+    }
+    // INTRANSIT
+    if (state == ProjectState.INTRANSIT) {
+      if (projectEvent == ProjectEvent.RECEIVE)
+        return (ErrorCodes.SUCCESS, ProjectState.RECEIVED);
+    }
+    return (ErrorCodes.ERROR, state);
+  }
+
 }

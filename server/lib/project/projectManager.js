@@ -137,6 +137,33 @@ function getProjects(adminName) {
   }
 }
 
+function handleEvent(adminName, id, projectEvent) {
+  return function(scope) {
+    rest.verbose('handleEvent', {id, projectEvent});
+
+    const method = 'handleEvent';
+
+    return rest.setScope(scope)
+      .then( getProject(adminName, id) )
+      .then(function (scope) {
+        // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
+        const projectAddress = scope.result.address;
+        const args = {
+          projectAddress: projectAddress,
+          projectEvent: projectEvent,
+        };
+        return rest.callMethod(adminName, contractName, method, args)(scope);
+      })
+      .then(function(scope) {
+        // returns (ErrorCodes, ProjectState)
+        const tupleString = scope.contracts[contractName].calls[method];
+        const tupleArray = tupleString.split(',');
+        scope.result = {errorCode: tupleArray[0], state: tupleArray[1]};
+        return scope;
+      });
+  }
+}
+
 function trimArray(array) {
   return array.map(function(member) {
     return util.trimLeadingZeros(member);
@@ -153,4 +180,5 @@ module.exports = {
   exists: exists,
   getProject: getProject,
   getProjects: getProjects,
+  handleEvent: handleEvent,
 };
