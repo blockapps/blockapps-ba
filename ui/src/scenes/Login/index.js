@@ -11,10 +11,7 @@ import './Login.css';
 class Login extends Component {
 
   submit = (values) => {
-    this.props.userLoginSubmit({
-      username: values.username,
-      password: values.password
-    });
+    this.props.userLoginSubmit(values.username, values.password);
   }
 
   render() {
