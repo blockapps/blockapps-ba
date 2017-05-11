@@ -8,6 +8,11 @@ import { reduxForm, Field } from 'redux-form';
 import { userLoginSubmit } from './login.actions';
 import './Login.css';
 
+// TODO: make this  reusable
+const renderTextField = ({ input, meta: { touched, error }, ...others }) => (
+  <TextField {...input} {...others} error={touched && !!error} errorText={error} />
+);
+
 class Login extends Component {
 
   submit = (values) => {
@@ -19,11 +24,6 @@ class Login extends Component {
       // login,
       handleSubmit
     } = this.props;
-
-    // TODO: make this  reusable
-    const renderTextField =({ input, meta: { touched, error }, ...others }) => (
-      <TextField {...input} {...others} error={touched && !!error} errorText={error} />
-    );
 
     return (
       <div className="md-grid margin-top">
