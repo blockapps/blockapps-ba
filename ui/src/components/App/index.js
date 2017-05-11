@@ -40,7 +40,7 @@ class App extends Component {
     const navItems = [];
     const location = this.props.location;
     const routes = this.props.routes;
-    console.log('>>>> routes >>>>', routes);
+
     if(this.props.authenticated
       && routes
       && routes.length > 0
