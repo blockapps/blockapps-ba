@@ -84,7 +84,7 @@ function getAdminInterface(address) {
 function compileSearch() {
   return function (scope) {
     return nop(scope)
-      .then(bid.compileSearch())
+      .then(projectManager.compileSearch())
       .then(userManager.compileSearch());
   }
 }
@@ -133,22 +133,6 @@ function login(adminName, username, password) {
   }
 }
 
-// function createProject(adminName, id, buyer) {
-//   return function(scope) {
-//     rest.verbose('dapp: createProject', {id, buyer});
-//     return setScope(scope)
-//       // create the project
-//       .then(projectManager.createProject(adminName, id, buyer))
-//       // returns the record from search
-//       .then(function(scope) {
-//         const project = scope.result;
-//         assert.equal(project.id, id, 'id');
-//         assert.equal(project.buyer, buyer, 'buyer');
-//         return scope;
-//       });
-//   }
-// }
-
 function createProject(adminName, name, buyer) {
   return function(scope) {
     rest.verbose('dapp: createProject', {adminName, name, buyer});
@@ -190,6 +174,13 @@ function createBid(adminName, name, supplier, amount) {
     rest.verbose('dapp: createBid', adminName, name, supplier, amount);
     return setScope(scope)
       .then(projectManager.createBid(adminName, name, supplier, amount));
+
+// projects by supplier (State optional)
+function getProjectsBySupplier(supplier, state) {
+  return function(scope) {
+    rest.verbose('dapp: getProjectsBySupplier', {supplier, state});
+    return setScope(scope)
+      .then(projectManager.getProjectsBySupplier(supplier, state));
   }
 }
 
