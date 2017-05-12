@@ -14,9 +14,20 @@ class BidTable extends Component {
     this.props.fetchProjectBids(this.props.name);
   }
 
+  // TODO: move to common place
+  get isBuyer() {
+    return this.props.login['roles'] === 'BUYER'
+      || (Array.isArray(this.props.login['roles']) && 'BUYER' in this.props.login['roles'])
+  }
+
+  handleBidAcceptClick = function(e, bidName) {
+    e.stopPropagation();
+    // TODO: implement the Bid Accept flow here
+    alert('- Bid accepted;\n- Project state changed OPEN -> PRODUCTION;\n- No more bids can be submitted;');
+  };
+
   render() {
     const bids = this.props.bids;
-
     const bidRows = bids.map(
       (bid,i) =>
         <TableRow key={"bid"+i}>
@@ -27,21 +38,23 @@ class BidTable extends Component {
               currency="USD" />
           </TableColumn>
           <TableColumn>
-            {/*todo: show accept buttons only if no accepted bid yet*/}
-            {/*{ project.accepted ?*/}
-            {/*<span>*/}
-            {/*<h2>{ `Welcome Back ${ this.props.name }` }</h2>*/}
-            {/*<p>You can visit settings to reset your password</p>*/}
-            {/*</span>*/}
-            {/*:*/}
-            {/*null*/}
-            {/*}*/}
             <span style={{whiteSpace: "normal"}}>
             {bid.supplier}
           </span>
           </TableColumn>
           <TableColumn>
-            <Button primary flat label="Accept">check_circle</Button> {/*todo: onClick= accept bid*/}
+            {
+              this.props['projectState'] === 'OPEN' && this.isBuyer
+                ? <Button
+                primary
+                flat
+                label="Accept"
+                onClick={
+                  (e) => this.handleBidAcceptClick(e, bid.name)
+                }
+              >check_circle</Button>
+                : ''
+            }
           </TableColumn>
         </TableRow>
       );
@@ -67,7 +80,7 @@ class BidTable extends Component {
 
 function mapStateToProps(state) {
   return {
+    login: state.login,
   };
 }
-
 export default connect(mapStateToProps, { fetchProjectBids })(BidTable);

@@ -18,20 +18,17 @@ class Project extends Component {
     this.props.fetchProject(encodeURI(this.props.params['pname']));
   }
 
-
-  handleBidAcceptClick = function(e, bidName) {
-    e.stopPropagation();
-    // TODO: implement the Bid Accept flow here
-    alert('- Bid accepted;\n- Project state changed OPEN -> PRODUCTION;\n- No more bids can be submitted;');
-  };
-
+  get isBuyer() {
+    return this.props.login['roles'] === 'BUYER'
+      || (Array.isArray(this.props.login['roles']) && 'BUYER' in this.props.login['roles'])
+  }
 
   render() {
     let projectContent;
 
     if (this.props.project) {
       const project = this.props.project;
-      console.log('>>>> project >>>>', project);
+
       projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
@@ -107,13 +104,17 @@ class Project extends Component {
               <div className="md-cell md-cell--11">
                 <h4 className="md-title ">Bids</h4>
               </div>
-              <div className="md-cell md-cell--1">
-                <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
-                  <Button raised primary label="Add Bid" />
-                </Link>
-              </div>
+              {
+                !this.isBuyer
+                ? <div className="md-cell md-cell--1">
+                    <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
+                      <Button raised primary label="Add Bid" />
+                    </Link>
+                  </div>
+                : ''
+              }
               <div className="md-cell md-cell--12">
-                <BidTable name={project.name} bids={project.bids ? project.bids : []} />
+                <BidTable name={project.name} bids={project.bids ? project.bids : []} projectState={project.state} />
               </div>
             </div>
           </CardText>
@@ -133,7 +134,8 @@ class Project extends Component {
 
 function mapStateToProps(state) {
   return {
-    project: state.project.project
+    project: state.project.project,
+    login: state.login,
   };
 }
 
