@@ -77,8 +77,8 @@ function getProject(projectId) {
 
 function* fetchProject(action) {
   try {
-    const project = yield call(getProject,action.projectId);
-    yield put(fetchProjectSuccess(project));
+    const response = yield call(getProject,action.projectId);
+    yield put(fetchProjectSuccess(response.data['project']));
   } catch (err) {
     yield put(fetchProjectFailure(err.message));
   }

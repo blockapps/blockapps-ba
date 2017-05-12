@@ -14,7 +14,7 @@ import {
   FETCH_PROJECTS_LIST,
   fetchProjectsListSuccess,
   fetchProjectsListFailure
-} from './projectsList.actions';
+} from './projects-list.actions';
 
 // TODO: define API endpoint for projects
 const url = API_URL + '/projects';
@@ -90,15 +90,30 @@ function getProjectsMock() {
   });
 }
 
-function getProjectsList(listType) {
+function getProjectsList(listType, username) {
   if (API_MOCK) {
     return getProjectsMock();
   }
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json'
-    }
+
+  let query;
+  switch (listType) {
+    case 'buyerList':
+      query = '?filter=buyer&buyer=' + username;
+      break;
+    case 'allOpenList':
+      query = '?filter=state&state=OPEN';
+      break;
+    default:
+      query = '';
+  }
+
+  return fetch(
+    url + query,
+    {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+    },
   })
     .then(handleApiError)
     .then(function(response) {
@@ -111,9 +126,9 @@ function getProjectsList(listType) {
 
 function* fetchProjectsList(action) {
   try {
-    let projects = yield call(getProjectsList, action.listType);
+    let response = yield call(getProjectsList, action.listType, action.username);
 
-    yield put(fetchProjectsListSuccess(projects));
+    yield put(fetchProjectsListSuccess(response.data['projects']));
   } catch (err) {
     yield put(fetchProjectsListFailure(err.message));
   }
