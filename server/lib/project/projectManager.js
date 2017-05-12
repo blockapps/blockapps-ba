@@ -7,6 +7,7 @@ const contractName = 'ProjectManager';
 const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const projectContractName = require('./project').contractName;
 
 function compileSearch() {
@@ -222,7 +223,7 @@ function getProjectsByState(state) {
       .then(function(scope) {
         const projects = scope.result;
         const filtered = projects.filter(function(project) {
-          return project.state === state;
+          return project.state === ProjectState[state];
         });
         scope.result = filtered;
         return scope;
@@ -276,5 +277,7 @@ module.exports = {
   getBidsByName: getBidsByName,
   getProject: getProject,
   getProjects: getProjects,
+  getProjectsByBuyer: getProjectsByBuyer,
+  getProjectsByState: getProjectsByState,
   handleEvent: handleEvent,
 };

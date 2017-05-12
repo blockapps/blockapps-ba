@@ -199,5 +199,7 @@ module.exports = function (libPath) {
     login: login,
     createProject: createProject,
     getProjects: getProjects,
+    getProjectsByBuyer: getProjectsByBuyer,
+    getProjectsByState: getProjectsByState,
   };
 };

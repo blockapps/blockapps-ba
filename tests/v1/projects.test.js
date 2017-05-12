@@ -8,6 +8,7 @@ const assert = ba.common.assert;
 const expect = ba.common.expect;
 const config = common.config;
 const UserRole = ba.rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 
 chai.use(chaiHttp);
 
@@ -36,8 +37,8 @@ function assert_apiSuccess(res) {
 describe("Projects Test", function() {
   const name = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
-  const roleSupplier = UserRole.SUPPLIER;
-  const roleBuyer = UserRole.BUYER;
+  // const roleSupplier = UserRole.SUPPLIER;
+  // const roleBuyer = UserRole.BUYER;
 
   it('should create a project', function(done) {
     this.timeout(config.timeout);
@@ -60,14 +61,15 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should output the list of projects', function(done) {
+  it('should output the list of projects filtered by buyer', function(done) {
     this.timeout(config.timeout);
+    const buyer = "Buyer1";
     chai.request(server)
       .get('/api/v1/projects')
       .query(
         {
-          username: buyer,
-          role: roleBuyer,
+          filter: 'buyer',
+          buyer: buyer,
         }
       )
       .end((err, res) => {
@@ -78,7 +80,31 @@ describe("Projects Test", function() {
         const projects = data.projects;
         assert.isDefined(projects, 'should return projects');
         assert.isArray(projects, 'projects list should be an array');
-        //todo: the returned list should be filtered by user
+        //todo: the returned list should be filtered by buyer (preliminarily create at least one project)
+        done();
+      });
+  });
+
+  it('should output the list of projects filtered by state', function(done) {
+    this.timeout(config.timeout);
+    const state = ProjectState.OPEN;
+    chai.request(server)
+      .get('/api/v1/projects')
+      .query(
+        {
+          filter: 'state',
+          state: state,
+        }
+      )
+      .end((err, res) => {
+        assert_noerr(err);
+        assert_apiSuccess(res);
+        res.body.should.have.property('data');
+        const data = res.body.data;
+        const projects = data.projects;
+        assert.isDefined(projects, 'should return projects');
+        assert.isArray(projects, 'projects list should be an array');
+        //todo: the returned list should be filtered by state (preliminarily create at least one project)
         done();
       });
   });
