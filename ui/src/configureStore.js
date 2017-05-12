@@ -17,6 +17,7 @@ import watchLoginSubmit from './scenes/Login/login.saga';
 import watchFetchProjects from './scenes/Projects/projects.saga';
 import watchFetchProject from './scenes/Projects/components/Project/sagas/project.saga';
 import watchProjectCreate from './scenes/Projects/components/ProjectCreate/sagas/project-create.saga';
+import watchBidSubmit from './scenes/Projects/components/Bid/bid.saga.js';
 
 const rootReducer = combineReducers({
   form: formReducer,
@@ -32,6 +33,7 @@ const rootSaga = function* startForeman() {
   yield fork(watchFetchProjects);
   yield fork(watchFetchProject);
   yield fork(watchProjectCreate);
+  yield fork(watchBidSubmit);
 };
 
 const configureStore = () => {

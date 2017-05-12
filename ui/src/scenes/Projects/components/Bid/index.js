@@ -6,6 +6,7 @@ import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { reduxForm, Field } from 'redux-form';
 import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
+import { bidSubmit } from './bid.actions';
 import './Bid.css';
 
 class Bid extends Component {
@@ -14,14 +15,26 @@ class Bid extends Component {
     browserHistory.goBack();
   }
 
+  submit = (values) => {
+    this.props.bidSubmit({
+      name: this.props.name,
+      supplier: this.props.supplier,
+      amount: values.amount
+    });
+  }
+
   render() {
+    const {
+      handleSubmit
+    } = this.props;
+
     return(
       <Dialog
       id="simpleDialogExample"
       visible={true}
       title="Bid for some contract"
       onHide={this.closeDialog}>
-      <form>
+      <form onSubmit={handleSubmit(this.submit)}>
         <div className="md-grid">
           <Field
             id="amount"
@@ -55,10 +68,11 @@ class Bid extends Component {
 
 function mapStateToProps(state) {
   return {
+    supplier: state.login.username
   };
 }
 
-const connected = connect(mapStateToProps, {  })(Bid);
+const connected = connect(mapStateToProps, { bidSubmit })(Bid);
 
 const formedComponent = reduxForm({ form: 'bid'})(connected);
 

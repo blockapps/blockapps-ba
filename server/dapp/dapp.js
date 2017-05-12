@@ -184,6 +184,15 @@ function getProjectsByState(state) {
   }
 }
 
+// create bid
+function createBid(adminName, name, supplier, amount) {
+  return function(scope) {
+    rest.verbose('dapp: createBid', adminName, name, supplier, amount);
+    return setScope(scope)
+      .then(projectManager.createBid(adminName, name, supplier, amount));
+  }
+}
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.libPath = libPath;
@@ -201,5 +210,6 @@ module.exports = function (libPath) {
     getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
+    createBid: createBid
   };
 };

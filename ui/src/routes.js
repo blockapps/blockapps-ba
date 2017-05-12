@@ -17,15 +17,15 @@ export default (
     <Route path="/login" component={ Login } />
     <IndexRedirect to="/dashboard" />
     <Route component={EnsureAuthenticated}>
-      <Route path="/dashboard" component={ Dashboard } name="Dashboard" icon="home">
-        <Route path="/dashboard/bid" component={ Bid } />
-      </Route>
+      <Route path="/dashboard" component={ Dashboard } name="Dashboard" icon="home" />
       <Route path="/projects" name="Projects" icon="view_list">
         <IndexRoute component={ Projects } />
         <Route path="create" component={ ProjectCreate } />
         <Route path=":pid" component={ Project } />
+        <Route path=":name/bid" component={ Bid } />
       </Route>
       <Route path="/reports" component={ Reports } name="Reports" icon="trending_up" />
       <Route path="/settings" component={ Settings } name="Settings" icon="settings" />
+    </Route>
   </Route>
 );

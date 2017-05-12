@@ -46,7 +46,6 @@ function loginApiCall(username,password) {
 function* submitLogin(action) {
   try {
     const response = yield call(loginApiCall, action.username, action.password);
-    console.log('>>>> response >>>>',response);
     if(response.data.authenticate) {
       yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
       browserHistory.push('/dashboard');

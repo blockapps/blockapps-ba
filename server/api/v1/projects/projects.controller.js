@@ -58,6 +58,25 @@ const projectsController = {
         util.response.status500(res, err);
       });
   },
+
+  bid: function(req, res) {
+    const supplier = req.supplier;
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.createBid(
+        deploy.adminName,
+        req.name,
+        req.body.supplier,
+        req.body.amount))
+      .then(scope => {
+        util.response.status200(res, {
+          bid: scope.result
+        })
+      })
+      .catch(err => {
+        util.response.status500(res, err);
+      })
+  }
 };
 
 module.exports = projectsController;

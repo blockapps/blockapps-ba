@@ -37,6 +37,7 @@ function assert_apiSuccess(res) {
 describe("Projects Test", function() {
   const name = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
+  const supplier = "Supplier1";
   // const roleSupplier = UserRole.SUPPLIER;
   // const roleBuyer = UserRole.BUYER;
 
@@ -105,6 +106,25 @@ describe("Projects Test", function() {
         assert.isDefined(projects, 'should return projects');
         assert.isArray(projects, 'projects list should be an array');
         //todo: the returned list should be filtered by state (preliminarily create at least one project)
+        done();
+      });
+  });
+
+  it('Should bid on a project', function(done){
+    const amount = 100;
+    this.timeout(config.timeout);
+    chai.request(server)
+      .post('/api/v1/projects/' + name + '/bid')
+      .send({ supplier, amount })
+      .end((err, res) => {
+        assert_noerr(err);
+        assert_apiSuccess(res);
+        res.body.should.have.property('data');
+        const data = res.body.data;
+        const bid = data.bid;
+        assert.isDefined(bid, 'should return new bid');
+        assert.equal(bid.supplier, supplier, 'new bid should contain supplier');
+        assert.equal(bid.amount, amount, 'new bid should contain amount');
         done();
       });
   });
