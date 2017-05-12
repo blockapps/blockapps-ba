@@ -35,7 +35,7 @@ function assert_apiSuccess(res) {
 }
 
 describe("Projects Test", function() {
-  const name = "Project_" + new Date().getTime();
+  const projectName = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
   const supplier = "Supplier1";
   // const roleSupplier = UserRole.SUPPLIER;
@@ -46,7 +46,7 @@ describe("Projects Test", function() {
     chai.request(server)
       .post('/api/v1/projects')
       .send({
-        name: name,
+        name: projectName,
         buyer: buyer
       })
       .end((err, res) => {
@@ -62,7 +62,24 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should output the list of projects filtered by buyer', function(done) {
+  it('should return a project by its name', function(done) {
+    this.timeout(config.timeout);
+    chai.request(server)
+      .get(`/api/v1/projects/${encodeURI(projectName)}/`)
+      .end((err, res) => {
+        assert_noerr(err);
+        assert_apiSuccess(res);
+        res.body.should.have.property('data');
+        const data = res.body.data;
+        console.log('>>>>>>>>>>>>>>>', data);
+        const project = data.project;
+        assert.isDefined(project, 'should return project');
+        assert.equal(project.name, projectName, 'project name should be same as in request');
+        done();
+      });
+  });
+
+  it('should return the list of projects filtered by buyer', function(done) {
     this.timeout(config.timeout);
     const buyer = "Buyer1";
     chai.request(server)
@@ -86,7 +103,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should output the list of projects filtered by state', function(done) {
+  it('should return the list of projects filtered by state', function(done) {
     this.timeout(config.timeout);
     const state = ProjectState.OPEN;
     chai.request(server)
@@ -112,10 +129,10 @@ describe("Projects Test", function() {
 
   it('Should bid on a project', function(done){
     const amount = 100;
-    console.log('>>>> test bid >>>>', name, supplier, amount);
+    console.log('>>>> test bid >>>>', projectName, supplier, amount);
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + name + '/bid')
+      .post('/api/v1/projects/' + projectName + '/bid')
       .send({ supplier, amount })
       .end((err, res) => {
         assert_noerr(err);

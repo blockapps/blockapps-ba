@@ -21,7 +21,7 @@ export default (
       <Route path="/projects" name="Projects" icon="view_list">
         <IndexRoute component={ Projects } />
         <Route path="create" component={ ProjectCreate } />
-        <Route path=":pid" component={ Project } />
+        <Route path=":pname" component={ Project } />
         <Route path=":name/bid" component={ Bid } />
       </Route>
       <Route path="/reports" component={ Reports } name="Reports" icon="trending_up" />

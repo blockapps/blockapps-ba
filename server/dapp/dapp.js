@@ -186,6 +186,15 @@ function getProjectsBySupplier(supplier, state) {
   }
 }
 
+// project by name
+function getProject(adminName, name) {
+  return function(scope) {
+    rest.verbose('dapp: getProject', name);
+    return setScope(scope)
+      .then(projectManager.getProject(adminName, name));
+  }
+}
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.libPath = libPath;
@@ -203,6 +212,7 @@ module.exports = function (libPath) {
     getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
-    createBid: createBid
+    createBid: createBid,
+    getProject: getProject,
   };
 };

@@ -30,6 +30,25 @@ const projectsController = {
       });
   },
 
+  get: function(req, res) {
+    const deploy = req.app.get('deploy');
+    const projectName = decodeURI(req.params['pName']);
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.getProject(
+        deploy.adminName,
+        projectName
+      ))
+      .then(scope => {
+        util.response.status200(res, {
+          project: scope.result
+        });
+      })
+      .catch(err => {
+        util.response.status500(res, err);
+      });
+  },
+
   list: function(req, res) {
     const deploy = req.app.get('deploy');
     const filter = req.query['filter'];

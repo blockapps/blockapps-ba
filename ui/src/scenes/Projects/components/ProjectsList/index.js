@@ -11,55 +11,81 @@ import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 
-import { fetchProjectsList } from './projectsList.actions';
+import { fetchProjectsList } from './projects-list.actions';
 
 class ProjectsList extends Component {
 
   componentWillMount() {
     const listType = this.props['listType'];
-    console.log('>>>>>', listType);
-    this.props.fetchProjectsList();
+    this.props.fetchProjectsList(listType, this.props.login['username']);
   }
 
-  handleProjectClick = function(e, projectId) {
+  handleProjectClick = function(e, projectName) {
     e.stopPropagation();
-    browserHistory.push(`/projects/${projectId}`);
+    browserHistory.push(`/projects/${projectName}`); //todo: html encode url
   };
 
   render() {
     let projectsTable;
+    console.warn(this.props.projects);
 
     if (this.props.projects.length > 0) {
+
+
       const projectRows = this.props.projects.map(
         (project, index) =>
           <TableRow
             key={index}
-            onClick={(e) => this.handleProjectClick(e, project.id)}
+            onClick={(e) => this.handleProjectClick(e, project.name)}
             style={{cursor: 'pointer'}}
           >
             <TableColumn>
-              <FormattedDate
-                value={new Date(project.created)}
-                day="numeric"
-                month="long"
-                year="numeric" />
-            </TableColumn>
-            <TableColumn>{project.name}</TableColumn>
-            <TableColumn>
-              <FormattedNumber
-                value={project.priceDesired}
-                style="currency" //eslint-disable-line
-                currency="USD" />
+              {
+                project.created
+                ? <FormattedDate
+                    value={new Date(project.created)}
+                    day="numeric"
+                    month="long"
+                    year="numeric" />
+                : ''
+              }
+
             </TableColumn>
             <TableColumn>
-              <FormattedDate
-                value={new Date(project.desiredDeliveryDate)}
-                day="numeric"
-                month="long"
-                year="numeric" />
+              {project.name ? project.name : ''}
             </TableColumn>
-            <TableColumn>{project.deliveryAddress.city}, {project.deliveryAddress.state}</TableColumn>
-            <TableColumn>{project.status}</TableColumn>
+            <TableColumn>
+              { project.priceDesired
+                ? <FormattedNumber
+                    value={project.priceDesired}
+                    style="currency" //eslint-disable-line
+                    currency="USD" />
+                : ''
+              }
+
+            </TableColumn>
+            <TableColumn>
+              {
+                project.desiredDeliveryDate
+                ? <FormattedDate
+                    value={new Date(project.desiredDeliveryDate)}
+                    day="numeric"
+                    month="long"
+                    year="numeric" />
+                : ''
+              }
+            </TableColumn>
+            <TableColumn>
+              {
+                project.deliveryAddress && project.deliveryAddress.city && project.deliveryAddress.state
+                ? project.deliveryAddress.city + ', ' + project.deliveryAddress.state
+                : ''
+              }
+
+            </TableColumn>
+            <TableColumn>
+              {project.status ? project.status : ''}
+            </TableColumn>
           </TableRow>
       );
 
@@ -94,7 +120,8 @@ class ProjectsList extends Component {
 
 function mapStateToProps(state) {
   return {
-    projects: state.projects.projects
+    projects: state.projects.projects,
+    login: state.login,
   };
 }
 
