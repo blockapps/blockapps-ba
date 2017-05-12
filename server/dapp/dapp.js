@@ -157,24 +157,32 @@ function createProject(adminName, name, buyer) {
   }
 }
 
-function getProjects(adminName) {
-
-  function filterProjectListItem(element) {
-    if (this.role === 'BUYER') {
-      return element.buyer === this.username
-    } else if(this.role === 'SUPPLIER') {
-
-    }
-    return false;
-  }
-
+// all projects - unfiltered
+function getProjects() {
   return function(scope) {
-    rest.verbose('dapp: getProjects', {adminName});
+    rest.verbose('dapp: getProjects');
     return setScope(scope)
-      .then(projectManager.getProjects(adminName));
+      .then(projectManager.getProjects());
   }
 }
 
+// projects - by buyer
+function getProjectsByBuyer(buyer) {
+  return function(scope) {
+    rest.verbose('dapp: getProjectsByBuyer', buyer);
+    return setScope(scope)
+      .then(projectManager.getProjectsByBuyer(buyer));
+  }
+}
+
+// projects - by state
+function getProjectsByState(state) {
+  return function(scope) {
+    rest.verbose('dapp: getProjectsByState', state);
+    return setScope(scope)
+      .then(projectManager.getProjectsByState(state));
+  }
+}
 
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});

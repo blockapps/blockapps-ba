@@ -29,16 +29,16 @@ const projectsController = {
       });
   },
 
-  list: function(req, res) {
+  listByBuyer: function(req, res) {
     const deploy = req.app.get('deploy');
-    const username = req.query['username'];
-    const role = req.query['role'];
+    const buyer = req.query['buyer'];
 
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
       .then(
         dapp.getProjects(
-          deploy.adminName
+          deploy.adminName,
+          buyer
         )
       )
       .then(scope => {

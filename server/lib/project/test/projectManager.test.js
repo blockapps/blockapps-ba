@@ -124,13 +124,6 @@ describe('ProjectManager tests', function() {
     const buyer = 'Buyer1';
 
     rest.setScope(scope)
-      // get project - should not exist
-      .then(projectManager.getProject(adminName, name))
-      .then(function(scope) {
-        const project = scope.result;
-        assert.isUndefined(project, 'should not be found');
-        return scope;
-      })
       // create project
       .then(projectManager.createProject(adminName, name, buyer))
       // get it - should exist
@@ -143,6 +136,28 @@ describe('ProjectManager tests', function() {
       .then(function(scope) {
         done();
       }).catch(done);
+  });
+
+  it.only('Get non exisiting project', function(done) {
+    const name = util.uid('Project');
+    const buyer = 'Buyer1';
+
+    rest.setScope(scope)
+      // get project - should not exist
+      .then(projectManager.getProject(adminName, name))
+      .then(function(scope) {
+        // did not throw - not good
+        done(new Error('Project should nto be found ' + name));
+      }).catch(function(error) {
+        const errorCode = error.message;
+        // error should be NOT_FOUND
+        if (errorCode == ErrorCodes.NOT_FOUND) {
+          done();
+          return ;
+        }
+        // other error - not good
+        done(error);
+      });
   });
 
   it('Get Projects', function(done) {

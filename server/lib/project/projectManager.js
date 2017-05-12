@@ -162,10 +162,9 @@ function getProject(adminName, name) {
       .then(function(scope) {
         // returns address
         const address = scope.contracts[contractName].calls[method];
-        // if not found
+        // if not found - throw
         if (address == 0) {
-          scope.result = undefined;
-          return scope;
+          throw new Error(ErrorCodes.NOT_FOUND);
         }
         // found - query for the full record
         const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
@@ -179,7 +178,7 @@ function getProject(adminName, name) {
   }
 }
 
-function getProjects(adminName) {
+function getProjects() {
   return function(scope) {
     rest.verbose('getProjects');
 
@@ -197,6 +196,22 @@ function getProjects(adminName) {
         return scope;
       });
   }
+}
+
+function getProjectsByBuyer(buyer) {
+  return function(scope) {
+    rest.verbose('getProjectsByBuyer', buyer);
+    return rest.setScope(scope)
+      .then(getProjects())
+      .then(function(scope) {
+        const projects = scope.result;
+        const filtered = projects.filter(function(project) {
+          return project.buyer === buyer;
+        });
+        scope.result = filtered;
+        return scope;
+      });
+    }
 }
 
 function handleEvent(adminName, name, projectEvent) {
