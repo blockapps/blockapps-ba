@@ -10,19 +10,40 @@ const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(con
 const projectsController = {
   create: function(req, res) {
     const deploy = req.app.get('deploy');
-    const name = req.body.name;
-    const buyer = req.body.buyer;
+    const project = req.body;
 
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
       .then(dapp.createProject(
         deploy.adminName,
-        name,
-        buyer
+        project.name,
+        project.buyer
       ))
       .then(scope => {
         util.response.status200(res, {
           project: scope.result
+        });
+      })
+      .catch(err => {
+        util.response.status500(res, err);
+      });
+  },
+
+  list: function(req, res) {
+    const deploy = req.app.get('deploy');
+    const username = req.query['username'];
+    const role = req.query['role'];
+
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(
+        dapp.getProjects(
+          deploy.adminName
+        )
+      )
+      .then(scope => {
+        util.response.status200(res, {
+          projects: scope.result
         });
       })
       .catch(err => {

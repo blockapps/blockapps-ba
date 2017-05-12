@@ -20,20 +20,25 @@ class Projects extends Component {
     this.props.fetchProjects();
   }
 
+  handleProjectClick = function(e, projectId) {
+    e.stopPropagation();
+    browserHistory.push(`/projects/${projectId}`);
+  };
+
+  handleNewProjectClick = function(e) {
+    e.stopPropagation();
+    browserHistory.push(`/projects/create`);
+  };
+
   render() {
     let myProjectsTable;
-
-    let handleProjectClick = function(e, projectId) {
-      e.stopPropagation();
-      browserHistory.push(`/projects/${projectId}`);
-    };
 
     if (this.props.projects.length > 0) {
       const projectRows = this.props.projects.map(
         (project, index) =>
           <TableRow
             key={index}
-            onClick={(e) => handleProjectClick(e, project.id)}
+            onClick={(e) => this.handleProjectClick(e, project.id)}
             style={{cursor: 'pointer'}}
           >
             <TableColumn>
@@ -89,7 +94,7 @@ class Projects extends Component {
         <h2>Projects</h2>
         <div className="md-grid">
           <div className="md-cell">
-            <Button flat primary label="New Project">add_circle</Button>
+            <Button flat primary label="New Project" onClick={(e) => this.handleNewProjectClick(e)}>add_circle</Button>
           </div>
           {myProjectsTable}
         </div>

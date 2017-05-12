@@ -157,6 +157,25 @@ function createProject(adminName, name, buyer) {
   }
 }
 
+function getProjects(adminName) {
+
+  function filterProjectListItem(element) {
+    if (this.role === 'BUYER') {
+      return element.buyer === this.username
+    } else if(this.role === 'SUPPLIER') {
+
+    }
+    return false;
+  }
+
+  return function(scope) {
+    rest.verbose('dapp: getProjects', {adminName});
+    return setScope(scope)
+      .then(projectManager.getProjects(adminName));
+  }
+}
+
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.libPath = libPath;
@@ -171,5 +190,6 @@ module.exports = function (libPath) {
     // business functions
     login: login,
     createProject: createProject,
+    getProjects: getProjects,
   };
 };

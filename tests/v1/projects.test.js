@@ -7,6 +7,7 @@ const should = ba.common.should;
 const assert = ba.common.assert;
 const expect = ba.common.expect;
 const config = common.config;
+const UserRole = ba.rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 chai.use(chaiHttp);
 
@@ -35,6 +36,8 @@ function assert_apiSuccess(res) {
 describe("Projects Test", function() {
   const name = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
+  const roleSupplier = UserRole.SUPPLIER;
+  const roleBuyer = UserRole.BUYER;
 
   it('should create a project', function(done) {
     this.timeout(config.timeout);
@@ -56,5 +59,30 @@ describe("Projects Test", function() {
         done();
       });
   });
+
+  it('should output the list of projects', function(done) {
+    this.timeout(config.timeout);
+    chai.request(server)
+      .get('/api/v1/projects')
+      .query(
+        {
+          username: buyer,
+          role: roleBuyer,
+        }
+      )
+      .end((err, res) => {
+        assert_noerr(err);
+        assert_apiSuccess(res);
+        res.body.should.have.property('data');
+        const data = res.body.data;
+        const projects = data.projects;
+        assert.isDefined(projects, 'should return projects');
+        assert.isArray(projects, 'projects list should be an array');
+        //todo: the returned list should be filtered by user
+        done();
+      });
+  });
+
+
 
 });

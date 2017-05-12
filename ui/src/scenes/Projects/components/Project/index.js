@@ -13,7 +13,7 @@ import TableColumn from 'react-md/lib/DataTables/TableColumn';
 // import { browserHistory } from 'react-router';
 import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 
-import { fetchProject } from './project.actions';
+import { fetchProject } from './actions/project.actions';
 
 class Project extends Component {
 
@@ -26,10 +26,35 @@ class Project extends Component {
 
     if (this.props.project) {
       const project = this.props.project;
-      // let bidsRows = project.bids.map(
-      //   bid =>
-      //
-      // );
+      // TODO: show bids list
+      let bidsRows = project.bids.map(
+        bid =>
+          <TableRow>
+            <TableColumn>
+              <FormattedNumber
+                value={bid.price}
+                style="currency" //eslint-disable-line
+                currency="USD" />
+            </TableColumn>
+            <TableColumn>
+              {/*todo: show accept buttons only if no accepted bid yet*/}
+              {/*{ project.accepted ?*/}
+                {/*<span>*/}
+              {/*<h2>{ `Welcome Back ${ this.props.name }` }</h2>*/}
+              {/*<p>You can visit settings to reset your password</p>*/}
+            {/*</span>*/}
+                {/*:*/}
+                {/*null*/}
+              {/*}*/}
+              <span style={{whiteSpace: "normal"}}>
+                {bid.planDescription}
+              </span>
+            </TableColumn>
+            <TableColumn>
+              <Button primary flat label="Accept">check_circle</Button> {/*todo: onClick= accept bid*/}
+            </TableColumn>
+          </TableRow>
+      );
       projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
@@ -48,7 +73,7 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Status:</h4>
-                <span style={{'text-transform': 'capitalize'}}>{project.status}</span>
+                <span style={{'textTransform': 'capitalize'}}>{project.status}</span>
               </div>
             </div>
             <div className="md-grid">
@@ -84,8 +109,8 @@ class Project extends Component {
             </div>
             <div className="md-grid">
               <div className="md-cell md-cell--12">
-                <h4 className="md-title ">Specs:</h4>
-                <Button raised label="Download" href={project.specFileURL}>file_download</Button>
+                <h4 className="md-title ">Specification:</h4>
+                {project.spec}
               </div>
             </div>
             { project.deliveredDate
@@ -110,11 +135,12 @@ class Project extends Component {
                       // autoAdjust={false}
                     >
                       <TableColumn>Bid</TableColumn>
+                      <TableColumn>Specs</TableColumn>
                       <TableColumn>Actions</TableColumn>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/*{BidsRows}*/}
+                    {bidsRows}
                   </TableBody>
                 </DataTable>
               </div>

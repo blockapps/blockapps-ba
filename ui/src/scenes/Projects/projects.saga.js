@@ -37,18 +37,18 @@ function getProjectsMock() {
             state: 'New York',
             zip: '11249'
           },
-          specFileURL: 'http://bucket.s3.amazonaws.com/specs/7878u7e4hf83h28fh83uehr83uh8eujf',
+          spec: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur',
           status: 'open',
           deliveredDate: null,
           bids: [
             {
               price: 790,
-              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/ij93ij9ij39irjf9ie3jrfvg9i39r',
+              planDescription: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur at, ei malis clita scripta mel. Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
               accepted: false
             },
             {
               price: 795,
-              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/asdasdqa3rf2erg3rhedfgh4th4r',
+              planDescription: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur at, ei malis clita scripta mel. Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
               accepted: false
             }
           ]
@@ -67,18 +67,18 @@ function getProjectsMock() {
             state: 'NY',
             zip: '11249'
           },
-          specFileURL: 'http://bucket.s3.amazonaws.com/specs/1431',
+          spec: 'Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum',
           status: 'closed',
           deliveredDate: '2017-05-18T12:35:00.000Z',
           bids: [
             {
               price: 10.2,
-              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/sdfswerf3rgv3wrfwfgh3ed',
+              planDescription: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur at, ei malis clita scripta mel. Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
               accepted: true
             },
             {
               price: 10,
-              projectPlanFileURL: 'http://bucket.s3.amazonaws.com/plans/qwasdqasdf2erg3rhedfgh4th4r',
+              planDescription: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur at, ei malis clita scripta mel. Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
               accepted: false
             }
           ]
