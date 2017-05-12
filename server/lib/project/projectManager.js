@@ -214,6 +214,22 @@ function getProjectsByBuyer(buyer) {
     }
 }
 
+function getProjectsByState(state) {
+  return function(scope) {
+    rest.verbose('getProjectsByState', state);
+    return rest.setScope(scope)
+      .then(getProjects())
+      .then(function(scope) {
+        const projects = scope.result;
+        const filtered = projects.filter(function(project) {
+          return project.state === state;
+        });
+        scope.result = filtered;
+        return scope;
+      });
+    }
+}
+
 function handleEvent(adminName, name, projectEvent) {
   return function(scope) {
     rest.verbose('handleEvent', {name, projectEvent});
