@@ -2,6 +2,7 @@ apiDebug: true
 password: '1234'
 timeout: 600000
 libPath: ./server/lib
+contractsPath: ./contracts/
 dataFilename: ./server/dapp/dapp.presets.yaml
 deployFilename: ./server/config/localhost.deploy.yaml
 
@@ -12,5 +13,5 @@ nodes:
   - id: 0
     explorerUrl: 'http://localhost:9000'
     stratoUrl: 'http://localhost/strato-api'
-    blocUrl: 'http://localhost/bloc'
+    blocUrl: 'http://localhost/bloc/'
     searchUrl: 'http://localhost/cirrus'

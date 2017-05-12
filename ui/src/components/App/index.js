@@ -19,7 +19,11 @@ class App extends Component {
           desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           toolbarTitle={ title }
         >
-          {this.props.children}
+          <div className="md-grid">
+            <div className="md-cell md-cell--12">
+              {this.props.children}
+            </div>
+          </div>
         </NavigationDrawer>
       )
     }
@@ -37,15 +41,16 @@ class App extends Component {
   }
 
   render() {
-    const navItems = [];
+    let navItems = [];
     const location = this.props.location;
     const routes = this.props.routes;
 
-    if(this.props.authenticated
+    if (
+      this.props.authenticated
       && routes
-      && routes.length > 0
+      && routes.length > 1
       && routes[1].childRoutes
-      && routes[1].childRoutes.length > 0) {
+    ) {
       routes[1].childRoutes.forEach(function(route){
         //only add route if there is a name property
         if(!route.name) { return; }
