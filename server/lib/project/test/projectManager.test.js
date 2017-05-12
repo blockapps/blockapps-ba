@@ -138,7 +138,7 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Get non exisiting project', function(done) {
+  it('Get non exisiting project', function(done) {
     const name = util.uid('Project');
     const buyer = 'Buyer1';
 
@@ -166,7 +166,7 @@ describe('ProjectManager tests', function() {
 
     rest.setScope(scope)
       // get projects - should not exist
-      .then(projectManager.getProjects(adminName))
+      .then(projectManager.getProjects())
       .then(function(scope) {
         const projects = scope.result;
         const found = projects.filter(function(project) {
@@ -185,6 +185,40 @@ describe('ProjectManager tests', function() {
           return project.name === name;
         });
         assert.equal(found.length, 1, 'project list should contain ' + name);
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+  it('Get Projects by buyer', function(done) {
+    const uid = util.uid();
+    const name = 'Project' + uid;
+    const buyer = 'Buyer' + uid + '_';
+
+    const count = 15;
+    const mod = 3;
+    const projects = Array.apply(null, {
+      length: count
+    }).map(function(item, index) {
+      return {name: name + index, buyer: buyer + index%mod};
+    });
+
+    rest.setScope(scope)
+      // add all projects
+      .then(function(scope) {
+        return Promise.each(projects, function(project) { // for each project
+          return projectManager.createProject(adminName, project.name, project.buyer)(scope) // create project
+        }).then(function() { // all done
+          return scope;
+        });
+      })
+      // get projects by buyer - should find that name in there
+      .then(projectManager.getProjectsByBuyer(buyer+'1'))
+      .then(function(scope) {
+        const projects = scope.result;
+        assert.equal(projects.length, count/mod, '# of found projects');
         return scope;
       })
       .then(function(scope) {

@@ -276,5 +276,7 @@ module.exports = {
   getBidsByName: getBidsByName,
   getProject: getProject,
   getProjects: getProjects,
+  getProjectsByBuyer: getProjectsByBuyer,
+  getProjectsByState: getProjectsByState,
   handleEvent: handleEvent,
 };
