@@ -177,6 +177,15 @@ function createBid(adminName, name, supplier, amount) {
   }
 }
 
+// accept bid
+function acceptBid(adminName, bidId) {
+  return function(scope) {
+    rest.verbose('dapp: acceptBid', bidId;
+    return setScope(scope)
+      .then(projectManager.acceptBid(adminName, bidId));
+  }
+}
+
 // projects by supplier (State optional)
 function getProjectsBySupplier(supplier, state) {
   return function(scope) {

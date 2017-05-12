@@ -9,7 +9,7 @@ import "../../common/Util.sol";
 /**
 * Interface for Project data contracts
 */
-contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent {
+contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidState {
 
   Project[] projects;
   uint bidId; // unique identifier for bids
@@ -96,4 +96,13 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent {
     return (ErrorCodes.ERROR, state);
   }
 
+  function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
+    Bid bid = Bid(bidAddress);
+    BidState currentState = bid.getState();
+    if (currentState == BidState.OPEN  &&  state == BidState.ACCEPTED) {
+      bid.setState(state);
+      return ErrorCodes.SUCCESS;
+    }
+    return ErrorCodes.ERROR;
+  }
 }
