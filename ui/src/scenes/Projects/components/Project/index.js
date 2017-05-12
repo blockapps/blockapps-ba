@@ -19,7 +19,7 @@ import { fetchProject } from './actions/project.actions';
 class Project extends Component {
 
   componentWillMount() {
-    this.props.fetchProject(this.props.params['pname']); //todo: html encode url
+    this.props.fetchProject(encodeURI(this.props.params['pname']));
   }
 
   render() {
@@ -41,14 +41,14 @@ class Project extends Component {
               </TableColumn>
               <TableColumn>
                 {/*todo: show accept buttons only if no accepted bid yet*/}
-                {/*{ project.accepted ?*/}
-                {/*<span>*/}
-                {/*<h2>{ `Welcome Back ${ this.props.name }` }</h2>*/}
-                {/*<p>You can visit settings to reset your password</p>*/}
-                {/*</span>*/}
-                {/*:*/}
-                {/*null*/}
-                {/*}*/}
+                { project.accepted ?
+                <span>
+                <h2>{ `Welcome Back ${ this.props.name }` }</h2>
+                <p>You can visit settings to reset your password</p>
+                </span>
+                :
+                null
+                }
                 <span style={{whiteSpace: "normal"}}>
                 {bid.planDescription}
               </span>
@@ -77,9 +77,7 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Status:</h4>
-                <span style={{'textTransform': 'capitalize'}}>
-                  {project.state ? project.state : ''}
-                  </span>
+                {project.state ? project.state : ''}
               </div>
             </div>
             <div className="md-grid">

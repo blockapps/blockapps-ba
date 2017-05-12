@@ -38,7 +38,7 @@ function getProjectMock(projectId) {
             zip: '11249'
           },
           spec: 'Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel,',
-          status: 'open',
+          state: 'open',
           deliveredDate: '2017-05-20T16:47:49.016Z',
           bids: [
             {

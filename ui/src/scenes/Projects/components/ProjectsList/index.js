@@ -27,10 +27,9 @@ class ProjectsList extends Component {
 
   render() {
     let projectsTable;
-    console.warn(this.props.projects);
+
 
     if (this.props.projects.length > 0) {
-
 
       const projectRows = this.props.projects.map(
         (project, index) =>
@@ -84,7 +83,7 @@ class ProjectsList extends Component {
 
             </TableColumn>
             <TableColumn>
-              {project.status ? project.status : ''}
+              {project.state ? project.state : ''}
             </TableColumn>
           </TableRow>
       );
