@@ -1,15 +1,15 @@
-import { takeLatest, put } from 'redux-saga/effects';
+import { takeLatest, put, call } from 'redux-saga/effects';
 import {
   BID_SUBMIT,
-  bidSuccess
+  bidSuccess,
   bidFailure
 } from './bid.actions';
-import { API_URL, API_MOCK } from '../../environment';
-import { handleApiError } from '../../lib/apiErrorHandler';
+import { API_URL, API_MOCK } from '../../../../environment';
+import { handleApiError } from '../../../../lib/apiErrorHandler';
 
 const bidUrl = API_URL + '/projects/:name/bid';
 
-function submitBidBidApiCall(
+function submitBidApiCall(
   name,
   supplier,
   amount
@@ -41,9 +41,9 @@ function submitBidBidApiCall(
   }
 }
 
-function submitBid(action){
+function* submitBid(action){
   try {
-    const response = yield call(
+    yield call(
       submitBidApiCall,
       action.projectId,
       action.name,

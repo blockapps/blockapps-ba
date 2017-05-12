@@ -9,7 +9,7 @@ import Project from './scenes/Projects/components/Project'
 import ProjectCreate from './scenes/Projects/components/ProjectCreate'
 import Reports from './scenes/Reports/';
 import Settings from './scenes/Settings/';
-import Bid from './scenes/Dashboard/components/Bid/';
+import Bid from './scenes/Projects/components/Bid/';
 
 
 export default (
