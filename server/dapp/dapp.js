@@ -180,7 +180,7 @@ function createBid(adminName, name, supplier, amount) {
 // accept bid
 function acceptBid(adminName, bidId) {
   return function(scope) {
-    rest.verbose('dapp: acceptBid', bidId;
+    rest.verbose('dapp: acceptBid', bidId);
     return setScope(scope)
       .then(projectManager.acceptBid(adminName, bidId));
   }

@@ -123,6 +123,7 @@ describe("Projects Test", function() {
         const projects = data.projects;
         assert.isDefined(projects, 'should return projects');
         assert.isArray(projects, 'projects list should be an array');
+        assert.isOk(projects.length > 0, 'projects list should not be empty');
         //todo: the returned list should be filtered by state (preliminarily create at least one project)
         done();
       });

@@ -15,8 +15,16 @@ import { fetchProject } from './actions/project.actions';
 class Project extends Component {
 
   componentWillMount() {
-    this.props.fetchProject(this.props.params['pname']); //todo: html encode url
+    this.props.fetchProject(encodeURI(this.props.params['pname']));
   }
+
+
+  handleBidAcceptClick = function(e, bidName) {
+    e.stopPropagation();
+    // TODO: implement the Bid Accept flow here
+    alert('- Bid accepted;\n- Project state changed OPEN -> PRODUCTION;\n- No more bids can be submitted;');
+  };
+
 
   render() {
     let projectContent;
@@ -24,7 +32,6 @@ class Project extends Component {
     if (this.props.project) {
       const project = this.props.project;
       console.log('>>>> project >>>>', project);
-
       projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
@@ -43,9 +50,7 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Status:</h4>
-                <span style={{'textTransform': 'capitalize'}}>
-                  {project.state ? project.state : ''}
-                  </span>
+                {project.state ? project.state : ''}
               </div>
             </div>
             <div className="md-grid">
@@ -132,4 +137,8 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject })(Project);
+export default connect(
+  mapStateToProps,
+  { fetchProject },
+  // { bidAccept }
+)(Project);

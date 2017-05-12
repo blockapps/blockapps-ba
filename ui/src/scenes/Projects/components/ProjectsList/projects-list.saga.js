@@ -16,7 +16,6 @@ import {
   fetchProjectsListFailure
 } from './projects-list.actions';
 
-// TODO: define API endpoint for projects
 const url = API_URL + '/projects';
 
 
@@ -41,7 +40,7 @@ function getProjectsMock() {
               zip: '11249'
             },
             spec: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur',
-            status: 'open',
+            state: 'OPEN',
             deliveredDate: null
           },
           {
@@ -59,7 +58,7 @@ function getProjectsMock() {
               zip: '11249'
             },
             spec: 'Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum',
-            status: 'closed',
+            state: 'RECEIVED',
             deliveredDate: '2017-05-18T12:35:00.000Z'
           }
         ]
@@ -79,7 +78,7 @@ function getProjectsList(listType, username) {
       query = '?filter=buyer&buyer=' + username;
       break;
     case 'allOpenList':
-      query = '?filter=state&state=OPEN';
+      query = '?filter=state&state=1'; // state 1 is 'OPEN'
       break;
     default:
       query = '';
