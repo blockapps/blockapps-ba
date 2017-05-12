@@ -22,6 +22,14 @@ class Project extends Component {
     this.props.fetchProject(encodeURI(this.props.params['pname']));
   }
 
+
+  handleBidAcceptClick = function(e, bidName) {
+    e.stopPropagation();
+    // TODO: implement the Bid Accept flow here
+    alert('- Bid accepted;\n- Project state changed OPEN -> PRODUCTION;\n- No more bids can be submitted;');
+  };
+
+
   render() {
     let projectContent;
 
@@ -40,21 +48,23 @@ class Project extends Component {
                   currency="USD" />
               </TableColumn>
               <TableColumn>
-                {/*todo: show accept buttons only if no accepted bid yet*/}
-                { project.accepted ?
-                <span>
-                <h2>{ `Welcome Back ${ this.props.name }` }</h2>
-                <p>You can visit settings to reset your password</p>
-                </span>
-                :
-                null
-                }
                 <span style={{whiteSpace: "normal"}}>
                 {bid.planDescription}
               </span>
               </TableColumn>
               <TableColumn>
-                <Button primary flat label="Accept">check_circle</Button> {/*todo: onClick= accept bid*/}
+                {
+                  project.state === 'OPEN'
+                  ? <Button
+                      primary
+                      flat
+                      label="Accept"
+                      onClick={
+                        (e) => this.handleBidAcceptClick(e, bid.name)
+                      }
+                    >check_circle</Button>
+                  : ''
+                }
               </TableColumn>
             </TableRow>
         );
@@ -177,4 +187,8 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject })(Project);
+export default connect(
+  mapStateToProps,
+  { fetchProject },
+  // { bidAccept }
+)(Project);

@@ -21,6 +21,7 @@ class App extends Component {
         >
           <div className="md-grid">
             <div className="md-cell md-cell--12">
+              <div className="md-grid" />
               {this.props.children}
             </div>
           </div>

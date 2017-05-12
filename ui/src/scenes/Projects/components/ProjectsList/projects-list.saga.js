@@ -40,7 +40,7 @@ function getProjectsMock() {
               zip: '11249'
             },
             spec: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur',
-            state: 'open',
+            state: 'OPEN',
             deliveredDate: null
           },
           {
@@ -58,7 +58,7 @@ function getProjectsMock() {
               zip: '11249'
             },
             spec: 'Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum',
-            state: 'closed',
+            state: 'RECEIVED',
             deliveredDate: '2017-05-18T12:35:00.000Z'
           }
         ]
