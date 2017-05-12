@@ -12,6 +12,7 @@ const projectManager = require('../projectManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
+const BidState = rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -233,7 +234,7 @@ describe('ProjectManager tests', function() {
 
     const count = 8;
     const changed = Math.floor(count/2);
-    const projects = Array.apply(null, {
+    const sourceProjects = Array.apply(null, {
       length: count
     }).map(function(item, index) {
       return {name: name + index, buyer: buyer};
@@ -242,7 +243,7 @@ describe('ProjectManager tests', function() {
     rest.setScope(scope)
       // add all projects
       .then(function(scope) {
-        return Promise.each(projects, function(project) { // for each project
+        return Promise.each(sourceProjects, function(project) { // for each project
           return projectManager.createProject(adminName, project.name, project.buyer)(scope) // create project
         }).then(function() { // all done
           return scope;
@@ -250,7 +251,7 @@ describe('ProjectManager tests', function() {
       })
       // change state for the first half
       .then(function(scope) {
-        return Promise.each(projects.slice(0,changed), function(project) { // for each project
+        return Promise.each(sourceProjects.slice(0,changed), function(project) { // for each project
           return projectManager.handleEvent(adminName, project.name, ProjectEvent.ACCEPT)(scope);
         }).then(function() { // all done
           return scope;
@@ -261,11 +262,12 @@ describe('ProjectManager tests', function() {
       .then(projectManager.getProjectsByState(ProjectState.PRODUCTION))
       .then(function(scope) {
         const projects = scope.result;
-        const filtered = projects.filter(function(project, index) {
-          console.log(project.name, (name + index), (project.name === (name + index)))
-          return project.name === (name + index);
-        });
-        assert.equal(filtered.length, changed, '# of found projects');
+        const comparator = function (memberA, memberB) {
+          return memberA.name == memberB.name;
+        };
+        const notContained = filter_isContained(sourceProjects.slice(0,changed), projects, comparator);
+        // if found any items in the source list, that are not included in the query results
+        assert.equal(notContained.length, 0, 'some projects were not found ' + JSON.stringify(notContained, null, 2));
         return scope;
       })
       .then(function(scope) {
@@ -348,6 +350,52 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it.only('Accept a Bid', function(done) {
+    const name = util.uid('Project');
+    const buyer = 'Buyer1';
+    const supplier = 'Supplier1';
+    const amount = 5678;
+
+    rest.setScope(scope)
+      // create project
+      .then(projectManager.createProject(adminName, name, buyer))
+      // create a bid
+      .then(projectManager.createBid(adminName, name, supplier, amount))
+      // save the bid ID
+      .then(function(scope) {
+        const bid = scope.result;
+        scope.bidId = bid.id;
+        return scope;
+      })
+      // get the bid
+      .then(function(scope) {
+        return projectManager.getBid(scope.bidId)(scope)
+      })
+      // check that state is OPEN
+      .then(function(scope) {
+        const bid = scope.result;
+        assert.equal(bid.state, BidState[BidState.OPEN], 'state OPEN');
+        return scope;
+      })
+      // accept the bid
+      .then(function(scope) {
+        return projectManager.acceptBid(adminName, scope.bidId)(scope);
+      })
+      // get the bid again
+      .then(function(scope) {
+        return projectManager.getBid(scope.bidId)(scope);
+      })
+      // check that state is ACCEPTED
+      .then(function(scope) {
+        const bid = scope.result;
+        assert.equal(bid.state, BidState[BidState.ACCEPTED], 'state ACCEPTED');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
   it('Get bids by supplier', function(done) {
     const name = util.uid('Project');
     const buyer = 'Buyer1';
@@ -397,3 +445,14 @@ describe('ProjectManager tests', function() {
   });
 
 });
+
+function filter_isContained(setA, setB, comparator) {
+  // console.log('setA', setA);
+  // console.log('setB', setB);
+  return setA.filter(function(memberA) {
+    return !setB.filter(function(memberB) {
+        // compare
+        return comparator(memberA, memberB);
+      }).length > 0; // some items were found in setA that are not included in setB
+  });
+}
