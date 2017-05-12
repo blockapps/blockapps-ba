@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router';
 import Button from 'react-md/lib/Buttons/Button';
 import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
@@ -26,12 +27,12 @@ class Project extends Component {
 
     if (this.props.project) {
       const project = this.props.project;
-      console.warn(project);
       let bidsRows;
+      console.log('>>>> project >>>>', project);
       if (project.bids) {
         bidsRows = project.bids.map(
-          bid =>
-            <TableRow>
+          (bid,i) =>
+            <TableRow key={"bid"+i}>
               <TableColumn>
                 <FormattedNumber
                   value={bid.price}
@@ -61,7 +62,7 @@ class Project extends Component {
       projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
-            title={project.name}
+            title={project.name ? project.name : ''}
             // subtitle={
             //   <span>
             //     {/*<FormattedDate*/}
@@ -132,8 +133,15 @@ class Project extends Component {
               : null
             }
             <div className="md-grid">
-              <div className="md-cell md-cell--12">
+              <div className="md-cell md-cell--11">
                 <h4 className="md-title ">Bids</h4>
+              </div>
+              <div className="md-cell md-cell--1">
+                <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
+                  <Button raised primary label="Add Bid" />
+                </Link>
+              </div>
+              <div className="md-cell md-cell--12">
                 <DataTable plain>
                   <TableHeader>
                     <TableRow
@@ -153,6 +161,7 @@ class Project extends Component {
           </CardText>
         </Card>
     }
+
     return (
       <section>
         <h2>Project</h2>
@@ -160,7 +169,7 @@ class Project extends Component {
           {projectContent}
         </div>
       </section>
-    )
+    );
   }
 }
 

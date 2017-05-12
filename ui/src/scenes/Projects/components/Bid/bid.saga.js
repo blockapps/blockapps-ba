@@ -4,10 +4,11 @@ import {
   bidSuccess,
   bidFailure
 } from './bid.actions';
+import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 
-const bidUrl = API_URL + '/projects/:name/bid';
+const bidUrl = API_URL + '/projects/:name/bids';
 
 function submitBidApiCall(
   name,
@@ -45,11 +46,11 @@ function* submitBid(action){
   try {
     yield call(
       submitBidApiCall,
-      action.projectId,
       action.name,
       action.supplier,
       action.amount);
     yield put(bidSuccess());
+    browserHistory.goBack();
   }
   catch(err) {
     yield put(bidFailure(err));
