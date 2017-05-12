@@ -38,6 +38,7 @@ describe("Projects Test", function() {
   const projectName = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
   const supplier = "Supplier1";
+  const amount = 100;
   // const roleSupplier = UserRole.SUPPLIER;
   // const roleBuyer = UserRole.BUYER;
 
@@ -122,17 +123,16 @@ describe("Projects Test", function() {
         const projects = data.projects;
         assert.isDefined(projects, 'should return projects');
         assert.isArray(projects, 'projects list should be an array');
+        assert.isOk(projects.length > 0, 'projects list should not be empty');
         //todo: the returned list should be filtered by state (preliminarily create at least one project)
         done();
       });
   });
 
   it('Should bid on a project', function(done){
-    const amount = 100;
-    console.log('>>>> test bid >>>>', projectName, supplier, amount);
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectName + '/bid')
+      .post('/api/v1/projects/' + projectName + '/bids')
       .send({ supplier, amount })
       .end((err, res) => {
         assert_noerr(err);
@@ -140,6 +140,26 @@ describe("Projects Test", function() {
         res.body.should.have.property('data');
         const data = res.body.data;
         const bid = data.bid;
+        assert.isDefined(bid, 'should return new bid');
+        assert.equal(bid.supplier, supplier, 'new bid should contain supplier');
+        assert.equal(bid.amount, amount, 'new bid should contain amount');
+        done();
+      });
+  });
+
+  it('Should get bids for a project', function(done){
+    this.timeout(config.timeout);
+    chai.request(server)
+      .get('/api/v1/projects/' + projectName + '/bids')
+      .end((err, res) => {
+        assert_noerr(err);
+        assert_apiSuccess(res);
+        res.body.should.have.property('data');
+        const data = res.body.data;
+        const bids = data.bids;
+        assert.isArray(bids, 'should be an array')
+        assert.equal(bids.length, 1, 'length of bid array should be 1');
+        const bid = bids[0];
         assert.isDefined(bid, 'should return new bid');
         assert.equal(bid.supplier, supplier, 'new bid should contain supplier');
         assert.equal(bid.amount, amount, 'new bid should contain amount');

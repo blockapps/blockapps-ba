@@ -177,6 +177,15 @@ function createBid(adminName, name, supplier, amount) {
   }
 }
 
+// accept bid
+function acceptBid(adminName, bidId) {
+  return function(scope) {
+    rest.verbose('dapp: acceptBid', bidId);
+    return setScope(scope)
+      .then(projectManager.acceptBid(adminName, bidId));
+  }
+}
+
 // projects by supplier (State optional)
 function getProjectsBySupplier(supplier, state) {
   return function(scope) {
@@ -192,6 +201,15 @@ function getProject(adminName, name) {
     rest.verbose('dapp: getProject', name);
     return setScope(scope)
       .then(projectManager.getProject(adminName, name));
+  }
+}
+
+// bids by name
+function getBids(adminName, name) {
+  return function(scope) {
+    rest.verbose('dapp: getBids', name);
+    return setScope(scope)
+      .then(projectManager.getBidsByName(name));
   }
 }
 
@@ -213,6 +231,7 @@ module.exports = function (libPath) {
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
     createBid: createBid,
+    getBids: getBids,
     getProject: getProject,
   };
 };

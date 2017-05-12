@@ -21,38 +21,28 @@ const url = API_URL + '/projects/{0}';
 
 function getProjectMock(projectId) {
   return new Promise(function(resolve, reject) {
-    resolve(
-      {
-        id: projectId,
-        created: '2017-05-09T16:47:49.016Z',
-        buyer: 'buyer1',
-        name: 'T-Shirts with logo',
-        description: 'The T-Shirts with our company\'s logo on the chest, Qty: 50',
-        priceDesired: 800.10,
-        desiredDeliveryDate: '2017-05-20T16:47:49.016Z',
-        deliveryAddress: {
-          street: '109 S 5th street',
-          city: 'Brooklyn',
-          state: 'New York',
-          zip: '11249'
-        },
-        spec: 'Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel,',
-        status: 'open',
-        deliveredDate: '2017-05-20T16:47:49.016Z',
-        bids: [
-          {
-            price: 790,
-            planDescription: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur at, ei malis clita scripta mel. Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
-            accepted: false
+    resolve({
+      data: {
+        project: {
+          id: projectId,
+          created: '2017-05-09T16:47:49.016Z',
+          buyer: 'buyer1',
+          name: 'T-Shirts with logo',
+          description: 'The T-Shirts with our company\'s logo on the chest, Qty: 50',
+          priceDesired: 800.10,
+          desiredDeliveryDate: '2017-05-20T16:47:49.016Z',
+          deliveryAddress: {
+            street: '109 S 5th street',
+            city: 'Brooklyn',
+            state: 'New York',
+            zip: '11249'
           },
-          {
-            price: 795,
-            planDescription: 'Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
-            accepted: false
-          }
-        ]
+          spec: 'Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel,',
+          status: 'open',
+          deliveredDate: '2017-05-20T16:47:49.016Z'
+        }
       }
-    );
+    });
   });
 }
 

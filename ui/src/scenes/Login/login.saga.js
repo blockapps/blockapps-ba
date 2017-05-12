@@ -48,7 +48,7 @@ function* submitLogin(action) {
     const response = yield call(loginApiCall, action.username, action.password);
     if(response.data.authenticate) {
       yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
-      browserHistory.push('/dashboard');
+      browserHistory.push('/projects');
     }
   }
   catch(err)

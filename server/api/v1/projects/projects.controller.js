@@ -80,7 +80,6 @@ const projectsController = {
 
   bid: function(req, res) {
     const deploy = req.app.get('deploy');
-    console.log('>>>> route >>>>', req.params.name, req.body.supplier, req.body.amount);
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
       .then(dapp.createBid(
@@ -91,6 +90,21 @@ const projectsController = {
       .then(scope => {
         util.response.status200(res, {
           bid: scope.result
+        })
+      })
+      .catch(err => {
+        util.response.status500(res, err);
+      })
+  },
+
+  getBids: function(req, res) {
+    const deploy = req.app.get('deploy');
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.getBids(deploy.adminName, req.params.name))
+      .then(scope => {
+        util.response.status200(res, {
+          bids: scope.result
         })
       })
       .catch(err => {

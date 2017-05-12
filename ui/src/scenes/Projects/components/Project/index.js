@@ -1,67 +1,41 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router';
 import Button from 'react-md/lib/Buttons/Button';
 import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import CardText from 'react-md/lib/Cards/CardText';
-import DataTable from 'react-md/lib/DataTables/DataTable';
-import TableHeader from 'react-md/lib/DataTables/TableHeader';
-import TableBody from 'react-md/lib/DataTables/TableBody';
-import TableRow from 'react-md/lib/DataTables/TableRow';
-import TableColumn from 'react-md/lib/DataTables/TableColumn';
+import BidTable from '../BidTable/';
 
 // import { browserHistory } from 'react-router';
-import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
+import { FormattedDate, FormattedTime } from 'react-intl';
 
 import { fetchProject } from './actions/project.actions';
 
 class Project extends Component {
 
   componentWillMount() {
-    this.props.fetchProject(this.props.params['pname']); //todo: html encode url
+    this.props.fetchProject(encodeURI(this.props.params['pname']));
   }
+
+
+  handleBidAcceptClick = function(e, bidName) {
+    e.stopPropagation();
+    // TODO: implement the Bid Accept flow here
+    alert('- Bid accepted;\n- Project state changed OPEN -> PRODUCTION;\n- No more bids can be submitted;');
+  };
+
 
   render() {
     let projectContent;
 
     if (this.props.project) {
       const project = this.props.project;
-      console.warn(project);
-      let bidsRows;
-      if (project.bids) {
-        bidsRows = project.bids.map(
-          bid =>
-            <TableRow>
-              <TableColumn>
-                <FormattedNumber
-                  value={bid.price}
-                  style="currency" //eslint-disable-line
-                  currency="USD" />
-              </TableColumn>
-              <TableColumn>
-                {/*todo: show accept buttons only if no accepted bid yet*/}
-                {/*{ project.accepted ?*/}
-                {/*<span>*/}
-                {/*<h2>{ `Welcome Back ${ this.props.name }` }</h2>*/}
-                {/*<p>You can visit settings to reset your password</p>*/}
-                {/*</span>*/}
-                {/*:*/}
-                {/*null*/}
-                {/*}*/}
-                <span style={{whiteSpace: "normal"}}>
-                {bid.planDescription}
-              </span>
-              </TableColumn>
-              <TableColumn>
-                <Button primary flat label="Accept">check_circle</Button> {/*todo: onClick= accept bid*/}
-              </TableColumn>
-            </TableRow>
-        );
-      }
+      console.log('>>>> project >>>>', project);
       projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
-            title={project.name}
+            title={project.name ? project.name : ''}
             // subtitle={
             //   <span>
             //     {/*<FormattedDate*/}
@@ -76,9 +50,7 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Status:</h4>
-                <span style={{'textTransform': 'capitalize'}}>
-                  {project.state ? project.state : ''}
-                  </span>
+                {project.state ? project.state : ''}
               </div>
             </div>
             <div className="md-grid">
@@ -132,27 +104,22 @@ class Project extends Component {
               : null
             }
             <div className="md-grid">
-              <div className="md-cell md-cell--12">
+              <div className="md-cell md-cell--11">
                 <h4 className="md-title ">Bids</h4>
-                <DataTable plain>
-                  <TableHeader>
-                    <TableRow
-                      // autoAdjust={false}
-                    >
-                      <TableColumn>Bid</TableColumn>
-                      <TableColumn>Specs</TableColumn>
-                      <TableColumn>Actions</TableColumn>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bidsRows}
-                  </TableBody>
-                </DataTable>
+              </div>
+              <div className="md-cell md-cell--1">
+                <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
+                  <Button raised primary label="Add Bid" />
+                </Link>
+              </div>
+              <div className="md-cell md-cell--12">
+                <BidTable name={project.name} bids={project.bids ? project.bids : []} />
               </div>
             </div>
           </CardText>
         </Card>
     }
+
     return (
       <section>
         <h2>Project</h2>
@@ -160,7 +127,7 @@ class Project extends Component {
           {projectContent}
         </div>
       </section>
-    )
+    );
   }
 }
 
@@ -170,4 +137,8 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject })(Project);
+export default connect(
+  mapStateToProps,
+  { fetchProject },
+  // { bidAccept }
+)(Project);

@@ -8,6 +8,7 @@ const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
+const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const projectContractName = require('./project').contractName;
 
 function compileSearch() {
@@ -103,6 +104,42 @@ function createBid(adminName, name, supplier, amount) {
             scope.result = resultArray[0];
             return scope;
           })
+      });
+  }
+}
+
+// throws: ErrorCodes
+function acceptBid(adminName, bidId) {
+  return function(scope) {
+    rest.verbose('acceptBid', bidId);
+    return rest.setScope(scope)
+      .then(getBid(bidId))
+      .then(function(scope) {
+        const bid = scope.result;
+        return setBidState(adminName, bid.address, BidState.ACCEPTED)(scope);
+      });
+  }
+}
+
+function setBidState(adminName, bidAddress, state) {
+  return function(scope) {
+    rest.verbose('setBidState', {bidAddress, state});
+    // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
+    const method = 'setBidState';
+    const args = {
+      bidAddress: bidAddress,
+      state: state,
+    };
+
+    return rest.setScope(scope)
+      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(function(scope) {
+        // returns (ErrorCodes)
+        const errorCode = scope.contracts[contractName].calls[method];
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
+        }
+        return scope;
       });
   }
 }
@@ -311,6 +348,7 @@ module.exports = {
 
   createProject: createProject,
   createBid: createBid,
+  acceptBid: acceptBid,
   exists: exists,
   getBid: getBid,
   getBidsByName: getBidsByName,

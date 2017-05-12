@@ -4,7 +4,7 @@ import Dialog from 'react-md/lib/Dialogs';
 import { browserHistory } from 'react-router';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { reduxForm, Field } from 'redux-form';
-import FileInput from 'react-md/lib/FileInputs';
+//import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
 import { bidSubmit } from './bid.actions';
 import './Bid.css';
@@ -17,7 +17,7 @@ class Bid extends Component {
 
   submit = (values) => {
     this.props.bidSubmit({
-      name: this.props.name,
+      name: this.props.params.name,
       supplier: this.props.supplier,
       amount: values.amount
     });
@@ -32,7 +32,7 @@ class Bid extends Component {
       <Dialog
       id="simpleDialogExample"
       visible={true}
-      title="Bid for some contract"
+      title={ "Bid for " + this.props.params.name }
       onHide={this.closeDialog}>
       <form onSubmit={handleSubmit(this.submit)}>
         <div className="md-grid">
@@ -44,7 +44,7 @@ class Bid extends Component {
             className="md-cell--12 md-cell--top"
             component={ReduxedTextField}
           />
-          <div className="md-cell--12 center">
+          {/*<div className="md-cell--12 center">
             <br />
             <h4> Upload project plan </h4>
           </div>
@@ -54,7 +54,7 @@ class Bid extends Component {
             flat
             iconBefore
             className="md-cell--12 md-cell--right"
-          />
+          />*/}
           <div className="md-cell--12">
             <Button raised primary label="Bid" type="submit" className="bid-button"/>
           </div>
