@@ -112,6 +112,7 @@ describe("Projects Test", function() {
 
   it('Should bid on a project', function(done){
     const amount = 100;
+    console.log('>>>> test bid >>>>', name, supplier, amount);
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + name + '/bid')

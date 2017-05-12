@@ -174,6 +174,8 @@ function createBid(adminName, name, supplier, amount) {
     rest.verbose('dapp: createBid', adminName, name, supplier, amount);
     return setScope(scope)
       .then(projectManager.createBid(adminName, name, supplier, amount));
+  }
+}
 
 // projects by supplier (State optional)
 function getProjectsBySupplier(supplier, state) {
