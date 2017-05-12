@@ -1,8 +1,8 @@
 url: 'http://192.168.0.106/bloc'
-adminName: Admin_62143_10308346033
+adminName: Admin_64955_11028595158
 adminPassword: '1234'
 AdminInterface:
-  address: 262456ef023ad3fb9c48f18eaa1fd687d3cfd82b
+  address: d2600a7b79cfcba968f91fa35d6425c03d2f50dc
 users:
   - username: Supplier1
     password: '1234'

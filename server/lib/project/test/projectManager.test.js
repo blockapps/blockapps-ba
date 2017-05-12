@@ -226,6 +226,53 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it('Get Projects by state', function(done) {
+    const uid = util.uid();
+    const name = 'Project' + uid;
+    const buyer = 'Buyer' + uid;
+
+    const count = 8;
+    const changed = Math.floor(count/2);
+    const projects = Array.apply(null, {
+      length: count
+    }).map(function(item, index) {
+      return {name: name + index, buyer: buyer};
+    });
+
+    rest.setScope(scope)
+      // add all projects
+      .then(function(scope) {
+        return Promise.each(projects, function(project) { // for each project
+          return projectManager.createProject(adminName, project.name, project.buyer)(scope) // create project
+        }).then(function() { // all done
+          return scope;
+        });
+      })
+      // change state for the first half
+      .then(function(scope) {
+        return Promise.each(projects.slice(0,changed), function(project) { // for each project
+          return projectManager.handleEvent(adminName, project.name, ProjectEvent.ACCEPT)(scope);
+        }).then(function() { // all done
+          return scope;
+        });
+      })
+
+      // get projects by state - should find that name in there
+      .then(projectManager.getProjectsByState(ProjectState.PRODUCTION))
+      .then(function(scope) {
+        const projects = scope.result;
+        const filtered = projects.filter(function(project, index) {
+          console.log(project.name, (name + index), (project.name === (name + index)))
+          return project.name === (name + index);
+        });
+        assert.equal(filtered.length, changed, '# of found projects');
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
   it('ACCEPT an OPEN project - change to PRODUCTION', function(done) {
     const name = util.uid('Project');
     const buyer = 'Buyer1';
@@ -301,6 +348,52 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it('Get bids by supplier', function(done) {
+    const name = util.uid('Project');
+    const buyer = 'Buyer1';
+    const supplier = 'Supplier1';
+    const amount = 5678;
 
+    rest.setScope(scope)
+      // create user
+      .then(projectManager.createProject(adminName, name, buyer))
+      .then(projectManager.createBid(adminName, name, supplier, amount))
+      // get bids by supplier
+      .then(projectManager.getBidsBySupplier(supplier))
+      .then(function(scope) {
+        const bids = scope.result;
+        const filtered = bids.filter(function(bid) {
+          return bid.supplier === supplier  &&  bid.name == name;
+        });
+        assert.equal(filtered.length, 1, 'one and only one');
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+  it('Get projects by supplier', function(done) {
+    const name = util.uid('Project');
+    const buyer = 'Buyer1';
+    const supplier = 'Supplier1';
+    const amount = 5678;
+
+    rest.setScope(scope)
+      // create user
+      .then(projectManager.createProject(adminName, name, buyer))
+      .then(projectManager.createBid(adminName, name, supplier, amount))
+      // get bids by supplier
+      .then(projectManager.getProjectsBySupplier(supplier))
+      .then(function(scope) {
+        const projects = scope.result;
+        const filtered = projects.filter(function(project) {
+          return project.name === name;
+        });
+        assert.equal(filtered.length, 1, '# of found projects');
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 
 });

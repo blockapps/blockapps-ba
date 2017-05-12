@@ -129,6 +129,17 @@ function getBidsByName(name) {
   }
 }
 
+function getBidsBySupplier(supplier) {
+  return function(scope) {
+    rest.verbose('getBidsByName', supplier);
+    return rest.query(`Bid?supplier=eq.${supplier}`)(scope)
+    .then(function(scope) {
+      scope.result = scope.query.slice(-1)[0];
+      return scope;
+    });
+  }
+}
+
 function exists(adminName, name) {
   return function(scope) {
     rest.verbose('exists', name);
@@ -231,6 +242,34 @@ function getProjectsByState(state) {
     }
 }
 
+function getProjectsBySupplier(supplier, state) {
+  return function(scope) {
+    rest.verbose('getProjectsBySupplier', supplier, state);
+    return rest.setScope(scope)
+      .then(getBidsBySupplier(supplier))
+      .then(function(scope) {
+        const bids = scope.result;
+        const names = bids.map(function(bid) {
+          return bid.name;
+        });
+        scope.result = names;
+        return getProjectsByName(names)(scope);
+      });
+    }
+}
+
+function getProjectsByName(names) {
+  return function(scope) {
+    rest.verbose('getProjectsByName', names);
+    const csv = util.toCsv(names); // generate csv string
+    return rest.query(`${projectContractName}?name=in.${csv}`)(scope)
+      .then(function (scope) {
+        scope.result = scope.query.slice(-1)[0];
+        return scope;
+      });
+  }
+}
+
 function handleEvent(adminName, name, projectEvent) {
   return function(scope) {
     rest.verbose('handleEvent', {name, projectEvent});
@@ -275,9 +314,11 @@ module.exports = {
   exists: exists,
   getBid: getBid,
   getBidsByName: getBidsByName,
+  getBidsBySupplier: getBidsBySupplier,
   getProject: getProject,
   getProjects: getProjects,
   getProjectsByBuyer: getProjectsByBuyer,
   getProjectsByState: getProjectsByState,
+  getProjectsBySupplier: getProjectsBySupplier,
   handleEvent: handleEvent,
 };
