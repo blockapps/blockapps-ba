@@ -5,6 +5,8 @@ const config = ba.common.config;
 const Promise = ba.common.Promise;
 
 const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
+const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
+const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 
 // ========== Admin (super user) ==========
 
@@ -30,6 +32,7 @@ const AI = {
   libPath: undefined,
   subContractsNames: {
     UserManager: 'UserManager',
+    ProjectManager: 'ProjectManager',
   },
   contractName: 'AdminInterface',
   contractFilename: '/admin/AdminInterface.sol',
@@ -81,6 +84,7 @@ function getAdminInterface(address) {
 function compileSearch() {
   return function (scope) {
     return nop(scope)
+      .then(projectManager.compileSearch())
       .then(userManager.compileSearch());
   }
 }
@@ -129,6 +133,59 @@ function login(adminName, username, password) {
   }
 }
 
+function createProject(adminName, name, buyer) {
+  return function(scope) {
+    rest.verbose('dapp: createProject', {adminName, name, buyer});
+    return setScope(scope)
+      .then(projectManager.createProject(adminName, name, buyer));
+  }
+}
+
+// all projects - unfiltered
+function getProjects() {
+  return function(scope) {
+    rest.verbose('dapp: getProjects');
+    return setScope(scope)
+      .then(projectManager.getProjects());
+  }
+}
+
+// projects - by buyer
+function getProjectsByBuyer(buyer) {
+  return function(scope) {
+    rest.verbose('dapp: getProjectsByBuyer', buyer);
+    return setScope(scope)
+      .then(projectManager.getProjectsByBuyer(buyer));
+  }
+}
+
+// projects - by state
+function getProjectsByState(state) {
+  return function(scope) {
+    rest.verbose('dapp: getProjectsByState', state);
+    return setScope(scope)
+      .then(projectManager.getProjectsByState(state));
+  }
+}
+
+// create bid
+function createBid(adminName, name, supplier, amount) {
+  return function(scope) {
+    rest.verbose('dapp: createBid', adminName, name, supplier, amount);
+    return setScope(scope)
+      .then(projectManager.createBid(adminName, name, supplier, amount));
+  }
+}
+
+// projects by supplier (State optional)
+function getProjectsBySupplier(supplier, state) {
+  return function(scope) {
+    rest.verbose('dapp: getProjectsBySupplier', {supplier, state});
+    return setScope(scope)
+      .then(projectManager.getProjectsBySupplier(supplier, state));
+  }
+}
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.libPath = libPath;
@@ -142,5 +199,10 @@ module.exports = function (libPath) {
     setScope: setScope,
     // business functions
     login: login,
+    createProject: createProject,
+    getProjects: getProjects,
+    getProjectsByBuyer: getProjectsByBuyer,
+    getProjectsByState: getProjectsByState,
+    createBid: createBid
   };
 };

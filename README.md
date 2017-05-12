@@ -63,3 +63,9 @@ npm run start
 cd ui
 npm run start
 ```
+
+### Testing
+
+```
+mocha tests/v1
+```

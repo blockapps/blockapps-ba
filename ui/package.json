@@ -7,6 +7,7 @@
     "react-addons-css-transition-group": "^15.5.2",
     "react-addons-transition-group": "^15.5.2",
     "react-dom": "15.5.4",
+    "react-intl": "^2.3.0",
     "react-md": "1.0.12",
     "react-redux": "5.0.4",
     "react-router": "3.0.2",
@@ -23,7 +24,7 @@
   "scripts": {
     "build-css": "node-sass src/ -o src/",
     "watch-css": "npm run build-css && node-sass src/ -o src/ --watch --recursive",
-    "start-js": "PORT=3030 react-scripts start",
+    "start-js": "PORT=3030 REACT_APP_API_MOCK=${API_MOCK} REACT_APP_API_URL=${API_URL} react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "build": "npm run build-css && react-scripts build",
     "test": "react-scripts test --env=jsdom",

@@ -3,15 +3,10 @@ import { connect } from 'react-redux';
 import Button from 'react-md/lib/Buttons/Button';
 import Paper from 'react-md/lib/Papers';
 import Toolbar from 'react-md/lib/Toolbars';
-import TextField from 'react-md/lib/TextFields';
 import { reduxForm, Field } from 'redux-form';
 import { userLoginSubmit } from './login.actions';
+import ReduxedTextField from '../../components/ReduxedTextField/';
 import './Login.css';
-
-// TODO: make this  reusable
-const renderTextField = ({ input, meta: { touched, error }, ...others }) => (
-  <TextField {...input} {...others} error={touched && !!error} errorText={error} />
-);
 
 class Login extends Component {
 
@@ -40,7 +35,7 @@ class Login extends Component {
                   type="text"
                   label="Enter Username"
                   className="md-cell--8 md-cell--top"
-                  component={renderTextField} />
+                  component={ReduxedTextField} />
                 <div className="md-cell--2" />
                 <div className="md-cell--2" />
                 <Field
@@ -49,7 +44,7 @@ class Login extends Component {
                   type="password"
                   label="Enter Password"
                   className="md-cell--8 md-cell--bottom"
-                  component={renderTextField} />
+                  component={ReduxedTextField} />
                 <div className="md-cell--2" />
                 <div className="md-cell--2" />
                 <div className="md-cell--right login-cell">

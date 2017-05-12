@@ -6,13 +6,16 @@ import { Provider } from 'react-redux';
 import { syncHistoryWithStore } from 'react-router-redux';
 import configureStore from './configureStore';
 import './index.css';
+import { IntlProvider } from 'react-intl'
 
 const store = configureStore();
 const history = syncHistoryWithStore(browserHistory, store);
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={history} routes={routes} />
+    <IntlProvider locale="en">
+      <Router history={history} routes={routes} />
+    </IntlProvider>
   </Provider>,
   document.getElementById('root')
 );
