@@ -38,20 +38,8 @@ function getProjectMock(projectId) {
             zip: '11249'
           },
           spec: 'Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel,',
-          state: 'OPEN',
-          deliveredDate: '2017-05-20T16:47:49.016Z',
-          bids: [
-            {
-              price: 790,
-              planDescription: 'Lorem ipsum dolor sit amet, eam molestie singulis referrentur at, ei malis clita scripta mel. Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
-              accepted: false
-            },
-            {
-              price: 795,
-              planDescription: 'Et qui altera assentior reformidans, cum case augue te. Ius te dicit probatus intellegebat, no minimum molestiae delicatissimi cum. Omnium officiis instructior ne mel, nam id fugit minim interesset.',
-              accepted: false
-            }
-          ]
+          status: 'OPEN',
+          deliveredDate: '2017-05-20T16:47:49.016Z'
         }
       }
     });
