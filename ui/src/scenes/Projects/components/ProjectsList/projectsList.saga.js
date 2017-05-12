@@ -6,19 +6,21 @@ import {
 import {
   API_URL,
   API_MOCK
-} from '../../environment';
+} from '../../../../environment';
 import {
   handleApiError
-} from '../../lib/apiErrorHandler';
+} from '../../../../lib/apiErrorHandler';
 import {
-  FETCH_PROJECTS,
-  fetchProjectsSuccess,
-  fetchProjectsFailure
-} from './projects.actions';
+  FETCH_PROJECTS_LIST,
+  fetchProjectsListSuccess,
+  fetchProjectsListFailure
+} from './projectsList.actions';
 
 // TODO: define API endpoint for projects
 const url = API_URL + '/projects';
 
+
+// TODO: move to utils and use it everywhere
 function getProjectsMock() {
   return new Promise(function(resolve, reject) {
     resolve(
@@ -88,7 +90,7 @@ function getProjectsMock() {
   });
 }
 
-function getProjects() {
+function getProjectsList(listType) {
   if (API_MOCK) {
     return getProjectsMock();
   }
@@ -107,16 +109,16 @@ function getProjects() {
     });
 }
 
-function* fetchProjects(action) {
+function* fetchProjectsList(action) {
   try {
-    let projects = yield call(getProjects);
+    let projects = yield call(getProjectsList, action.listType);
 
-    yield put(fetchProjectsSuccess(projects));
+    yield put(fetchProjectsListSuccess(projects));
   } catch (err) {
-    yield put(fetchProjectsFailure(err.message));
+    yield put(fetchProjectsListFailure(err.message));
   }
 }
 
-export default function* watchFetchProjects() {
-  yield takeLatest(FETCH_PROJECTS, fetchProjects);
+export default function* watchFetchProjectsList() {
+  yield takeLatest(FETCH_PROJECTS_LIST, fetchProjectsList);
 }

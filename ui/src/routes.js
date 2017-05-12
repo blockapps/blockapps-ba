@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, IndexRedirect, IndexRoute } from 'react-router';
 import App from './components/App/';
-// import EnsureAuthenticated from './components/EnsureAuthenticated/';
+import EnsureAuthenticated from './components/EnsureAuthenticated/';
 import Login from "./scenes/Login";
 import Dashboard from './scenes/Dashboard/';
 import Projects from './scenes/Projects/';
@@ -14,7 +14,7 @@ export default (
   <Route path="/" component={ App }>
     <Route path="/login" component={ Login } />
     <IndexRedirect to="/projects" />
-    {/*<Route component={EnsureAuthenticated}>*/}
+    <Route component={EnsureAuthenticated}>
       <Route path="/dashboard" component={ Dashboard } name="Dashboard" icon="home" />
       <Route path="/projects" name="Projects" icon="view_list">
         <IndexRoute component={ Projects } />
@@ -23,6 +23,6 @@ export default (
       </Route>
       <Route path="/reports" component={ Reports } name="Reports" icon="trending_up" />
       <Route path="/settings" component={ Settings } name="Settings" icon="settings" />
-    {/*</Route>*/}
+    </Route>
   </Route>
 );
