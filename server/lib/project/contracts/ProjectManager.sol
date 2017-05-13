@@ -103,6 +103,10 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
       bid.setState(state);
       return ErrorCodes.SUCCESS;
     }
+    if (currentState == BidState.OPEN  &&  state == BidState.REJECTED) {
+      bid.setState(state);
+      return ErrorCodes.SUCCESS;
+    }
     return ErrorCodes.ERROR;
   }
 }

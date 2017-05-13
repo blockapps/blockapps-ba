@@ -350,7 +350,7 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Accept a Bid', function(done) {
+  it('Accept a Bid', function(done) {
     const name = util.uid('Project');
     const buyer = 'Buyer1';
     const supplier = 'Supplier1';
@@ -379,7 +379,7 @@ describe('ProjectManager tests', function() {
       })
       // accept the bid
       .then(function(scope) {
-        return projectManager.acceptBid(adminName, scope.bidId)(scope);
+        return projectManager.acceptBid(adminName, scope.bidId, name)(scope);
       })
       // get the bid again
       .then(function(scope) {
@@ -395,6 +395,57 @@ describe('ProjectManager tests', function() {
         done();
       }).catch(done);
   });
+
+  it.only('Accept a Bid and rejects the others', function(done) {
+    const name = util.uid('Project');
+    const buyer = 'Buyer1';
+    const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
+    const amount = 5678;
+
+    rest.setScope(scope)
+      // create project
+      .then(projectManager.createProject(adminName, name, buyer))
+      // create bids
+      .then(createMultipleBids(adminName, name, suppliers))
+      .then(projectManager.getBidsByName(name))
+      // accept one bid
+      .then(function(scope) {
+        const bids = scope.result;
+        scope.acceptedBid = bids[0].id;
+        return projectManager.acceptBid(adminName, bids[0].id, name)(scope);
+      })
+      // get the bids
+      .then(function(scope) {
+        return projectManager.getBidsByName(name)(scope);
+      })
+      // check that the accepted bid is ACCEPTED and all others are REJECTED
+      .then(function(scope) {
+        const bids = scope.result;
+        console.log(bids);
+        bids.map(function(bid) {
+          if (bid.id === scope.acceptedBid) {
+            assert.equal(bid.state, BidState[BidState.ACCEPTED]);
+          } else {
+            assert.equal(bid.state, BidState[BidState.REJECTED]);
+          }
+        });
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+  function createMultipleBids(adminName, name, suppliers) {
+    return function(scope) {
+      const amount = 5678;
+      return Promise.each(suppliers, function(supplier) { // for each project
+        return projectManager.createBid(adminName, name, supplier, amount)(scope); // create project
+      }).then(function() { // all done
+        return scope;
+      });
+    }
+  }
 
   it('Get bids by supplier', function(done) {
     const name = util.uid('Project');

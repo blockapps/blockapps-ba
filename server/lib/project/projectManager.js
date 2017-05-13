@@ -2,6 +2,7 @@ const ba = require('blockapps-rest');
 const rest = ba.rest;
 const util = ba.common.util;
 const config = ba.common.config;
+const Promise = ba.common.Promise;
 
 const contractName = 'ProjectManager';
 const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol`;
@@ -109,14 +110,24 @@ function createBid(adminName, name, supplier, amount) {
 }
 
 // throws: ErrorCodes
-function acceptBid(adminName, bidId) {
+function acceptBid(adminName, bidId, name) {
   return function(scope) {
-    rest.verbose('acceptBid', bidId);
+    rest.verbose('acceptBid', name, bidId);
     return rest.setScope(scope)
-      .then(getBid(bidId))
+      .then(getBidsByName(name))
       .then(function(scope) {
-        const bid = scope.result;
-        return setBidState(adminName, bid.address, BidState.ACCEPTED)(scope);
+        const bids = scope.result;
+
+        return Promise.each(bids, function(bid) { // for each bid
+          // accept the selected bid - reject the others
+          if (bid.id == bidId) {
+            return setBidState(adminName, bid.address, BidState.ACCEPTED)(scope); // ACCEPT
+          } else {
+            return setBidState(adminName, bid.address, BidState.REJECTED)(scope); // REJECT
+          }
+        }).then(function() { // all done
+          return scope;
+        });
       });
   }
 }
