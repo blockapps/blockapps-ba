@@ -247,7 +247,7 @@ function getProjects() {
       .then(function (scope) {
         const state = scope.states[contractName];
         const projects = state.projects;
-        const trimmed = trimArray(projects); // FIXME leading zeros bug
+        const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
         const csv = util.toCsv(trimmed); // generate csv string
         return rest.query(`${projectContractName}?address=in.${csv}`)(scope);
       })
@@ -344,13 +344,6 @@ function handleEvent(adminName, name, projectEvent) {
       });
   }
 }
-
-function trimArray(array) {
-  return array.map(function(member) {
-    return util.trimLeadingZeros(member);
-  });
-}
-
 
 module.exports = {
   compileSearch: compileSearch,

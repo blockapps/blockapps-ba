@@ -133,7 +133,7 @@ function getUsers(adminName) {
       .then(function (scope) {
         const state = scope.states[contractName];
         const users = state.users;
-        const trimmed = trimArray(users); // trim leading zeros due to bug in cirrus
+        const trimmed = util.trimLeadingZeros(users); // FIXME leading zeros bug
         const csv = util.toCsv(trimmed); // generate csv string
         return rest.query(`${userContractName}?address=in.${csv}`)(scope);
       })
@@ -166,13 +166,6 @@ function login(adminName, username, password) {
       });
   }
 }
-
-function trimArray(array) {
-  return array.map(function(member) {
-    return util.trimLeadingZeros(member);
-  });
-}
-
 
 module.exports = {
   compileSearch: compileSearch,

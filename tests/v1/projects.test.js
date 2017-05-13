@@ -12,28 +12,6 @@ const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 
 chai.use(chaiHttp);
 
-function assert_noerr(err) {
-  assert.equal(err, null, JSON.stringify(err, null, 2));
-}
-
-function assert_apiError(res, status, mustContain) {
-  res.should.be.json;
-  assert.notStrictEqual(res.body.success, undefined, 'Malformed body: success undefined');
-  assert.notOk(res.body.success, `API success should be false: ${JSON.stringify(res.body, null, 2)}`);
-  assert.equal(res.status, status, `HTTP status should be ${status} ${JSON.stringify(res.body.error)}`);
-  assert.notStrictEqual(res.body.error, undefined, 'Malformed body: error undefined');
-  const message = res.body.error.toLowerCase();
-  assert.isAtLeast(message.indexOf(mustContain.toLowerCase()), 0, `error '${message}' must contain '${mustContain}' `);
-}
-
-function assert_apiSuccess(res) {
-  res.should.be.json;
-  assert.notStrictEqual(res.body.success, undefined, 'Malformed body: success undefined');
-  assert.ok(res.body.success, `API success should be true ${JSON.stringify(res.body, null, 2)}`);
-  assert.equal(res.status, 200, `HTTP status should be 200`);
-  assert.strictEqual(res.body.error, undefined, `Error should be undefined `);
-}
-
 describe("Projects Test", function() {
   const projectName = "Project_" + new Date().getTime();
   const buyer = "Buyer1";
@@ -51,10 +29,7 @@ describe("Projects Test", function() {
         buyer: buyer
       })
       .end((err, res) => {
-        assert_noerr(err);
-        assert_apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
+        const data = assert.apiData(err, res);
         const project = data.project;
         assert.isDefined(project, 'should return new project');
         // todo: the created project returns the created project
@@ -68,11 +43,7 @@ describe("Projects Test", function() {
     chai.request(server)
       .get(`/api/v1/projects/${encodeURI(projectName)}/`)
       .end((err, res) => {
-        assert_noerr(err);
-        assert_apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
-        console.log('>>>>>>>>>>>>>>>', data);
+        const data = assert.apiData(err, res);
         const project = data.project;
         assert.isDefined(project, 'should return project');
         assert.equal(project.name, projectName, 'project name should be same as in request');
@@ -92,10 +63,7 @@ describe("Projects Test", function() {
         }
       )
       .end((err, res) => {
-        assert_noerr(err);
-        assert_apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
+        const data = assert.apiData(err, res);
         const projects = data.projects;
         assert.isDefined(projects, 'should return projects');
         assert.isArray(projects, 'projects list should be an array');
@@ -116,10 +84,7 @@ describe("Projects Test", function() {
         }
       )
       .end((err, res) => {
-        assert_noerr(err);
-        assert_apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
+        const data = assert.apiData(err, res);
         const projects = data.projects;
         assert.isDefined(projects, 'should return projects');
         assert.isArray(projects, 'projects list should be an array');
@@ -135,10 +100,7 @@ describe("Projects Test", function() {
       .post('/api/v1/projects/' + projectName + '/bids')
       .send({ supplier, amount })
       .end((err, res) => {
-        assert_noerr(err);
-        assert_apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
+        const data = assert.apiData(err, res);
         const bid = data.bid;
         assert.isDefined(bid, 'should return new bid');
         assert.equal(bid.supplier, supplier, 'new bid should contain supplier');
@@ -152,10 +114,7 @@ describe("Projects Test", function() {
     chai.request(server)
       .get('/api/v1/projects/' + projectName + '/bids')
       .end((err, res) => {
-        assert_noerr(err);
-        assert_apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
+        const data = assert.apiData(err, res);
         const bids = data.bids;
         assert.isArray(bids, 'should be an array')
         assert.equal(bids.length, 1, 'length of bid array should be 1');
@@ -165,6 +124,6 @@ describe("Projects Test", function() {
         assert.equal(bid.amount, amount, 'new bid should contain amount');
         done();
       });
-  });
+    });
 
 });
