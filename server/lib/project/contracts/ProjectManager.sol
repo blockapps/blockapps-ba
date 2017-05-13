@@ -38,13 +38,40 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
     return projects[index];
   }
 
-  function createProject(string name, string buyer) returns (ErrorCodes) {
+  /*
+  string addressStreet,
+  string addressCity,
+  string addressState,
+  string addressZip
+  */
+  //      addressStreet,
+  //      addressCity,
+  //      addressState,
+  //      addressZip
+
+  function createProject(
+    string name,
+    string buyer,
+    string description,
+    string spec,
+    uint price,
+    uint created,
+    uint targetDelivery
+  ) returns (ErrorCodes) {
     // fail if username exists
     if (exists(name)) return ErrorCodes.EXISTS;
     // add project
     uint index = projects.length;
     nameToIndexMap[b32(name)] = index;
-    projects.push(new Project(name, buyer));
+    projects.push(new Project(
+      name,
+      buyer,
+      description,
+      spec,
+      price,
+      created,
+      targetDelivery
+    ));
     return ErrorCodes.SUCCESS;
   }
 

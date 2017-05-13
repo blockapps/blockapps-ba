@@ -11,15 +11,11 @@ const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 const projectsController = {
   create: function(req, res) {
     const deploy = req.app.get('deploy');
-    const project = req.body;
+    const projectArgs = req.body;
 
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
-      .then(dapp.createProject(
-        deploy.adminName,
-        project.name,
-        project.buyer
-      ))
+      .then(dapp.createProject(deploy.adminName, projectArgs))
       .then(scope => {
         util.response.status200(res, {
           project: scope.result

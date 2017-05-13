@@ -48,15 +48,19 @@ function uploadContract(adminName, adminPassword, args) {
 
 // throws: ErrorCodes
 // returns: record from search
-function createProject(adminName, name, buyer) {
+function createProject(adminName, args) {
   return function(scope) {
-    rest.verbose('createProject', {name, buyer});
-    // function createProject(string name, string buyer) returns (ErrorCodes) {
+    rest.verbose('createProject', args);
+    // function createProject(
+    //   string name,
+    //   string buyer,
+    //   string description,
+    //   string spec,
+    //   uint price,
+    //   uint created,
+    //   uint targetDelivery
+    // ) returns (ErrorCodes) {
     const method = 'createProject';
-    const args = {
-      name: name,
-      buyer: buyer,
-    };
 
     return rest.setScope(scope)
       .then(rest.callMethod(adminName, contractName, method, args))
@@ -69,7 +73,7 @@ function createProject(adminName, name, buyer) {
         return scope;
       })
       // get the contract data from search
-      .then(getProject(adminName, name));
+      .then(getProject(adminName, args.name));
   }
 }
 

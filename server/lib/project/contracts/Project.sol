@@ -43,17 +43,14 @@ contract Project is ErrorCodes, ProjectState {
   ProjectState public state;
 
   function Project(
-      string _name,
-      string _buyer,
-      string _description,
-      string _spec,
-      uint _price,
-      uint _created,
-      uint _targetDelivery,
-      string _addressStreet,
-      string _addressCity,
-      string _addressState,
-      string _addressZip ) {
+    string _name,
+    string _buyer,
+    string _description,
+    string _spec,
+    uint _price,
+    uint _created,
+    uint _targetDelivery
+  ) {
     name = _name;
     buyer = _buyer;
     description = _description;
@@ -61,12 +58,20 @@ contract Project is ErrorCodes, ProjectState {
     price = _price;
     created = _created;
     targetDelivery = _targetDelivery;
+
+    state = ProjectState.OPEN;
+  }
+
+  function setShippingAddress(
+    string _addressStreet,
+    string _addressCity,
+    string _addressState,
+    string _addressZip
+  ) {
     addressStreet = _addressStreet;
     addressCity = _addressCity;
     addressState = _addressState;
     addressZip = _addressZip;
-
-    state = ProjectState.OPEN;
   }
 
   function getState() returns (ProjectState) {

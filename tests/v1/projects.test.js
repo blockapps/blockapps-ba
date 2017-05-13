@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../../server');
 const ba = require('blockapps-rest');
+const util = ba.common.util;
 const common = ba.common;
 const should = ba.common.should;
 const assert = ba.common.assert;
@@ -13,27 +14,23 @@ const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 chai.use(chaiHttp);
 
 describe("Projects Test", function() {
-  const projectName = "Project_" + new Date().getTime();
-  const buyer = "Buyer1";
+  const uid = util.uid();
+  const projectArgs = createProjectArgs(uid);
   const supplier = "Supplier1";
   const amount = 100;
-  // const roleSupplier = UserRole.SUPPLIER;
-  // const roleBuyer = UserRole.BUYER;
 
   it('should create a project', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects')
-      .send({
-        name: projectName,
-        buyer: buyer
-      })
+      .send(projectArgs)
       .end((err, res) => {
         const data = assert.apiData(err, res);
         const project = data.project;
         assert.isDefined(project, 'should return new project');
         // todo: the created project returns the created project
-        assert.equal(project.buyer, buyer, 'new project should contain buyer');
+        assert.equal(project.name, projectArgs.name, 'new project should contain name');
+        assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
         done();
       });
   });
@@ -41,25 +38,25 @@ describe("Projects Test", function() {
   it('should return a project by its name', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
-      .get(`/api/v1/projects/${encodeURI(projectName)}/`)
+      .get(`/api/v1/projects/${encodeURI(projectArgs.name)}/`)
       .end((err, res) => {
         const data = assert.apiData(err, res);
         const project = data.project;
         assert.isDefined(project, 'should return project');
-        assert.equal(project.name, projectName, 'project name should be same as in request');
+        assert.equal(project.name, projectArgs.name, 'project name should be same as in request');
         done();
       });
   });
 
   it('should return the list of projects filtered by buyer', function(done) {
     this.timeout(config.timeout);
-    const buyer = "Buyer1";
+
     chai.request(server)
       .get('/api/v1/projects')
       .query(
         {
           filter: 'buyer',
-          buyer: buyer,
+          buyer: projectArgs.buyer,
         }
       )
       .end((err, res) => {
@@ -97,7 +94,7 @@ describe("Projects Test", function() {
   it('Should bid on a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectName + '/bids')
+      .post('/api/v1/projects/' + projectArgs.name + '/bids')
       .send({ supplier, amount })
       .end((err, res) => {
         const data = assert.apiData(err, res);
@@ -112,7 +109,7 @@ describe("Projects Test", function() {
   it('Should get bids for a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
-      .get('/api/v1/projects/' + projectName + '/bids')
+      .get('/api/v1/projects/' + projectArgs.name + '/bids')
       .end((err, res) => {
         const data = assert.apiData(err, res);
         const bids = data.bids;
@@ -127,3 +124,19 @@ describe("Projects Test", function() {
     });
 
 });
+
+
+function createProjectArgs(uid) {
+  const projectArgs = {
+    name: 'Project_' + uid,
+    buyer: 'Buyer1',
+    description: 'description_' + uid,
+    spec: 'spec_' + uid,
+    price: 1234,
+
+    created: new Date().getTime(),
+    targetDelivery: new Date().getTime() + 3 * 24*60*60*1000, // 3 days
+  };
+
+  return projectArgs;
+}

@@ -84,10 +84,10 @@ describe('Project tests', function() {
       _created: created,
       _targetDelivery: targetDelivery,
 
-      _addressStreet: addressStreet,
-      _addressCity: addressCity,
-      _addressState: addressState,
-      _addressZip: addressZip,
+      // _addressStreet: addressStreet,
+      // _addressCity: addressCity,
+      // _addressState: addressState,
+      // _addressZip: addressZip,
     };
 
     // create with constructor args
@@ -103,10 +103,10 @@ describe('Project tests', function() {
         assert.equal(project.price, price, 'price');
         assert.equal(project.created, created, 'created');
         assert.equal(project.targetDelivery, targetDelivery, 'targetDelivery');
-        assert.equal(project.addressStreet, addressStreet, 'addressStreet');
-        assert.equal(project.addressCity, addressCity, 'addressCity');
-        assert.equal(project.addressState, addressState, 'addressState');
-        assert.equal(project.addressZip, addressZip, 'addressZip');
+        // assert.equal(project.addressStreet, addressStreet, 'addressStreet');
+        // assert.equal(project.addressCity, addressCity, 'addressCity');
+        // assert.equal(project.addressState, addressState, 'addressState');
+        // assert.equal(project.addressZip, addressZip, 'addressZip');
         return scope;
       })
       .then(rest.waitQuery(`${project.contractName}?name=eq.${name}`, 1))
