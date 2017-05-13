@@ -265,7 +265,7 @@ describe('ProjectManager tests', function() {
         const comparator = function (memberA, memberB) {
           return memberA.name == memberB.name;
         };
-        const notContained = filter_isContained(sourceProjects.slice(0,changed), projects, comparator);
+        const notContained = util.filter.isContained(sourceProjects.slice(0,changed), projects, comparator, true);
         // if found any items in the source list, that are not included in the query results
         assert.equal(notContained.length, 0, 'some projects were not found ' + JSON.stringify(notContained, null, 2));
         return scope;
@@ -396,7 +396,7 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Accept a Bid and rejects the others', function(done) {
+  it('Accept a Bid and rejects the others', function(done) {
     const name = util.uid('Project');
     const buyer = 'Buyer1';
     const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
@@ -494,16 +494,4 @@ describe('ProjectManager tests', function() {
         done();
       }).catch(done);
   });
-
 });
-
-function filter_isContained(setA, setB, comparator) {
-  // console.log('setA', setA);
-  // console.log('setB', setB);
-  return setA.filter(function(memberA) {
-    return !setB.filter(function(memberB) {
-        // compare
-        return comparator(memberA, memberB);
-      }).length > 0; // some items were found in setA that are not included in setB
-  });
-}
