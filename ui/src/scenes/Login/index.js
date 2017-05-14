@@ -21,7 +21,7 @@ class Login extends Component {
     } = this.props;
 
     return (
-      <div className="md-grid margin-top">
+      <div className="md-grid md-toolbar--relative">
         <div className="md-cell--4 md-cell--phone-hidden" />
         <div className="md-cell--4 md-cell--12-phone">
           <Paper className="login-paper" zDepth={5}>
