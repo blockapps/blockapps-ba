@@ -133,6 +133,27 @@ const projectsController = {
         util.response.status500(res, err);
       })
   },
+
+  handleEvent: function(req, res) {
+    const deploy = req.app.get('deploy');
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(
+        dapp.handleEvent(
+          deploy.adminName,
+          req.params.name,
+          req.body.projectEvent
+        )
+      )
+      .then(scope => {
+        util.response.status200(res, {
+          bid: scope.result
+        })
+      })
+      .catch(err => {
+        util.response.status500(res, err);
+      })
+  },
 };
 
 module.exports = projectsController;

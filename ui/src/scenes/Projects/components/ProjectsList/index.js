@@ -22,7 +22,7 @@ class ProjectsList extends Component {
 
   handleProjectClick = function(e, projectName) {
     e.stopPropagation();
-    browserHistory.push(`/projects/${projectName}`); //todo: html encode url
+    browserHistory.push(`/projects/${encodeURI(projectName)}`);
   };
 
   render() {

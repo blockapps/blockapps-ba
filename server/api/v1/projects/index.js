@@ -7,6 +7,7 @@ router.get('/:name', projectController.get);
 router.get('/', projectController.list);
 router.post('/:name/bids', projectController.bid);
 router.get('/:name/bids', projectController.getBids);
+router.post('/:name/events', projectController.handleEvent);
 router.post('/:name/bids/:id', projectController.acceptBid);
 
 
