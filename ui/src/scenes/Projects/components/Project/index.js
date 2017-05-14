@@ -31,7 +31,7 @@ class Project extends Component {
     let projectContent;
     let projectButtons = '';
 
-    if (this.props.project) {
+    if (this.props.project && this.props.project['name']) {
       const project = this.props.project;
 
       if (this.isBuyer) {
@@ -78,26 +78,34 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Description:</h4>
-                {project.description ? project.description : ''}
+                {project.description ? project.description : '-'}
               </div>
             </div>
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Desired price:</h4>
-                <FormattedNumber
-                  value={project.price}
-                  style="currency" //eslint-disable-line
-                  currency="USD" />
+                {
+                  project.price
+                  ? <FormattedNumber
+                      value={project.price}
+                      style="currency" //eslint-disable-line
+                      currency="USD" />
+                  : ''
+                }
               </div>
             </div>
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title ">Deliver by:</h4>
-                <FormattedDate
-                  value={new Date(project.targetDelivery)}
-                  day="numeric"
-                  month="long"
-                  year="numeric"/>
+                {
+                  project.targetDelivery
+                  ? <FormattedDate
+                      value={new Date(project.targetDelivery)}
+                      day="numeric"
+                      month="long"
+                      year="numeric"/>
+                  : ''
+                }
               </div>
             </div>
             {/*<div className="md-grid">*/}
@@ -109,7 +117,7 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title ">Specification:</h4>
-                {project.spec ? project.spec : ''}
+                {project.spec ? project.spec : '-'}
               </div>
             </div>
             { project.delivered
