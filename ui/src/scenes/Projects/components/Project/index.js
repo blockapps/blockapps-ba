@@ -6,7 +6,7 @@ import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import CardText from 'react-md/lib/Cards/CardText';
 import BidTable from '../BidTable/';
-import { FormattedDate, FormattedTime } from 'react-intl';
+import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 import { fetchProject } from './actions/project.actions';
 import { projectEvent } from './actions/project-event.actions';
 
@@ -20,9 +20,11 @@ class Project extends Component {
     return this.props.login['role'] === 'BUYER'
   }
 
-  handleShippedClick = function(e, projectName) {
+  handleProjectEventClick = function(e, projectName, projectEvent) {
     e.stopPropagation();
-    this.props.projectEvent(projectName, 2); // ProjectEvent[2] == 'DELIVER'
+    // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
+    this.props.projectEvent(projectName, projectEvent);
+
   };
 
   render() {
@@ -33,16 +35,20 @@ class Project extends Component {
       const project = this.props.project;
 
       if (this.isBuyer) {
-
-      } else {
-        if (project.state === 'PRODUCTION') {
-          // TODO: CHECK IF MY BID WAS ACCEPTED!
+        if (project.state === 'INTRANSIT') {
           projectButtons =
             <div className="md-cell">
-              <Button raised primary onClick={(e) => this.handleShippedClick(e, project.name)} label="Mark as Shipped" />
+              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 3)} label="Mark as Received" />
             </div>
         }
-
+      } else {
+        if (project.state === 'PRODUCTION') {
+          // TODO: check that accepted bid is made by current supplier
+          projectButtons =
+            <div className="md-cell">
+              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 2)} label="Mark as Shipped" />
+            </div>
+        }
       }
 
         projectContent =
@@ -50,13 +56,15 @@ class Project extends Component {
           <CardTitle
             title={project.name ? project.name : ''}
              subtitle={
-               <span>
-                 <FormattedDate
-                   value={new Date(project.created)}
-                   day="numeric"
-                   month="long"
-                   year="numeric"/>, <FormattedTime value={new Date(project.created)} />
-               </span>
+               project.created
+               ? <span>
+                   <FormattedDate
+                     value={new Date(project.created)}
+                     day="numeric"
+                     month="long"
+                     year="numeric"/>, <FormattedTime value={new Date(project.created)} />
+                 </span>
+               : ''
              }
           />
           <CardText>

@@ -164,15 +164,26 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should deliver project', function(done) {
+  it('should change project state to INTRANSIT', function(done) {
     this.timeout(config.timeout);
-    console.error('>>>>>>>>>>>>>>ProjectEvent.DELIVER', ProjectEvent.DELIVER);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/events')
       .send({projectEvent: ProjectEvent.DELIVER})
       .end((err, res) => {
         const data = assert.apiData(err, res); // returns { bid: { errorCode: '1', state: '3' } } TODO: why `bid`?
         assert.equal(data.bid.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
+        done();
+      });
+  });
+
+  it('should change project state to RECEIVED', function(done) {
+    this.timeout(config.timeout);
+    chai.request(server)
+      .post('/api/v1/projects/' + projectArgs.name + '/events')
+      .send({projectEvent: ProjectEvent.RECEIVE})
+      .end((err, res) => {
+        const data = assert.apiData(err, res); // returns { bid: { errorCode: '1', state: '4' } } TODO: why `bid`?
+        assert.equal(data.bid.state, ProjectState.RECEIVED, 'returned state should be RECEIVED');
         done();
       });
   });
