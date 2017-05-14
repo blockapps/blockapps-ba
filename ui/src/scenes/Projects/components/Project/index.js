@@ -29,15 +29,15 @@ class Project extends Component {
         <Card className="md-cell md-cell--12">
           <CardTitle
             title={project.name ? project.name : ''}
-            // subtitle={
-            //   <span>
-            //     {/*<FormattedDate*/}
-            //       {/*value={new Date(project.created)}*/}
-            //       {/*day="numeric"*/}
-            //       {/*month="long"*/}
-            //       {/*year="numeric"/>, <FormattedTime value={new Date(project.created)} />*/}
-            //   </span>
-            // }
+             subtitle={
+               <span>
+                 <FormattedDate
+                   value={new Date(project.created)}
+                   day="numeric"
+                   month="long"
+                   year="numeric"/>, <FormattedTime value={new Date(project.created)} />
+               </span>
+             }
           />
           <CardText>
             <div className="md-grid">
@@ -55,43 +55,43 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Desired price:</h4>
-                {/*<FormattedNumber*/}
-                  {/*value={project.priceDesired}*/}
-                  {/*style="currency" //eslint-disable-line*/}
-                  {/*currency="USD" />*/}
+                <FormattedNumber
+                  value={project.price}
+                  style="currency" //eslint-disable-line
+                  currency="USD" />
               </div>
             </div>
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title ">Deliver by:</h4>
-                {/*<FormattedDate*/}
-                  {/*value={new Date(project.desiredDeliveryDate)}*/}
-                  {/*day="numeric"*/}
-                  {/*month="long"*/}
-                  {/*year="numeric"/>*/}
+                <FormattedDate
+                  value={new Date(project.targetDelivery)}
+                  day="numeric"
+                  month="long"
+                  year="numeric"/>
               </div>
             </div>
-            <div className="md-grid">
-              <div className="md-cell md-cell--12">
-                <h4 className="md-title ">Deliver address:</h4>
-                {/*{`${project.deliveryAddress.street}, ${project.deliveryAddress.city}, ${project.deliveryAddress.state}, ${project.deliveryAddress.zip}`}*/}
-              </div>
-            </div>
+            {/*<div className="md-grid">*/}
+              {/*<div className="md-cell md-cell--12">*/}
+                {/*<h4 className="md-title ">Deliver address:</h4>*/}
+                {/*/!*{`${project.deliveryAddress.street}, ${project.deliveryAddress.city}, ${project.deliveryAddress.state}, ${project.deliveryAddress.zip}`}*!/*/}
+              {/*</div>*/}
+            {/*</div>*/}
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title ">Specification:</h4>
                 {project.spec ? project.spec : ''}
               </div>
             </div>
-            { project.deliveredDate
+            { project.delivered
               ? <div className="md-grid">
                   <div className="md-cell md-cell--12">
                     <h4 className="md-title ">Delivered on:</h4>
                     <FormattedDate
-                      value={new Date(project.deliveredDate)}
+                      value={new Date(project.delivered)}
                       day="numeric"
                       month="long"
-                      year="numeric"/>, <FormattedTime value={new Date(project.deliveredDate)} />
+                      year="numeric"/>, <FormattedTime value={new Date(project.delivered)} />
                   </div>
                 </div>
               : null
