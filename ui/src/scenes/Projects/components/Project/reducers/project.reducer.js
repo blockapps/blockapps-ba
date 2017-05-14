@@ -4,14 +4,8 @@ import {
   FETCH_PROJECT_FAILURE,
 } from '../actions/project.actions';
 
-import {
-  FETCH_PROJECT_BIDS_SUCCESS
-} from '../../BidTable/actions/projectBids.actions';
-
-import projectBidsReducer from '../../BidTable/reducers/projectBids.reducer';
-
 const initialState = {
-  project: '',
+  project: {},
   isUpdating: false,
   message: ''
 };
@@ -21,16 +15,13 @@ const reducer = function (state=initialState, action) {
   switch (action.type) {
     case FETCH_PROJECT:
       return {
-        project: state.project,
+        project: {},
         isUpdating: true,
         message: ''
       };
     case FETCH_PROJECT_SUCCESS:
       return {
-        project: {
-          ...action.project,
-          bids: projectBidsReducer({ bids: state.project.bids }, action).bids
-        },
+        project: action.project,
         isUpdating: false,
         message: ''
       };
@@ -39,17 +30,6 @@ const reducer = function (state=initialState, action) {
         project: state.project,
         isUpdating: false,
         message: action.message
-      };
-    case FETCH_PROJECT_BIDS_SUCCESS:
-      const bidReducer = projectBidsReducer({ bids: state.project.bids }, action);
-      console.log('>>>> bid Reducer >>>>', bidReducer);
-      return {
-        project: {
-          ...state.project,
-          bids: projectBidsReducer({ bids: state.project.bids }, action).bids
-        },
-        isUpdating: false,
-        message: ''
       };
     default:
       return state;

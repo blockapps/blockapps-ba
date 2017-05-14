@@ -61,7 +61,9 @@ function getBids(name){
 
 function* fetchProjectBids(action){
   try {
+    console.log('>>>> CALLING GET BIDS >>>>');
     let response = yield call(getBids, action.name);
+    console.log('>>>>> GET BIDS RETURNED >>>>', response.data);
     yield put(fetchProjectBidsSuccess(response.data.bids));
   }
   catch(err) {

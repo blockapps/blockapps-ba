@@ -11,18 +11,37 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 
 // ========== Admin (super user) ==========
 
-function setAdmin(adminName, adminPassword, aiAddress) {
+function testAdminInterface(scope) {
+  for (var name in AI.subContractsNames) {
+    if (scope.contracts[name] === undefined) throw new Error('setAdmin: AdminInterface: undefined: ' + name);
+    if (scope.contracts[name] === 0) throw new Error('setAdmin: AdminInterface: 0: ' + name);
+    if (scope.contracts[name].address == 0) throw new Error('setAdmin: AdminInterface: address 0: ' + name);
+  }
+}
+
+function setAdmin(adminName, adminPassword, aiAddress, adminAddress) {
   return function (scope) {
-    rest.verbose('setAdmin', adminName, adminPassword, aiAddress);
+    rest.verbose('setAdmin', adminName, adminPassword, aiAddress, adminAddress);
+    if(aiAddress && adminAddress) {
+      return nop(scope)
+        .then(function(scope){
+          scope.users[adminName] = {
+            address: adminAddress,
+            password: adminPassword
+          }
+          return scope;
+        })
+        .then(getAdminInterface(aiAddress))
+        .then(function (scope) {
+          testAdminInterface(scope);
+          return scope;
+        });
+    }
     return nop(scope)
       .then(rest.createUser(adminName, adminPassword))
       .then(getAdminInterface(aiAddress))
       .then(function (scope) {
-        for (var name in AI.subContractsNames) {
-          if (scope.contracts[name] === undefined) throw new Error('setAdmin: AdminInterface: undefined: ' + name);
-          if (scope.contracts[name] === 0) throw new Error('setAdmin: AdminInterface: 0: ' + name);
-          if (scope.contracts[name].address == 0) throw new Error('setAdmin: AdminInterface: address 0: ' + name);
-        }
+        testAdminInterface(scope);
         return scope;
       });
   }

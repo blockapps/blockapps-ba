@@ -53,6 +53,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
           url: config.getBlocUrl(),
           adminName: adminName,
           adminPassword: adminPassword,
+          adminAddress: scope.users[adminName].address,
           AdminInterface: {
             address: scope.contracts[AI.contractName].address,
           },

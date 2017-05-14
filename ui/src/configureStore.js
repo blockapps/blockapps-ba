@@ -11,6 +11,7 @@ import { reducer as formReducer } from 'redux-form';
 import loginReducer from './scenes/Login/login.reducer.js';
 import projectListReducer from './scenes/Projects/components/ProjectsList/projects-list.reducer';
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
+import projectBidsReducer from './scenes/Projects/components/BidTable/reducers/projectBids.reducer';
 import projectCreateReducer from './scenes/Projects/components/ProjectCreate/reducers/project-create.reducer';
 
 import watchLoginSubmit from './scenes/Login/login.saga';
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   routing: routerReducer,
   login: loginReducer,
   projects: projectListReducer,
+  bids: projectBidsReducer,
   project: projectReducer,
   createProject: projectCreateReducer,
 });
