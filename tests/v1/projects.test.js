@@ -11,6 +11,7 @@ const config = common.config;
 const UserRole = ba.rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
+const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 
 chai.use(chaiHttp);
 
@@ -159,6 +160,19 @@ describe("Projects Test", function() {
         res.body.should.have.property('data');
         // todo: body data should be empty
         // todo: check the project changed state to PRODUCTION
+        done();
+      });
+  });
+
+  it('should deliver project', function(done) {
+    this.timeout(config.timeout);
+    console.error('>>>>>>>>>>>>>>ProjectEvent.DELIVER', ProjectEvent.DELIVER);
+    chai.request(server)
+      .post('/api/v1/projects/' + projectArgs.name + '/events')
+      .send({projectEvent: ProjectEvent.DELIVER})
+      .end((err, res) => {
+        const data = assert.apiData(err, res); // returns { bid: { errorCode: '1', state: '3' } } TODO: why `bid`?
+        assert.equal(data.bid.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
         done();
       });
   });

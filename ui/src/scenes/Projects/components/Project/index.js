@@ -11,6 +11,7 @@ import BidTable from '../BidTable/';
 import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 
 import { fetchProject } from './actions/project.actions';
+import { projectEvent } from './actions/project-event.actions';
 
 class Project extends Component {
 
@@ -22,13 +23,32 @@ class Project extends Component {
     return this.props.login['role'] === 'BUYER'
   }
 
+  handleShippedClick = function(e, projectName) {
+    e.stopPropagation();
+    this.props.projectEvent(projectName, 2); // ProjectEvent[2] == 'DELIVER'
+  };
+
   render() {
     let projectContent;
+    let projectButtons = '';
 
     if (this.props.project) {
       const project = this.props.project;
 
-      projectContent =
+      if (this.isBuyer) {
+
+      } else {
+        if (project.state === 'PRODUCTION') {
+          // TODO: CHECK IF MY BID WAS ACCEPTED!
+          projectButtons =
+            <div className="md-cell">
+              <Button raised primary onClick={(e) => this.handleShippedClick(e, project.name)} label="Mark as Shipped" />
+            </div>
+        }
+
+      }
+
+        projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
             title={project.name ? project.name : ''}
@@ -44,6 +64,7 @@ class Project extends Component {
           />
           <CardText>
             <div className="md-grid">
+              {projectButtons}
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Status:</h4>
                 {project.state ? project.state : ''}
@@ -104,7 +125,7 @@ class Project extends Component {
                 <h4 className="md-title ">Bids</h4>
               </div>
               {
-                !this.isBuyer
+                !this.isBuyer && project.state === 'OPEN'
                 ? <div className="md-cell md-cell--1">
                     <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
                       <Button raised primary label="Add Bid" />
@@ -138,4 +159,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject })(Project);
+export default connect(mapStateToProps, { fetchProject, projectEvent })(Project);

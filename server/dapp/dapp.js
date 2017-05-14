@@ -216,6 +216,15 @@ function getBids(adminName, name) {
   }
 }
 
+// handle project event
+function handleEvent(adminName, name, projectEvent) {
+  return function(scope) {
+    rest.verbose('dapp: project handleEvent', {name, projectEvent});
+    return setScope(scope)
+      .then(projectManager.handleEvent(adminName, name, projectEvent));
+  }
+}
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.libPath = libPath;
@@ -238,5 +247,6 @@ module.exports = function (libPath) {
     getBids: getBids,
     acceptBid: acceptBid,
     getProject: getProject,
+    handleEvent: handleEvent,
   };
 };

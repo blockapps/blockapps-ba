@@ -17,6 +17,7 @@ import watchLoginSubmit from './scenes/Login/login.saga';
 import watchFetchProjectList from './scenes/Projects/components/ProjectsList/projects-list.saga';
 import watchFetchProject from './scenes/Projects/components/Project/sagas/project.saga';
 import watchProjectCreate from './scenes/Projects/components/ProjectCreate/sagas/project-create.saga';
+import watchProjectEvent from './scenes/Projects/components/Project/sagas/project-event.saga.js';
 import watchBidSubmit from './scenes/Projects/components/Bid/bid.saga.js';
 import watchBidAccept from './scenes/Projects/components/BidTable/sagas/acceptBid.saga.js';
 import watchFetchProjectBids from './scenes/Projects/components/BidTable/sagas/projectBids.saga.js';
@@ -35,6 +36,7 @@ const rootSaga = function* startForeman() {
   yield fork(watchFetchProjectList);
   yield fork(watchFetchProject);
   yield fork(watchProjectCreate);
+  yield fork(watchProjectEvent);
   yield fork(watchBidSubmit);
   yield fork(watchBidAccept);
   yield fork(watchFetchProjectBids);
