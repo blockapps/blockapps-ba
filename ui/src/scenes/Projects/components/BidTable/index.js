@@ -80,6 +80,7 @@ class BidTable extends Component {
 function mapStateToProps(state) {
   return {
     login: state.login,
+    bids: state.bids.bids
   };
 }
 export default connect(mapStateToProps, { fetchProjectBids, acceptBid })(BidTable);

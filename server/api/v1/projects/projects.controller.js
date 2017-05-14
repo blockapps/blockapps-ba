@@ -14,7 +14,7 @@ const projectsController = {
     const projectArgs = req.body;
 
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp.createProject(deploy.adminName, projectArgs))
       .then(scope => {
         util.response.status200(res, {
@@ -30,7 +30,7 @@ const projectsController = {
     const deploy = req.app.get('deploy');
     const projectName = decodeURI(req.params['name']);
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp.getProject(
         deploy.adminName,
         projectName
@@ -67,7 +67,7 @@ const projectsController = {
     }
 
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp[listCallback](listParam))
       .then(scope => {
         util.response.status200(res, {
@@ -82,7 +82,7 @@ const projectsController = {
   bid: function(req, res) {
     const deploy = req.app.get('deploy');
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp.createBid(
         deploy.adminName,
         req.params.name,
@@ -101,7 +101,7 @@ const projectsController = {
   getBids: function(req, res) {
     const deploy = req.app.get('deploy');
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp.getBids(deploy.adminName, req.params.name))
       .then(scope => {
         util.response.status200(res, {
@@ -116,7 +116,7 @@ const projectsController = {
   acceptBid: function(req, res) {
     const deploy = req.app.get('deploy');
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(
         dapp.acceptBid(
           deploy.adminName,

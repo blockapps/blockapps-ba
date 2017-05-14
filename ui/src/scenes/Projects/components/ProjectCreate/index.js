@@ -4,6 +4,7 @@ import Button from 'react-md/lib/Buttons/Button';
 import Card from 'react-md/lib/Cards/Card';
 import CardText from 'react-md/lib/Cards/CardText';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
+import TextField from 'react-md/lib/TextFields';
 import { reduxForm, Field } from 'redux-form';
 import { projectCreate } from './actions/project-create.actions';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';

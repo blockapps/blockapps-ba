@@ -14,7 +14,7 @@ const loginController = {
     const password = req.body.password;
 
     dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp.login(deploy.adminName, username, password))
       .then(scope => {
         util.response.status200(res, {

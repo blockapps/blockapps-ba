@@ -69,7 +69,8 @@ function* fetchProject(action) {
   try {
     const response = yield call(getProject,action.projectId);
     yield put(fetchProjectSuccess(response.data['project']));
-  } catch (err) {
+  }
+  catch (err) {
     yield put(fetchProjectFailure(err.message));
   }
 }
