@@ -54,9 +54,9 @@ class ProjectsList extends Component {
               {project.name ? project.name : ''}
             </TableColumn>
             <TableColumn>
-              { project.priceDesired
+              { project.price
                 ? <FormattedNumber
-                    value={project.priceDesired}
+                    value={project.price}
                     style="currency" //eslint-disable-line
                     currency="USD" />
                 : ''
@@ -65,23 +65,22 @@ class ProjectsList extends Component {
             </TableColumn>
             <TableColumn>
               {
-                project.desiredDeliveryDate
+                project.targetDelivery
                 ? <FormattedDate
-                    value={new Date(project.desiredDeliveryDate)}
+                    value={new Date(project.targetDelivery)}
                     day="numeric"
                     month="long"
                     year="numeric" />
                 : ''
               }
             </TableColumn>
-            <TableColumn>
-              {
-                project.deliveryAddress && project.deliveryAddress.city && project.deliveryAddress.state
-                ? project.deliveryAddress.city + ', ' + project.deliveryAddress.state
-                : ''
-              }
-
-            </TableColumn>
+            {/*<TableColumn>*/}
+              {/*{*/}
+                {/*project.deliveryAddress && project.deliveryAddress.city && project.deliveryAddress.state*/}
+                {/*? project.deliveryAddress.city + ', ' + project.deliveryAddress.state*/}
+                {/*: ''*/}
+              {/*}*/}
+            {/*</TableColumn>*/}
             <TableColumn>
               {project.state ? project.state : ''}
             </TableColumn>
@@ -98,7 +97,7 @@ class ProjectsList extends Component {
                 <TableColumn>Name</TableColumn>
                 <TableColumn>Desired Price</TableColumn>
                 <TableColumn>Deliver by</TableColumn>
-                <TableColumn>Location</TableColumn>
+                {/*<TableColumn>Location</TableColumn>*/}
                 <TableColumn>Status</TableColumn>
               </TableRow>
             </TableHeader>
