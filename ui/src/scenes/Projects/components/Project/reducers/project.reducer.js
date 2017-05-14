@@ -6,9 +6,9 @@ import {
 
 import {
   FETCH_PROJECT_BIDS_SUCCESS
-} from '../../BidTable/bidTable.actions';
+} from '../../BidTable/actions/projectBids.actions';
 
-import bidTableReducer from '../../BidTable/bidTable.reducer';
+import projectBidsReducer from '../../BidTable/reducers/projectBids.reducer';
 
 const initialState = {
   project: '',
@@ -29,7 +29,7 @@ const reducer = function (state=initialState, action) {
       return {
         project: {
           ...action.project,
-          bids: bidTableReducer({ bids: state.project.bids }, action).bids
+          bids: projectBidsReducer({ bids: state.project.bids }, action).bids
         },
         isUpdating: false,
         message: ''
@@ -41,12 +41,12 @@ const reducer = function (state=initialState, action) {
         message: action.message
       };
     case FETCH_PROJECT_BIDS_SUCCESS:
-      const bidReducer = bidTableReducer({ bids: state.project.bids }, action);
+      const bidReducer = projectBidsReducer({ bids: state.project.bids }, action);
       console.log('>>>> bid Reducer >>>>', bidReducer);
       return {
         project: {
           ...state.project,
-          bids: bidTableReducer({ bids: state.project.bids }, action).bids
+          bids: projectBidsReducer({ bids: state.project.bids }, action).bids
         },
         isUpdating: false,
         message: ''

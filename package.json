@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server/index.js",
     "deploy": "mocha server/dapp/dapp.deploy.js --config server/config/$SERVER.config.yaml -b",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:user && npm run test:project && npm run test:routes",
+    "test:project": "mocha server/lib/project/test/ --config server/config/$SERVER.config.yaml -b",
+    "test:user": "mocha server/lib/user/test/ --config server/config/$SERVER.config.yaml -b",
+    "test:routes": "mocha tests/v1/"
   },
   "dependencies": {
     "blockapps-rest": "git+https://github.com/blockapps/blockapps-rest#develop",

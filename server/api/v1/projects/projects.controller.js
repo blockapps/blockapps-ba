@@ -11,15 +11,11 @@ const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 const projectsController = {
   create: function(req, res) {
     const deploy = req.app.get('deploy');
-    const project = req.body;
+    const projectArgs = req.body;
 
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
-      .then(dapp.createProject(
-        deploy.adminName,
-        project.name,
-        project.buyer
-      ))
+      .then(dapp.createProject(deploy.adminName, projectArgs))
       .then(scope => {
         util.response.status200(res, {
           project: scope.result
@@ -32,7 +28,7 @@ const projectsController = {
 
   get: function(req, res) {
     const deploy = req.app.get('deploy');
-    const projectName = decodeURI(req.params['pName']);
+    const projectName = decodeURI(req.params['name']);
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
       .then(dapp.getProject(
@@ -51,18 +47,23 @@ const projectsController = {
 
   list: function(req, res) {
     const deploy = req.app.get('deploy');
-    const filter = req.query['filter'];
-    const buyer = req.query['buyer'];
-    const state = req.query['state'];
 
-    let listCallback = 'getProjects';
-    let listParam;
-    if (filter === 'buyer') {
-      listCallback = 'getProjectsByBuyer';
-      listParam = buyer;
-    } else if (filter === 'state') {
-      listCallback = 'getProjectsByState';
-      listParam = state;
+    let listCallback, listParam;
+    switch (req.query['filter']) {
+      case 'buyer':
+        listCallback = 'getProjectsByBuyer';
+        listParam = req.query['buyer'];
+        break;
+      case 'state':
+        listCallback = 'getProjectsByState';
+        listParam = req.query['state'];
+        break;
+      case 'supplier':
+        listCallback = 'getProjectsBySupplier';
+        listParam = req.query['supplier'];
+        break;
+      default:
+        listCallback = 'getProjects'
     }
 
     dapp.setScope()
@@ -110,7 +111,28 @@ const projectsController = {
       .catch(err => {
         util.response.status500(res, err);
       })
-  }
+  },
+
+  acceptBid: function(req, res) {
+    const deploy = req.app.get('deploy');
+    dapp.setScope()
+      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
+      .then(
+        dapp.acceptBid(
+          deploy.adminName,
+          req.params.id,
+          req.params.name
+        )
+      )
+      .then(scope => {
+        util.response.status200(res, {
+          bid: scope.result
+        })
+      })
+      .catch(err => {
+        util.response.status500(res, err);
+      })
+  },
 };
 
 module.exports = projectsController;
