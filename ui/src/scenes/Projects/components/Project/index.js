@@ -6,8 +6,9 @@ import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import CardText from 'react-md/lib/Cards/CardText';
 import BidTable from '../BidTable/';
-import { FormattedDate, FormattedTime } from 'react-intl';
+import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 import { fetchProject } from './actions/project.actions';
+import { projectEvent } from './actions/project-event.actions';
 
 class Project extends Component {
 
@@ -19,28 +20,56 @@ class Project extends Component {
     return this.props.login['role'] === 'BUYER'
   }
 
+  handleProjectEventClick = function(e, projectName, projectEvent) {
+    e.stopPropagation();
+    // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
+    this.props.projectEvent(projectName, projectEvent);
+
+  };
+
   render() {
     let projectContent;
+    let projectButtons = '';
 
-    if (this.props.project) {
+    if (this.props.project && this.props.project['name']) {
       const project = this.props.project;
 
-      projectContent =
+      if (this.isBuyer) {
+        if (project.state === 'INTRANSIT') {
+          projectButtons =
+            <div className="md-cell">
+              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 3)} label="Mark as Received" />
+            </div>
+        }
+      } else {
+        if (project.state === 'PRODUCTION') {
+          // TODO: check that accepted bid is made by current supplier
+          projectButtons =
+            <div className="md-cell">
+              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 2)} label="Mark as Shipped" />
+            </div>
+        }
+      }
+
+        projectContent =
         <Card className="md-cell md-cell--12">
           <CardTitle
             title={project.name ? project.name : ''}
              subtitle={
-               <span>
-                 <FormattedDate
-                   value={new Date(project.created)}
-                   day="numeric"
-                   month="long"
-                   year="numeric"/>, <FormattedTime value={new Date(project.created)} />
-               </span>
+               project.created
+               ? <span>
+                   <FormattedDate
+                     value={new Date(project.created)}
+                     day="numeric"
+                     month="long"
+                     year="numeric"/>, <FormattedTime value={new Date(project.created)} />
+                 </span>
+               : ''
              }
           />
           <CardText>
             <div className="md-grid">
+              {projectButtons}
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Status:</h4>
                 {project.state ? project.state : ''}
@@ -49,26 +78,34 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Description:</h4>
-                {project.description ? project.description : ''}
+                {project.description ? project.description : '-'}
               </div>
             </div>
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title">Desired price:</h4>
-                <FormattedNumber
-                  value={project.price}
-                  style="currency" //eslint-disable-line
-                  currency="USD" />
+                {
+                  project.price
+                  ? <FormattedNumber
+                      value={project.price}
+                      style="currency" //eslint-disable-line
+                      currency="USD" />
+                  : ''
+                }
               </div>
             </div>
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title ">Deliver by:</h4>
-                <FormattedDate
-                  value={new Date(project.targetDelivery)}
-                  day="numeric"
-                  month="long"
-                  year="numeric"/>
+                {
+                  project.targetDelivery
+                  ? <FormattedDate
+                      value={new Date(project.targetDelivery)}
+                      day="numeric"
+                      month="long"
+                      year="numeric"/>
+                  : ''
+                }
               </div>
             </div>
             {/*<div className="md-grid">*/}
@@ -80,7 +117,7 @@ class Project extends Component {
             <div className="md-grid">
               <div className="md-cell md-cell--12">
                 <h4 className="md-title ">Specification:</h4>
-                {project.spec ? project.spec : ''}
+                {project.spec ? project.spec : '-'}
               </div>
             </div>
             { project.delivered
@@ -101,7 +138,7 @@ class Project extends Component {
                 <h4 className="md-title ">Bids</h4>
               </div>
               {
-                !this.isBuyer
+                !this.isBuyer && project.state === 'OPEN'
                 ? <div className="md-cell md-cell--1">
                     <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
                       <Button raised primary label="Add Bid" />
@@ -139,4 +176,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject })(Project);
+export default connect(mapStateToProps, { fetchProject, projectEvent })(Project);

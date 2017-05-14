@@ -14,7 +14,7 @@ export default (
   <Route path="/" component={ App }>
     <Route path="/login" component={ Login } />
     <IndexRedirect to="/projects" />
-    <Route component={EnsureAuthenticated}>
+    {/*<Route component={EnsureAuthenticated}>*/}
       <Route path="/projects" name="My Projects" icon="playlist_add_check">
         <IndexRoute component={ Projects } />
         <Route path="create" component={ ProjectCreate } />
@@ -22,6 +22,6 @@ export default (
         <Route path=":name/bid" component={ Bid } />
       </Route>
       <Route path="/open-projects" component={ OpenProjects } name="Open Projects" icon="view_list" role-access="SUPPLIER"/>
-    </Route>
+    {/*</Route>*/}
   </Route>
 );
