@@ -16,7 +16,7 @@ import {
   fetchProjectsListFailure
 } from './projects-list.actions';
 
-const url = API_URL + '/projects';
+const url = API_URL + '/projects?{0}';
 
 
 // TODO: move to utils and use it everywhere
@@ -74,18 +74,21 @@ function getProjectsList(listType, username) {
 
   let query;
   switch (listType) {
-    case 'buyerList':
-      query = '?filter=buyer&buyer=' + username;
+    case 'buyer':
+      query = 'filter=buyer&buyer=' + username;
       break;
-    case 'allOpenList':
-      query = '?filter=state&state=1'; // state 1 is 'OPEN'
+    case 'open':
+      query = 'filter=state&state=1'; // state 1 is 'OPEN'
+      break;
+    case 'supplier':
+      query = 'filter=supplier&supplier=' + username;
       break;
     default:
       query = '';
   }
 
   return fetch(
-    url + query,
+    url.replace('{0}', query),
     {
       method: 'GET',
       headers: {

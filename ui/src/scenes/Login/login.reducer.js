@@ -19,7 +19,7 @@ const reducer = function loginReducer (state = initialState, action) {
     case USER_LOGIN_SUCCESS:
       return {
         username: action.username,
-        roles: action.role,
+        role: action.role,
         error: null,
         authenticated: true,
         loginFailed: false
@@ -27,7 +27,7 @@ const reducer = function loginReducer (state = initialState, action) {
     case USER_LOGIN_FAILURE:
       return {
         username: null,
-        roles: null,
+        role: null,
         error: action.error,
         authenticated: false,
         loginFailed: true

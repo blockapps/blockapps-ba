@@ -4,15 +4,15 @@ import {
 import {
   API_URL,
   API_MOCK
-} from '../../../../environment';
+} from '../../../../../environment';
 import {
   handleApiError
-} from '../../../../lib/apiErrorHandler';
+} from '../../../../../lib/apiErrorHandler';
 import {
   FETCH_PROJECT_BIDS,
   fetchProjectBidsSuccess,
   fetchProjectBidsFailure
-} from './bidTable.actions';
+} from '../actions/projectBids.actions';
 
 // TODO: define API endpoint for projects
 const url = API_URL + '/projects/:name/bids';

@@ -7,6 +7,7 @@ const Promise = ba.common.Promise;
 const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
 const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
 const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
+const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 
 // ========== Admin (super user) ==========
 
@@ -133,11 +134,12 @@ function login(adminName, username, password) {
   }
 }
 
-function createProject(adminName, name, buyer) {
+function createProject(adminName, args) {
   return function(scope) {
-    rest.verbose('dapp: createProject', {adminName, name, buyer});
+    rest.verbose('dapp: createProject', {adminName, args});
+    args.created = +new Date();
     return setScope(scope)
-      .then(projectManager.createProject(adminName, name, buyer));
+      .then(projectManager.createProject(adminName, args));
   }
 }
 
@@ -178,11 +180,12 @@ function createBid(adminName, name, supplier, amount) {
 }
 
 // accept bid
-function acceptBid(adminName, bidId) {
+function acceptBid(adminName, bidId, name) {
   return function(scope) {
     rest.verbose('dapp: acceptBid', bidId);
     return setScope(scope)
-      .then(projectManager.acceptBid(adminName, bidId));
+      .then(projectManager.acceptBid(adminName, bidId, name))
+      .then(projectManager.handleEvent(adminName, name, ProjectEvent.ACCEPT));
   }
 }
 
@@ -230,8 +233,10 @@ module.exports = function (libPath) {
     getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
+    getProjectsBySupplier: getProjectsBySupplier,
     createBid: createBid,
     getBids: getBids,
+    acceptBid: acceptBid,
     getProject: getProject,
   };
 };

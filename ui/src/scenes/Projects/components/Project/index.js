@@ -19,8 +19,7 @@ class Project extends Component {
   }
 
   get isBuyer() {
-    return this.props.login['roles'] === 'BUYER'
-      || (Array.isArray(this.props.login['roles']) && 'BUYER' in this.props.login['roles'])
+    return this.props.login['role'] === 'BUYER'
   }
 
   render() {
@@ -139,8 +138,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(
-  mapStateToProps,
-  { fetchProject },
-  // { bidAccept }
-)(Project);
+export default connect(mapStateToProps, { fetchProject })(Project);

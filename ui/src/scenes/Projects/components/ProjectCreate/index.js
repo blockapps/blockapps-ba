@@ -8,23 +8,28 @@ import DatePicker from 'react-md/lib/Pickers/DatePickerContainer';
 import TextField from 'react-md/lib/TextFields';
 import { reduxForm, Field } from 'redux-form';
 import { projectCreate } from './actions/project-create.actions';
+import './ProjectCreate.css';
 
 // TODO: make this  reusable
 const renderTextField = ({ input, meta: { touched, error }, ...others }) => (
   <TextField {...input} {...others} error={touched && !!error} errorText={error} />
 );
-const renderDatePicker = ({ input, meta: { touched, error }, ...others }) => (
-  <DatePicker {...others} error={touched && !!error} errorText={error} />
-);
 
 class ProjectCreate extends Component {
 
   submit = (values) => {
-    // todo: validate fields?
     this.props.projectCreate(
       {
-        name: values['projectName'],
+        name: values['name'],
         buyer: this.props.login['username'],
+        description: values['description'],
+        spec: values['spec'],
+        price: values['price'],
+        targetDelivery: +new Date(values['targetDelivery']),
+        addressStreet: values['addressStreet'],
+        addressCity: values['addressCity'],
+        addressState: values['addressState'],
+        addressZip: values['addressZip'],
       }
     );
   };
@@ -43,8 +48,8 @@ class ProjectCreate extends Component {
               <form onSubmit={handleSubmit(this.submit)}>
                 <div className="md-grid">
                   <Field
-                    id="projectName"
-                    name="projectName"
+                    id="name"
+                    name="name"
                     type="text"
                     label="Short name"
                     required
@@ -53,16 +58,16 @@ class ProjectCreate extends Component {
                     component={renderTextField} />
                   <div className="md-cell--12" />
                   <Field
-                    id="projectDescription"
-                    name="projectDescription"
+                    id="description"
+                    name="description"
                     type="text"
                     label="Description"
                     className="md-cell--4"
                     component={renderTextField} />
                   <div className="md-cell--12" />
                   <Field
-                    id="priceDesired"
-                    name="priceDesired"
+                    id="price"
+                    name="price"
                     type="number"
                     label="Desired price"
                     min="0.01"
@@ -71,11 +76,12 @@ class ProjectCreate extends Component {
                     component={renderTextField} />
                   <div className="md-cell--12" />
                   <Field
-                    id="desiredDeliveryDate"
-                    name="desiredDeliveryDate"
-                    label="desiredDeliveryDate"
+                    id="targetDelivery"
+                    name="targetDelivery"
+                    label="Desired delivery date"
                     className="md-cell--4"
-                    component={renderDatePicker}
+                    type="date" // ignore the console warnings, todo: implement Date Picker with redux form
+                    component={renderTextField}
                   />
                   <div className="md-cell--12" />
                   <Field
@@ -113,8 +119,8 @@ class ProjectCreate extends Component {
                     component={renderTextField} />
                   <div className="md-cell--12" />
                   <Field
-                    id="specification"
-                    name="specification"
+                    id="spec"
+                    name="spec"
                     type="text"
                     label="Specification"
                     maxLength={1000}

@@ -2,7 +2,7 @@ import {
   FETCH_PROJECT_BIDS,
   FETCH_PROJECT_BIDS_SUCCESS,
   FETCH_PROJECT_BIDS_FAILURE,
-} from './bidTable.actions';
+} from '../actions/projectBids.actions';
 
 const initialState = {
   bids: [],

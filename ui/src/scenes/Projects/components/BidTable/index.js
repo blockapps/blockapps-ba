@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { fetchProjectBids } from './bidTable.actions';
+import { fetchProjectBids } from './actions/projectBids.actions';
+import { acceptBid } from './actions/acceptBid.actions';
 import Button from 'react-md/lib/Buttons/Button';
 import DataTable from 'react-md/lib/DataTables/DataTable';
 import TableHeader from 'react-md/lib/DataTables/TableHeader';
@@ -16,14 +17,12 @@ class BidTable extends Component {
 
   // TODO: move to common place
   get isBuyer() {
-    return this.props.login['roles'] === 'BUYER'
-      || (Array.isArray(this.props.login['roles']) && 'BUYER' in this.props.login['roles'])
+    return this.props.login['role'] === 'BUYER'
   }
 
-  handleBidAcceptClick = function(e, bidName) {
+  handleBidAcceptClick = function(e, bid) {
     e.stopPropagation();
-    // TODO: implement the Bid Accept flow here
-    alert('- Bid accepted;\n- Project state changed OPEN -> PRODUCTION;\n- No more bids can be submitted;');
+    this.props.acceptBid(bid.name, bid.id);
   };
 
   render() {
@@ -50,7 +49,7 @@ class BidTable extends Component {
                 flat
                 label="Accept"
                 onClick={
-                  (e) => this.handleBidAcceptClick(e, bid.name)
+                  (e) => this.handleBidAcceptClick(e, bid)
                 }
               >check_circle</Button>
                 : ''
@@ -83,4 +82,4 @@ function mapStateToProps(state) {
     login: state.login,
   };
 }
-export default connect(mapStateToProps, { fetchProjectBids })(BidTable);
+export default connect(mapStateToProps, { fetchProjectBids, acceptBid })(BidTable);
