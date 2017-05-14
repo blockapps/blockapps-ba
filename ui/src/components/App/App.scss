@@ -4,4 +4,17 @@
 $md-primary-color: $md-indigo-500 !default;
 $md-secondary-color: $md-pink-a-200 !default;
 
+.md-avatar--color {
+  background: $md-primary-color !important;
+  color: #fff !important;
+}
+
+.user-balance {
+  width: 200px;
+}
+
+.pad-left {
+  padding-left: 10px;
+}
+
 @include react-md-everything;
