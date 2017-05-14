@@ -6,10 +6,7 @@ import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import CardText from 'react-md/lib/Cards/CardText';
 import BidTable from '../BidTable/';
-
-// import { browserHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
-
 import { fetchProject } from './actions/project.actions';
 
 class Project extends Component {
@@ -112,9 +109,13 @@ class Project extends Component {
                   </div>
                 : ''
               }
-              <div className="md-cell md-cell--12">
-                <BidTable name={project.name} bids={project.bids ? project.bids : []} projectState={project.state} />
-              </div>
+              {
+                project.name && project.name.length > 0
+                ? <div className="md-cell md-cell--12">
+                    <BidTable name={project.name} projectState={project.state} />
+                  </div>
+                : ''
+              }
             </div>
           </CardText>
         </Card>
