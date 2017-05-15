@@ -57,6 +57,7 @@ function* submitBid(action){
   }
   catch(err) {
     yield put(bidFailure(err));
+    yield put(hideLoading());
   }
 }
 

@@ -42,6 +42,7 @@ function* submitProjectCreate(action) {
   catch(err)
   {
     yield put(projectCreateFailure(err));
+    yield put(hideLoading());
   }
 }
 

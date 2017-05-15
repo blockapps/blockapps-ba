@@ -114,6 +114,7 @@ function* fetchProjectsList(action) {
   }
   catch (err) {
     yield put(fetchProjectsListFailure(err.message));
+    yield put(hideLoading());
   }
 }
 

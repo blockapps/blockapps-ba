@@ -75,6 +75,7 @@ function* fetchProject(action) {
   }
   catch (err) {
     yield put(fetchProjectFailure(err.message));
+    yield put(hideLoading());
   }
 }
 

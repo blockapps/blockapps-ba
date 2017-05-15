@@ -57,6 +57,7 @@ function* submitLogin(action) {
   catch(err)
   {
     yield put(userLoginFailure(err));
+    yield put(hideLoading());
   }
 }
 

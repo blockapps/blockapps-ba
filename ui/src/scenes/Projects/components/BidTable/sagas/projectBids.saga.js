@@ -68,6 +68,7 @@ function* fetchProjectBids(action){
     yield put(fetchProjectBidsSuccess(response.data.bids));
   }
   catch(err) {
+    yield put(hideLoading());
     yield put(fetchProjectBidsFailure(err));
   }
 }
