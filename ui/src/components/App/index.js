@@ -31,7 +31,7 @@ class App extends Component {
     if(this.props.login.authenticated) {
       return (
         <NavigationDrawer
-          defaultVisible={true}
+          defaultVisible={ true }
           navItems={ navItems }
           drawerTitle="Menu"
           mobileDrawerType={ NavigationDrawer.DrawerTypes.TEMPORARY }
@@ -40,7 +40,7 @@ class App extends Component {
           toolbarTitle={ title }
           toolbarActions={ userBadge(this.props.login) }
         >
-          <LoadingBar style={{position: 'relative'}}/>
+          <LoadingBar style={{position: 'relative', zIndex: 20}}/>
           <div className="md-grid">
             <div className="md-cell md-cell--12">
               <div className="md-grid" />
@@ -56,6 +56,7 @@ class App extends Component {
           <Toolbar
             colored
             title={ title }
+            className="md-paper md-paper--2"
           />
           <LoadingBar />
           {this.props.children}

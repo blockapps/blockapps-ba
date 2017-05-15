@@ -48,7 +48,7 @@ class ProjectCreate extends Component {
                     type="text"
                     label="Short name"
                     required
-                    maxLength={100}
+                    maxLength={50}
                     className="md-cell--4"
                     component={ReduxedTextField} />
                   <div className="md-cell--12" />
@@ -57,6 +57,7 @@ class ProjectCreate extends Component {
                     name="description"
                     type="text"
                     label="Description"
+                    maxLength={50}
                     className="md-cell--4"
                     component={ReduxedTextField} />
                   <div className="md-cell--12" />
@@ -114,7 +115,7 @@ class ProjectCreate extends Component {
                     {/*maxLength={5}*/}
                     {/*className="md-cell--4"*/}
                     {/*component={ReduxedTextField} />*/}
-                  <div className="md-cell--12" />
+                  {/*<div className="md-cell--12" />*/}
                   <Field
                     id="spec"
                     name="spec"
@@ -124,7 +125,6 @@ class ProjectCreate extends Component {
                     rows={6}
                     className="md-cell--4"
                     component={ReduxedTextField} />
-                  <div className="md-cell--12" />
                   <div className="md-cell--12" />
                   <Button raised primary label="Create" type="submit" />
                 </div>
