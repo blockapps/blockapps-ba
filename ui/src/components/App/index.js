@@ -6,6 +6,8 @@ import FontIcon from 'react-md/lib/FontIcons';
 import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
+import Snackbar from 'react-md/lib/Snackbars';
+import { resetErrorMessage } from '../ErrorMessage/error-message.action';
 import './App.css';
 
 const userBadge = (login) => {
@@ -19,7 +21,7 @@ const userBadge = (login) => {
       </div>
     </div>
   );
-}
+};
 
 
 
@@ -29,15 +31,16 @@ class App extends Component {
     if(this.props.login.authenticated) {
       return (
         <NavigationDrawer
+          defaultVisible={true}
           navItems={ navItems }
           drawerTitle="Menu"
           mobileDrawerType={ NavigationDrawer.DrawerTypes.TEMPORARY }
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
-          desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
+          desktopDrawerType={ NavigationDrawer.DrawerTypes.FULL_HEIGHT }
           toolbarTitle={ title }
           toolbarActions={ userBadge(this.props.login) }
         >
-          <LoadingBar />
+          <LoadingBar style={{position: 'relative'}}/>
           <div className="md-grid">
             <div className="md-cell md-cell--12">
               <div className="md-grid" />
@@ -90,15 +93,27 @@ class App extends Component {
       );
     }
 
-    return (this.getAppBar("BlockApps Marketplace", navItems));
+    return (
+      <section>
+        {this.getAppBar("BlockApps Marketplace", navItems)}
+        <Snackbar
+          toasts={
+            this.props.errorMessage
+              ? [{text: this.props.errorMessage.toString(), action: 'Dismiss' }]
+              : []
+          }
+          onDismiss={() => {this.props.resetErrorMessage()}} />
+      </section>
+    )
   }
 }
 
 function mapStateToProps(state) {
   return {
     routing: state.routing,
-    login: state.login
+    login: state.login,
+    errorMessage: state.errorMessage,
   };
 }
 
-export default connect(mapStateToProps)(App);
+export default connect(mapStateToProps, {resetErrorMessage})(App);
