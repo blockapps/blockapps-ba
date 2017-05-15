@@ -28,25 +28,33 @@ class Login extends Component {
             <Toolbar colored title="Login" />
             <form onSubmit={handleSubmit(this.submit)}>
               <div className="md-grid">
-                <div className="md-cell--2" />
-                <Field
-                  id="username"
-                  name="username"
-                  type="text"
-                  label="Enter Username"
-                  className="md-cell--8 md-cell--top"
-                  component={ReduxedTextField} />
-                <div className="md-cell--2" />
-                <div className="md-cell--2" />
-                <Field
-                  id="password"
-                  name="password"
-                  type="password"
-                  label="Enter Password"
-                  className="md-cell--8 md-cell--bottom"
-                  component={ReduxedTextField} />
-                <div className="md-cell--2" />
-                <div className="md-cell--2" />
+                <div className="md-cell--12">
+                  <div className="md-grid md-grid--no-spacing">
+                    <div className="md-cell--2" />
+                    <Field
+                      id="username"
+                      name="username"
+                      type="text"
+                      label="Enter Username"
+                      className="md-cell--8 md-cell--top"
+                      component={ReduxedTextField} />
+                    <div className="md-cell--2" />
+                  </div>
+                </div>
+                <div className="md-cell--12">
+                  <div className="md-grid md-grid--no-spacing">
+                    <div className="md-cell--2" />
+                    <Field
+                      id="password"
+                      name="password"
+                      type="password"
+                      label="Enter Password"
+                      className="md-cell--8 md-cell--bottom"
+                      component={ReduxedTextField} />
+                    <div className="md-cell--2" />
+                  </div>
+                </div>
+                <div className="md-cell--12" />
                 <div className="md-cell--right login-cell">
                   <Button className="md-cell--right" raised primary label="Login" type="submit" />
                 </div>
