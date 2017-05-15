@@ -15,6 +15,7 @@ import {
   fetchProjectsListSuccess,
   fetchProjectsListFailure
 } from './projects-list.actions';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const url = API_URL + '/projects?{0}';
 
@@ -106,8 +107,9 @@ function getProjectsList(listType, username) {
 
 function* fetchProjectsList(action) {
   try {
+    yield put(showLoading());
     let response = yield call(getProjectsList, action.listType, action.username);
-
+    yield put(hideLoading());
     yield put(fetchProjectsListSuccess(response.data['projects']));
   }
   catch (err) {

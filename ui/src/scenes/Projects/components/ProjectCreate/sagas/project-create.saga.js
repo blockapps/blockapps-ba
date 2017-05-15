@@ -7,6 +7,7 @@ import {
 import { browserHistory } from 'react-router';
 import { API_URL } from '../../../../../environment';
 import { handleApiError } from '../../../../../lib/apiErrorHandler';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const projectsUrl = API_URL + '/projects';
 
@@ -30,8 +31,9 @@ function projectCreateApiCall(project) {
 
 function* submitProjectCreate(action) {
   try {
+    yield put(showLoading());
     const response = yield call(projectCreateApiCall, action.project);
-    console.log('>>>> response >>>>',response);
+    yield put(hideLoading());
     if(response.data.project) {
       yield put(projectCreateSuccess(response.data.project));
       browserHistory.push('/projects');

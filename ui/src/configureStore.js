@@ -5,9 +5,11 @@ import {
   combineReducers
 } from 'redux';
 import createSagaMiddleware from 'redux-saga';
+import { loadingBarMiddleware } from 'react-redux-loading-bar';
 
 import { routerReducer } from 'react-router-redux';
 import { reducer as formReducer } from 'redux-form';
+import { loadingBarReducer } from 'react-redux-loading-bar';
 import loginReducer from './scenes/Login/login.reducer.js';
 import projectListReducer from './scenes/Projects/components/ProjectsList/projects-list.reducer';
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
@@ -30,6 +32,7 @@ const rootReducer = combineReducers({
   bids: projectBidsReducer,
   project: projectReducer,
   createProject: projectCreateReducer,
+  loadingBar: loadingBarReducer,
 });
 
 const rootSaga = function* startForeman() {
@@ -47,7 +50,8 @@ const configureStore = () => {
   return {
     ...createStore(rootReducer,
       window.devToolsExtension ? window.devToolsExtension() : f => f,
-      applyMiddleware(sagaMiddleware)),
+      applyMiddleware(sagaMiddleware,loadingBarMiddleware())
+    ),
     runSaga: sagaMiddleware.run(rootSaga)
   };
 };
