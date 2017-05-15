@@ -67,6 +67,7 @@ class ProjectCreate extends Component {
                     label="Desired price"
                     min="1"
                     step="1"
+                    required
                     className="md-cell--4"
                     component={ReduxedTextField} />
                   <div className="md-cell--12" />
@@ -75,43 +76,44 @@ class ProjectCreate extends Component {
                     name="targetDelivery"
                     label="Desired delivery date"
                     className="md-cell--4"
+                    required
                     type="date" // ignore the console warnings, todo: implement Date Picker with redux form
                     component={ReduxedTextField}
                   />
                   <div className="md-cell--12" />
-                  <Field
-                    id="addressStreet"
-                    name="addressStreet"
-                    type="text"
-                    label="Street"
-                    className="md-cell--4"
-                    component={ReduxedTextField} />
-                  <div className="md-cell--12" />
-                  <Field
-                    id="addressCity"
-                    name="addressCity"
-                    type="text"
-                    label="City"
-                    className="md-cell--4"
-                    component={ReduxedTextField} />
-                  <div className="md-cell--12" />
-                  <Field
-                    id="addressState"
-                    name="addressState"
-                    type="text"
-                    label="State"
-                    maxLength={2}
-                    className="md-cell--4"
-                    component={ReduxedTextField} />
-                  <div className="md-cell--12" />
-                  <Field
-                    id="addressZip"
-                    name="addressZip"
-                    type="text"
-                    label="Zip code"
-                    maxLength={5}
-                    className="md-cell--4"
-                    component={ReduxedTextField} />
+                  {/*<Field*/}
+                    {/*id="addressStreet"*/}
+                    {/*name="addressStreet"*/}
+                    {/*type="text"*/}
+                    {/*label="Street"*/}
+                    {/*className="md-cell--4"*/}
+                    {/*component={ReduxedTextField} />*/}
+                  {/*<div className="md-cell--12" />*/}
+                  {/*<Field*/}
+                    {/*id="addressCity"*/}
+                    {/*name="addressCity"*/}
+                    {/*type="text"*/}
+                    {/*label="City"*/}
+                    {/*className="md-cell--4"*/}
+                    {/*component={ReduxedTextField} />*/}
+                  {/*<div className="md-cell--12" />*/}
+                  {/*<Field*/}
+                    {/*id="addressState"*/}
+                    {/*name="addressState"*/}
+                    {/*type="text"*/}
+                    {/*label="State"*/}
+                    {/*maxLength={2}*/}
+                    {/*className="md-cell--4"*/}
+                    {/*component={ReduxedTextField} />*/}
+                  {/*<div className="md-cell--12" />*/}
+                  {/*<Field*/}
+                    {/*id="addressZip"*/}
+                    {/*name="addressZip"*/}
+                    {/*type="text"*/}
+                    {/*label="Zip code"*/}
+                    {/*maxLength={5}*/}
+                    {/*className="md-cell--4"*/}
+                    {/*component={ReduxedTextField} />*/}
                   <div className="md-cell--12" />
                   <Field
                     id="spec"
