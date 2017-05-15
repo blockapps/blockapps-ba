@@ -7,6 +7,7 @@ import {
 import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const bidUrl = API_URL + '/projects/:name/bids';
 
@@ -44,16 +45,19 @@ function submitBidApiCall(
 
 function* submitBid(action){
   try {
+    yield put(showLoading());
     yield call(
       submitBidApiCall,
       action.name,
       action.supplier,
       action.amount);
+    yield put(hideLoading());
     yield put(bidSuccess());
     browserHistory.goBack();
   }
   catch(err) {
     yield put(bidFailure(err));
+    yield put(hideLoading());
   }
 }
 

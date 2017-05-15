@@ -5,6 +5,7 @@ import NavigationDrawer from 'react-md/lib/NavigationDrawers';
 import FontIcon from 'react-md/lib/FontIcons';
 import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
+import LoadingBar from 'react-redux-loading-bar';
 import './App.css';
 
 const userBadge = (login) => {
@@ -36,6 +37,7 @@ class App extends Component {
           toolbarTitle={ title }
           toolbarActions={ userBadge(this.props.login) }
         >
+          <LoadingBar />
           <div className="md-grid">
             <div className="md-cell md-cell--12">
               <div className="md-grid" />
@@ -52,6 +54,7 @@ class App extends Component {
             colored
             title={ title }
           />
+          <LoadingBar />
           {this.props.children}
         </div>
       )

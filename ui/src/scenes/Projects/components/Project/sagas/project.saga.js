@@ -15,6 +15,7 @@ import {
   fetchProjectSuccess,
   fetchProjectFailure
 } from '../actions/project.actions';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 // TODO: define API endpoint for projects
 const url = API_URL + '/projects/{0}';
@@ -67,11 +68,14 @@ function getProject(projectId) {
 
 function* fetchProject(action) {
   try {
+    yield put(showLoading());
     const response = yield call(getProject,action.projectId);
+    yield put(hideLoading());
     yield put(fetchProjectSuccess(response.data['project']));
   }
   catch (err) {
     yield put(fetchProjectFailure(err.message));
+    yield put(hideLoading());
   }
 }
 

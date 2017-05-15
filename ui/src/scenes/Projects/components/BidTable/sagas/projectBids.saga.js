@@ -13,6 +13,7 @@ import {
   fetchProjectBidsSuccess,
   fetchProjectBidsFailure
 } from '../actions/projectBids.actions';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 // TODO: define API endpoint for projects
 const url = API_URL + '/projects/:name/bids';
@@ -61,12 +62,13 @@ function getBids(name){
 
 function* fetchProjectBids(action){
   try {
-    console.log('>>>> CALLING GET BIDS >>>>');
+    yield put(showLoading());
     let response = yield call(getBids, action.name);
-    console.log('>>>>> GET BIDS RETURNED >>>>', response.data);
+    yield put(hideLoading());
     yield put(fetchProjectBidsSuccess(response.data.bids));
   }
   catch(err) {
+    yield put(hideLoading());
     yield put(fetchProjectBidsFailure(err));
   }
 }

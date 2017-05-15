@@ -9,6 +9,7 @@ import {
 import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../../environment';
 import { handleApiError } from '../../../../../lib/apiErrorHandler';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const url = API_URL + '/projects/:projectName/bids/:id';
 
@@ -41,7 +42,9 @@ function acceptBidCall(projectName, id) {
 
 function* acceptBid(action){
   try {
+    yield put(showLoading());
     yield call(acceptBidCall, action.projectName, action.id);
+    yield put(hideLoading());
     yield put(acceptBidSuccess());
     browserHistory.goBack(); // todo: update current project data on the page instead?
   }
