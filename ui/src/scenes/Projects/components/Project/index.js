@@ -200,7 +200,7 @@ class Project extends Component {
             <Status state={project.state} />
           </div>
           <div className="md-cell md-cell--4 md-cell--12-phone">
-            <Detail />
+            <Detail project={project}/>
           </div>
           <div className="md-cell md-cell--4  md-cell--12-phone">
             <Bids project={project} />
