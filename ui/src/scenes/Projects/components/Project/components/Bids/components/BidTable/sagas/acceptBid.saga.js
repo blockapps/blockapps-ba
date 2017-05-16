@@ -7,8 +7,8 @@ import {
   acceptBidFailure
 } from '../actions/acceptBid.actions';
 import { browserHistory } from 'react-router';
-import { API_URL, API_MOCK } from '../../../../../environment';
-import { handleApiError } from '../../../../../lib/apiErrorHandler';
+import { API_URL, API_MOCK } from '../../../../../../../../../environment';
+import { handleApiError } from '../../../../../../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const url = API_URL + '/projects/:projectName/bids/:id';

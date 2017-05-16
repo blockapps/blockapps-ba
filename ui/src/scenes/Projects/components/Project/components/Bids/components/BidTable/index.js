@@ -9,6 +9,8 @@ import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import { FormattedNumber } from 'react-intl';
+import { setUserMessage } from '../../../../../../../../components/UserMessage/user-message.action';
+//import './BidTable.css';
 
 class BidTable extends Component {
   componentWillMount(){
@@ -23,40 +25,54 @@ class BidTable extends Component {
   handleBidAcceptClick = function(e, bid) {
     e.stopPropagation();
     this.props.acceptBid(bid.name, bid.id);
+    this.props.setUserMessage('Bid Accepted');
   };
 
   render() {
     const bids = this.props.bids;
-    const bidRows = bids.map(
+    bids.sort(function(a, b){
+      return a.amount-b.amount;
+    });
+
+    const bidRows = bids.length !== 0 ? bids.map(
       (bid,i) =>
         <TableRow key={"bid"+i}>
-          <TableColumn>
-            <FormattedNumber
-              value={bid.amount}
-              style="currency" //eslint-disable-line
-              currency="USD" />
-          </TableColumn>
-          <TableColumn>
-            <span style={{whiteSpace: "normal"}}>
-            {bid.supplier}
-          </span>
-          </TableColumn>
           <TableColumn>
             {
               this.props['projectState'] === 'OPEN' && this.isBuyer
                 ? <Button
-                primary
-                flat
-                label="Accept"
-                onClick={
-                  (e) => this.handleBidAcceptClick(e, bid)
-                }
-              >check_circle</Button>
+                    flat
+                    label="Accept bid"
+                    onClick={
+                      (e) => this.handleBidAcceptClick(e, bid)
+                    }
+                  >gavel</Button>
                 : ''
             }
           </TableColumn>
+
+          <TableColumn >
+            <span className="md-subheading-2">
+              {bid.supplier}
+            </span>
+          </TableColumn>
+          <TableColumn numeric={true}>
+            <span className="md-subheading-2">
+              <FormattedNumber
+                value={bid.amount}
+                style="currency" //eslint-disable-line
+                currency="USD" />
+              </span>
+          </TableColumn>
         </TableRow>
-      );
+      )
+      :
+      <TableRow>
+        <TableColumn />
+        <TableColumn>
+          <i> No bids to show! </i>
+        </TableColumn>
+      </TableRow>;
 
       return (
         <DataTable plain>
@@ -64,16 +80,16 @@ class BidTable extends Component {
             <TableRow
               // autoAdjust={false}
             >
-              <TableColumn>Bid</TableColumn>
-              <TableColumn>Supplier</TableColumn>
-              <TableColumn>Actions</TableColumn>
+              <TableColumn header={true}></TableColumn>
+              <TableColumn header={true}>Supplier</TableColumn>
+              <TableColumn header={true} numeric={true}>Bid</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>
             {bidRows}
           </TableBody>
         </DataTable>
-      );
+      )
   }
 }
 
@@ -83,4 +99,4 @@ function mapStateToProps(state) {
     bids: state.bids.bids
   };
 }
-export default connect(mapStateToProps, { fetchProjectBids, acceptBid })(BidTable);
+export default connect(mapStateToProps, { fetchProjectBids, acceptBid, setUserMessage })(BidTable);

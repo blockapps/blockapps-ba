@@ -41,22 +41,17 @@ class App extends Component {
     if(this.props.login.authenticated) {
       return (
         <NavigationDrawer
-          defaultVisible={ true }
+          defaultVisible={ false }
           navItems={ navItems }
           drawerTitle="Menu"
           mobileDrawerType={ NavigationDrawer.DrawerTypes.TEMPORARY }
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
-          desktopDrawerType={ NavigationDrawer.DrawerTypes.FULL_HEIGHT }
+          desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           toolbarTitle={ title }
           toolbarActions={ this.userBadge() }
         >
-          <LoadingBar style={{position: 'relative', zIndex: 20}}/>
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              <div className="md-grid" />
-              {this.props.children}
-            </div>
-          </div>
+          <LoadingBar style={{position: 'relative', zIndex: 20}} />
+          {this.props.children}
         </NavigationDrawer>
       )
     }
