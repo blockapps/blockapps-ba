@@ -203,8 +203,7 @@ function acceptBid(adminName, bidId, name) {
   return function(scope) {
     rest.verbose('dapp: acceptBid', bidId);
     return setScope(scope)
-      .then(projectManager.acceptBid(adminName, bidId, name))
-      .then(projectManager.handleEvent(adminName, name, ProjectEvent.ACCEPT));
+      .then(projectManager.acceptBid(adminName, bidId, name));
   }
 }
 
@@ -239,8 +238,22 @@ function getBids(adminName, name) {
 function handleEvent(adminName, name, projectEvent) {
   return function(scope) {
     rest.verbose('dapp: project handleEvent', {name, projectEvent});
+
+    switch(projectEvent) {
+      case ProjectEvent.RECEIVE:
+        const buyer = 'Byuer1';
+        return projectManager.receiveProject(adminName, name, buyer)(scope);
+      default:
+        return projectManager.handleEvent(adminName, name, projectEvent)(scope);
+    }
+}
+
+// getBalance
+function getBalance(adminName, username) {
+  return function(scope) {
+    rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(projectManager.handleEvent(adminName, name, projectEvent));
+      .then(projectManager.getBalance(adminName, username));
   }
 }
 
