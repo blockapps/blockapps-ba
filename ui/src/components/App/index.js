@@ -7,25 +7,35 @@ import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
-import { resetErrorMessage } from '../ErrorMessage/error-message.action';
+import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
+import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
-
-const userBadge = (login) => {
-  return (
-    <div className="md-grid user-balance">
-      <Avatar className="md-cell--3 md-avatar--color" icon={<FontIcon>account_circle</FontIcon>} />
-      <div className="md-cell--8 pad-left">
-        <span className="md-font-bold">{login.username}</span>
-        <br />
-        <span className="md-font-medium">Balance: 0.00</span>
-      </div>
-    </div>
-  );
-};
-
 
 
 class App extends Component {
+  userBadge = () => {
+    const login = this.props.login;
+    return (
+      <div className="md-grid user-balance">
+        <Avatar className="md-cell--3 md-avatar--color" icon={<FontIcon>account_circle</FontIcon>} />
+        <div className="md-cell--8 pad-left">
+          <span className="md-font-bold">{login.username}</span>
+          <br />
+          <span className="md-font-medium">Balance: 0.00</span>
+        </div>
+        <div className="md-cell md-cell--1 md-text-center">
+          <a className="md-avatar--color" href="#" onClick={(e) => this.handleLogoutClick(e)}><FontIcon>exit_to_app</FontIcon></a>
+        </div>
+      </div>
+    );
+  };
+
+  handleLogoutClick = (e) => {
+    e.stopPropagation();
+    this.props.userLogout();
+    this.props.setUserMessage('You logged out');
+  };
+
   // get type of app bar based on login state
   getAppBar(title, navItems) {
     if(this.props.login.authenticated) {
@@ -38,7 +48,7 @@ class App extends Component {
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           desktopDrawerType={ NavigationDrawer.DrawerTypes.FULL_HEIGHT }
           toolbarTitle={ title }
-          toolbarActions={ userBadge(this.props.login) }
+          toolbarActions={ this.userBadge() }
         >
           <LoadingBar style={{position: 'relative', zIndex: 20}}/>
           <div className="md-grid">
@@ -99,11 +109,11 @@ class App extends Component {
         {this.getAppBar("BlockApps Marketplace", navItems)}
         <Snackbar
           toasts={
-            this.props.errorMessage
-              ? [{text: this.props.errorMessage.toString(), action: 'Dismiss' }]
+            this.props.userMessage
+              ? [{text: this.props.userMessage.toString(), action: 'Dismiss' }]
               : []
           }
-          onDismiss={() => {this.props.resetErrorMessage()}} />
+          onDismiss={() => {this.props.resetUserMessage()}} />
       </section>
     )
   }
@@ -113,8 +123,8 @@ function mapStateToProps(state) {
   return {
     routing: state.routing,
     login: state.login,
-    errorMessage: state.errorMessage,
+    userMessage: state.userMessage,
   };
 }
 
-export default connect(mapStateToProps, {resetErrorMessage})(App);
+export default connect(mapStateToProps, {resetUserMessage, setUserMessage, userLogout})(App);
