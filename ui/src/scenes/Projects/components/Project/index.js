@@ -197,7 +197,7 @@ class Project extends Component {
         <BidModal name={project.name}/>
         <div className="md-grid">
           <div className="md-cell md-cell--4 md-cell--12-phone">
-            <Status />
+            <Status state={project.state} />
           </div>
           <div className="md-cell md-cell--4 md-cell--12-phone">
             <Detail />

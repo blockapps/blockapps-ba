@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Card from 'react-md/lib/Cards/Card';
-import CardText from 'react-md/lib/Cards/CardText';
 import Toolbar from 'react-md/lib/Toolbars';
+import {Timeline, TimelineEvent} from 'react-event-timeline';
+import FontIcon from 'react-md/lib/FontIcons';
 
 class Status extends Component {
   render() {
@@ -11,6 +12,17 @@ class Status extends Component {
           themed
           title={"Status"}
         />
+        <Timeline>
+          <TimelineEvent
+            title="OPEN"
+            icon={<i className="material-icons md-18">signal_cellular_off</i>}
+            iconColor="#6fba1c"
+          />
+          <TimelineEvent
+            title="OPEN"
+            icon={<i className="material-icons md-18">signal_cellular_off</i>}
+          />
+        </Timeline>
       </Card>
     )
   }
