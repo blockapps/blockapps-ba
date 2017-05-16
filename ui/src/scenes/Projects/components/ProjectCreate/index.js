@@ -7,6 +7,7 @@ import CardTitle from 'react-md/lib/Cards/CardTitle';
 import { reduxForm, Field } from 'redux-form';
 import { projectCreate } from './actions/project-create.actions';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
+import { setUserMessage } from '../../../../components/UserMessage/user-message.action';
 import { Link } from 'react-router';
 import './ProjectCreate.css';
 
@@ -28,6 +29,7 @@ class ProjectCreate extends Component {
         addressZip: values['addressZip'],
       }
     );
+    this.props.setUserMessage('Contract Created Successfully');
   };
 
   render() {
@@ -146,7 +148,7 @@ function mapStateToProps(state) {
   };
 }
 
-const connected = connect(mapStateToProps, { projectCreate })(ProjectCreate);
+const connected = connect(mapStateToProps, { projectCreate, setUserMessage })(ProjectCreate);
 
 const formedComponent = reduxForm({ form: 'project-create'})(connected);
 

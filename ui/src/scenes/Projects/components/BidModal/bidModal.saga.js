@@ -8,6 +8,7 @@ import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
+import { setUserMessage } from '../../../../components/UserMessage/user-message.action'
 
 const bidUrl = API_URL + '/projects/:name/bids';
 
@@ -53,6 +54,7 @@ function* submitBid(action){
       action.amount);
     yield put(hideLoading());
     yield put(bidSuccess());
+    yield put(setUserMessage('Bid Success'));
     browserHistory.goBack();
   }
   catch(err) {

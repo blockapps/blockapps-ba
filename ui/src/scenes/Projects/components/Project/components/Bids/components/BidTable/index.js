@@ -9,7 +9,8 @@ import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import { FormattedNumber } from 'react-intl';
-import './BidTable.css';
+import { setUserMessage } from '../../../../../../../../components/UserMessage/user-message.action';
+//import './BidTable.css';
 
 class BidTable extends Component {
   componentWillMount(){
@@ -24,6 +25,7 @@ class BidTable extends Component {
   handleBidAcceptClick = function(e, bid) {
     e.stopPropagation();
     this.props.acceptBid(bid.name, bid.id);
+    this.props.setUserMessage('Bid Accepted');
   };
 
   render() {
@@ -97,4 +99,4 @@ function mapStateToProps(state) {
     bids: state.bids.bids
   };
 }
-export default connect(mapStateToProps, { fetchProjectBids, acceptBid })(BidTable);
+export default connect(mapStateToProps, { fetchProjectBids, acceptBid, setUserMessage })(BidTable);
