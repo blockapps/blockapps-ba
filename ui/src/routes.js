@@ -6,7 +6,6 @@ import Login from "./scenes/Login";
 import Projects from './scenes/Projects/';
 import Project from './scenes/Projects/components/Project'
 import ProjectCreate from './scenes/Projects/components/ProjectCreate'
-import Bid from './scenes/Projects/components/Bid/';
 
 
 export default (
@@ -18,7 +17,6 @@ export default (
         <IndexRoute component={ Projects } />
         <Route path="create" component={ ProjectCreate } />
         <Route path=":pname" component={ Project } />
-        <Route path=":name/bid" component={ Bid } />
       </Route>
     </Route>
   </Route>

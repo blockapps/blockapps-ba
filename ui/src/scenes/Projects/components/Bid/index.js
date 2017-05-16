@@ -1,26 +1,27 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Dialog from 'react-md/lib/Dialogs';
-import { browserHistory } from 'react-router';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { reduxForm, Field } from 'redux-form';
 //import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
-import { bidSubmit } from './bid.actions';
+import { bidSubmit, closeBidModal } from './bid.actions';
 import './Bid.css';
 
+//TODO: rename to BidModal
 class Bid extends Component {
 
   closeDialog = () => {
-    browserHistory.goBack();
+    this.props.closeBidModal();
   }
 
   submit = (values) => {
     this.props.bidSubmit({
-      name: this.props.params.name,
+      name: this.props.name,
       supplier: this.props.supplier,
       amount: values.amount
     });
+    this.props.closeBidModal();
   }
 
   render() {
@@ -31,8 +32,8 @@ class Bid extends Component {
     return(
       <Dialog
       id="simpleDialogExample"
-      visible={true}
-      title={ "Bid for " + this.props.params.name }
+      visible={this.props.isOpen}
+      title={ "Bid for " + this.props.name }
       onHide={this.closeDialog}>
       <form onSubmit={handleSubmit(this.submit)}>
         <div className="md-grid">
@@ -58,6 +59,7 @@ class Bid extends Component {
           <div className="md-cell--12">
             <Button raised primary label="Bid" type="submit" className="bid-button"/>
           </div>
+
         </div>
       </form>
     </Dialog>
@@ -68,11 +70,12 @@ class Bid extends Component {
 
 function mapStateToProps(state) {
   return {
-    supplier: state.login.username
+    supplier: state.login.username,
+    isOpen: state.bidModal.isOpen
   };
 }
 
-const connected = connect(mapStateToProps, { bidSubmit })(Bid);
+const connected = connect(mapStateToProps, { bidSubmit, closeBidModal })(Bid);
 
 const formedComponent = reduxForm({ form: 'bid'})(connected);
 

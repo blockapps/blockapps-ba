@@ -15,6 +15,7 @@ import projectListReducer from './scenes/Projects/components/ProjectList/project
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
 import projectBidsReducer from './scenes/Projects/components/BidTable/reducers/projectBids.reducer';
 import projectCreateReducer from './scenes/Projects/components/ProjectCreate/reducers/project-create.reducer';
+import bidModalReducer from './scenes/Projects/components/Bid/bid.reducer';
 
 import watchLoginSubmit from './scenes/Login/login.saga';
 import watchFetchProjectList from './scenes/Projects/components/ProjectList/project-list.saga';
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   login: loginReducer,
   projects: projectListReducer,
   bids: projectBidsReducer,
+  bidModal: bidModalReducer,
   project: projectReducer,
   createProject: projectCreateReducer,
   loadingBar: loadingBarReducer,

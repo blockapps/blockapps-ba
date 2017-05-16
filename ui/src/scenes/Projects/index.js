@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import Button from 'react-md/lib/Buttons/Button';
 import Toolbar from 'react-md/lib/Toolbars';
 import ProjectList from './components/ProjectList';
-import FontIcon from 'react-md/lib/FontIcons';
 
 class Projects extends Component {
 
@@ -21,10 +20,11 @@ class Projects extends Component {
   render() {
     const actions = this.isBuyer ?
       <Button
-        flat
-        label="New Project"
+        icon
+        key="add_circle_outline"
+        tooltipLabel="Create New Project"
         onClick={(e) => this.handleNewProjectClick(e)}>
-          <FontIcon>add_circle_outline</FontIcon>
+          add_circle_outline
         </Button>
         : <span></span>;
 
@@ -43,7 +43,7 @@ class Projects extends Component {
           <ProjectList listType="open" listTitle="Open Projects" />
         </div>
       </div>;
-      
+
     return (
       <section>
         <Toolbar

@@ -1,14 +1,24 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router';
+import { browserHistory } from 'react-router';
 import Button from 'react-md/lib/Buttons/Button';
 import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import CardText from 'react-md/lib/Cards/CardText';
+import Chip from 'react-md/lib/Chips';
+import Toolbar from 'react-md/lib/Toolbars';
+
+import Bid from '../Bid/';
 import BidTable from '../BidTable/';
 import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 import { fetchProject } from './actions/project.actions';
 import { projectEvent } from './actions/project-event.actions';
+import { openBidModal } from '../Bid/bid.actions';
+import Status from './components/Status';
+import Detail from './components/Detail';
+import Bids from './components/Bids';
+
+import './Project.css';
 
 class Project extends Component {
 
@@ -28,141 +38,186 @@ class Project extends Component {
   };
 
   render() {
-    let projectContent;
     let projectButtons = '';
+    const project = this.props.project;
 
-    if (this.props.project && this.props.project['name']) {
-      const project = this.props.project;
-
-      if (this.isBuyer) {
-        if (project.state === 'INTRANSIT') {
-          projectButtons =
-            <div className="md-cell">
-              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 3)} label="Mark as Received" />
-            </div>
-        }
-      } else {
-        if (project.state === 'PRODUCTION') {
-          // TODO: check that accepted bid is made by current supplier
-          projectButtons =
-            <div className="md-cell">
-              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 2)} label="Mark as Shipped" />
-            </div>
-        }
+    if (this.isBuyer) {
+      if (project.state === 'INTRANSIT') {
+        projectButtons =
+          <div className="md-cell">
+            <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 3)} label="Mark as Received" />
+          </div>
       }
+    } else {
+      if (project.state === 'PRODUCTION') {
+        // TODO: check that accepted bid is made by current supplier
+        projectButtons =
+          <div className="md-cell">
+            <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 2)} label="Mark as Shipped" />
+          </div>
+      }
+    }
 
-        projectContent =
-        <Card className="md-cell md-cell--12">
-          <CardTitle
-            title={project.name ? project.name : ''}
-             subtitle={
-               project.created
-               ? <span>
-                   <FormattedDate
-                     value={new Date(project.created)}
-                     day="numeric"
-                     month="long"
-                     year="numeric"/>, <FormattedTime value={new Date(project.created)} />
-                 </span>
-               : ''
-             }
-          />
-          <CardText>
-            <div className="md-grid">
-              {projectButtons}
-              <div className="md-cell md-cell--12">
-                <h4 className="md-title">Status:</h4>
-                {project.state ? project.state : ''}
-              </div>
+    const projectContent =
+      <Card className="md-cell md-cell--12">
+        <CardTitle
+          title={project.name ? project.name : ''}
+           subtitle={
+             project.created
+             ? <span>
+                 <FormattedDate
+                   value={new Date(project.created)}
+                   day="numeric"
+                   month="long"
+                   year="numeric"/>, <FormattedTime value={new Date(project.created)} />
+               </span>
+             : ''
+           }
+        />
+        <CardText>
+          <div className="md-grid">
+            {projectButtons}
+            <div className="md-cell md-cell--12">
+              <h4 className="md-title">Status:</h4>
+              {project.state ? project.state : ''}
             </div>
-            <div className="md-grid">
-              <div className="md-cell md-cell--12">
-                <h4 className="md-title">Description:</h4>
-                {project.description ? project.description : '-'}
-              </div>
+          </div>
+          <div className="md-grid">
+            <div className="md-cell md-cell--12">
+              <h4 className="md-title">Description:</h4>
+              {project.description ? project.description : '-'}
             </div>
-            <div className="md-grid">
-              <div className="md-cell md-cell--12">
-                <h4 className="md-title">Desired price:</h4>
-                {
-                  project.price
-                  ? <FormattedNumber
-                      value={project.price}
-                      style="currency" //eslint-disable-line
-                      currency="USD" />
-                  : ''
-                }
-              </div>
+          </div>
+          <div className="md-grid">
+            <div className="md-cell md-cell--12">
+              <h4 className="md-title">Desired price:</h4>
+              {
+                project.price
+                ? <FormattedNumber
+                    value={project.price}
+                    style="currency" //eslint-disable-line
+                    currency="USD" />
+                : ''
+              }
             </div>
-            <div className="md-grid">
-              <div className="md-cell md-cell--12">
-                <h4 className="md-title ">Deliver by:</h4>
-                {
-                  project.targetDelivery
-                  ? <FormattedDate
-                      value={new Date(project.targetDelivery)}
-                      day="numeric"
-                      month="long"
-                      year="numeric"/>
-                  : ''
-                }
-              </div>
+          </div>
+          <div className="md-grid">
+            <div className="md-cell md-cell--12">
+              <h4 className="md-title ">Deliver by:</h4>
+              {
+                project.targetDelivery
+                ? <FormattedDate
+                    value={new Date(project.targetDelivery)}
+                    day="numeric"
+                    month="long"
+                    year="numeric"/>
+                : ''
+              }
             </div>
-            {/*<div className="md-grid">*/}
-              {/*<div className="md-cell md-cell--12">*/}
-                {/*<h4 className="md-title ">Deliver address:</h4>*/}
-                {/*/!*{`${project.deliveryAddress.street}, ${project.deliveryAddress.city}, ${project.deliveryAddress.state}, ${project.deliveryAddress.zip}`}*!/*/}
-              {/*</div>*/}
+          </div>
+          {/*<div className="md-grid">*/}
+            {/*<div className="md-cell md-cell--12">*/}
+              {/*<h4 className="md-title ">Deliver address:</h4>*/}
+              {/*/!*{`${project.deliveryAddress.street}, ${project.deliveryAddress.city}, ${project.deliveryAddress.state}, ${project.deliveryAddress.zip}`}*!/*/}
             {/*</div>*/}
-            <div className="md-grid">
-              <div className="md-cell md-cell--12">
-                <h4 className="md-title ">Specification:</h4>
-                {project.spec ? project.spec : '-'}
-              </div>
+          {/*</div>*/}
+          <div className="md-grid">
+            <div className="md-cell md-cell--12">
+              <h4 className="md-title ">Specification:</h4>
+              {project.spec ? project.spec : '-'}
             </div>
-            { project.delivered
-              ? <div className="md-grid">
-                  <div className="md-cell md-cell--12">
-                    <h4 className="md-title ">Delivered on:</h4>
-                    <FormattedDate
-                      value={new Date(project.delivered)}
-                      day="numeric"
-                      month="long"
-                      year="numeric"/>, <FormattedTime value={new Date(project.delivered)} />
-                  </div>
+          </div>
+          { project.delivered
+            ? <div className="md-grid">
+                <div className="md-cell md-cell--12">
+                  <h4 className="md-title ">Delivered on:</h4>
+                  <FormattedDate
+                    value={new Date(project.delivered)}
+                    day="numeric"
+                    month="long"
+                    year="numeric"/>, <FormattedTime value={new Date(project.delivered)} />
                 </div>
-              : null
-            }
-            <div className="md-grid">
-              <div className="md-cell md-cell--11">
-                <h4 className="md-title ">Bids</h4>
               </div>
-              {
-                !this.isBuyer && project.state === 'OPEN'
-                ? <div className="md-cell md-cell--1">
-                    <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
-                      <Button raised primary label="Add Bid" />
-                    </Link>
-                  </div>
-                : ''
-              }
-              {
-                project.name && project.name.length > 0
-                ? <div className="md-cell md-cell--12">
-                    <BidTable name={project.name} projectState={project.state} />
-                  </div>
-                : ''
-              }
+            : null
+          }
+          <div className="md-grid">
+            <div className="md-cell md-cell--11">
+              <h4 className="md-title ">Bids</h4>
             </div>
-          </CardText>
-        </Card>
+            {
+              project.name && project.name.length > 0
+              ? <div className="md-cell md-cell--12">
+                  <BidTable name={project.name} projectState={project.state} />
+                </div>
+              : ''
+            }
+          </div>
+        </CardText>
+      </Card>
+
+    const actions = [];
+
+    const children = [];
+    if(project && project.name && project.state) {
+      //children
+      children.push(
+        <Chip
+          key="state"
+          label={project.state}
+          className="state-chip"
+        />
+      );
+
+      //actions
+      if(!this.isBuyer && project.state === 'OPEN') {
+        actions.push(
+          <Button
+            icon
+            key="gavel"
+            tooltipLabel="Bid"
+            onClick={(e) => {
+                e.stopPropagation();
+                this.props.openBidModal();
+              }
+            }>
+              gavel
+            </Button>
+        );
+      }
+      actions.push(
+        <Button
+          icon
+          key="home"
+          tooltipLabel="Home"
+          onClick={(e) => {
+              e.stopPropagation();
+              browserHistory.push('/projects');
+            }
+          }>
+            home
+        </Button>
+      );
     }
 
     return (
       <section>
-        <h2>Project</h2>
+        <Toolbar
+          themed
+          title={project.name}
+          actions={actions}
+          children={children}
+        />
+        <Bid name={project.name}/>
         <div className="md-grid">
-          {projectContent}
+          <div className="md-cell md-cell--4">
+            <Status />
+          </div>
+          <div className="md-cell md-cell--4">
+            <Detail />
+          </div>
+          <div className="md-cell md-cell--4">
+            <Bids />
+          </div>
         </div>
       </section>
     );
@@ -176,4 +231,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject, projectEvent })(Project);
+export default connect(mapStateToProps, { fetchProject, projectEvent, openBidModal })(Project);
