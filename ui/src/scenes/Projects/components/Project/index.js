@@ -209,13 +209,13 @@ class Project extends Component {
         />
         <Bid name={project.name}/>
         <div className="md-grid">
-          <div className="md-cell md-cell--4">
+          <div className="md-cell md-cell--4 md-cell--12-phone">
             <Status />
           </div>
-          <div className="md-cell md-cell--4">
+          <div className="md-cell md-cell--4 md-cell--12-phone">
             <Detail />
           </div>
-          <div className="md-cell md-cell--4">
+          <div className="md-cell md-cell--4  md-cell--12-phone">
             <Bids />
           </div>
         </div>
