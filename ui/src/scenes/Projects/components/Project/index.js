@@ -8,12 +8,11 @@ import CardText from 'react-md/lib/Cards/CardText';
 import Chip from 'react-md/lib/Chips';
 import Toolbar from 'react-md/lib/Toolbars';
 
-import Bid from '../Bid/';
-import BidTable from '../BidTable/';
+import BidModal from '../BidModal/';
 import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 import { fetchProject } from './actions/project.actions';
 import { projectEvent } from './actions/project-event.actions';
-import { openBidModal } from '../Bid/bid.actions';
+import { openBidModal } from '../BidModal/bidModal.actions';
 import Status from './components/Status';
 import Detail from './components/Detail';
 import Bids from './components/Bids';
@@ -140,18 +139,6 @@ class Project extends Component {
               </div>
             : null
           }
-          <div className="md-grid">
-            <div className="md-cell md-cell--11">
-              <h4 className="md-title ">Bids</h4>
-            </div>
-            {
-              project.name && project.name.length > 0
-              ? <div className="md-cell md-cell--12">
-                  <BidTable name={project.name} projectState={project.state} />
-                </div>
-              : ''
-            }
-          </div>
         </CardText>
       </Card>
 
@@ -207,7 +194,7 @@ class Project extends Component {
           actions={actions}
           children={children}
         />
-        <Bid name={project.name}/>
+        <BidModal name={project.name}/>
         <div className="md-grid">
           <div className="md-cell md-cell--4 md-cell--12-phone">
             <Status />
@@ -216,7 +203,7 @@ class Project extends Component {
             <Detail />
           </div>
           <div className="md-cell md-cell--4  md-cell--12-phone">
-            <Bids />
+            <Bids project={project} />
           </div>
         </div>
       </section>

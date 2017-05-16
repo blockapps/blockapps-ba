@@ -1,7 +1,7 @@
 import {
   BID_OPEN_MODAL,
   BID_CLOSE_MODAL
-} from './bid.actions';
+} from './bidModal.actions';
 
 const initialState = {
   isOpen: false,

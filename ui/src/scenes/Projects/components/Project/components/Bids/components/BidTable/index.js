@@ -9,6 +9,7 @@ import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import { FormattedNumber } from 'react-intl';
+import './BidTable.css';
 
 class BidTable extends Component {
   componentWillMount(){
@@ -27,33 +28,43 @@ class BidTable extends Component {
 
   render() {
     const bids = this.props.bids;
+    // sort in descending order
+    bids.sort(function(a,b){
+      if(a < b)
+        return 1;
+      if(a > b)
+        return -1;
+      return 0;
+    });
     const bidRows = bids.map(
       (bid,i) =>
         <TableRow key={"bid"+i}>
           <TableColumn>
-            <FormattedNumber
-              value={bid.amount}
-              style="currency" //eslint-disable-line
-              currency="USD" />
-          </TableColumn>
-          <TableColumn>
-            <span style={{whiteSpace: "normal"}}>
-            {bid.supplier}
-          </span>
-          </TableColumn>
-          <TableColumn>
             {
               this.props['projectState'] === 'OPEN' && this.isBuyer
                 ? <Button
-                primary
-                flat
-                label="Accept"
-                onClick={
-                  (e) => this.handleBidAcceptClick(e, bid)
-                }
-              >check_circle</Button>
+                    flat
+                    label="Accept bid"
+                    onClick={
+                      (e) => this.handleBidAcceptClick(e, bid)
+                    }
+                  >gavel</Button>
                 : ''
             }
+          </TableColumn>
+
+          <TableColumn >
+            <span className="md-subheading-2">
+              {bid.supplier}
+            </span>
+          </TableColumn>
+          <TableColumn numeric={true}>
+            <span className="md-subheading-2">
+              <FormattedNumber
+                value={bid.amount}
+                style="currency" //eslint-disable-line
+                currency="USD" />
+              </span>
           </TableColumn>
         </TableRow>
       );
@@ -64,9 +75,9 @@ class BidTable extends Component {
             <TableRow
               // autoAdjust={false}
             >
-              <TableColumn>Bid</TableColumn>
-              <TableColumn>Supplier</TableColumn>
-              <TableColumn>Actions</TableColumn>
+              <TableColumn header={true}></TableColumn>
+              <TableColumn header={true}>Supplier</TableColumn>
+              <TableColumn header={true} numeric={true}>Bid</TableColumn>
             </TableRow>
           </TableHeader>
           <TableBody>

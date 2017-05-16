@@ -3,7 +3,7 @@ import {
   BID_SUBMIT,
   bidSuccess,
   bidFailure
-} from './bid.actions';
+} from './bidModal.actions';
 import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';

@@ -5,11 +5,10 @@ import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { reduxForm, Field } from 'redux-form';
 //import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
-import { bidSubmit, closeBidModal } from './bid.actions';
-import './Bid.css';
+import { bidSubmit, closeBidModal } from './bidModal.actions';
+import './BidModal.css';
 
-//TODO: rename to BidModal
-class Bid extends Component {
+class BidModal extends Component {
 
   closeDialog = () => {
     this.props.closeBidModal();
@@ -75,7 +74,7 @@ function mapStateToProps(state) {
   };
 }
 
-const connected = connect(mapStateToProps, { bidSubmit, closeBidModal })(Bid);
+const connected = connect(mapStateToProps, { bidSubmit, closeBidModal })(BidModal);
 
 const formedComponent = reduxForm({ form: 'bid'})(connected);
 
