@@ -21,3 +21,5 @@ export const STATES = {
     icon: 'mood'
   }
 }
+
+export const PROJECT_EVENTS = ['NULL', 'Accepted', 'Shipped', 'Received']

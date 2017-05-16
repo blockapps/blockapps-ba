@@ -9,6 +9,8 @@ import {
 import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../../environment';
 import { handleApiError } from '../../../../../lib/apiErrorHandler';
+import { PROJECT_EVENTS } from '../../../../../constants';
+import { setUserMessage } from '../../../../../components/UserMessage/user-message.action'
 
 const url = API_URL + '/projects/:projectName/events';
 
@@ -44,6 +46,7 @@ function* projectEvent(action){
   try {
     yield call(projectEventCall, action.projectName, action.projectEvent);
     yield put(projectEventSuccess());
+    yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent])); 
     browserHistory.goBack(); // todo: update current project data on the page instead?
   }
   catch(err) {
