@@ -28,15 +28,11 @@ class BidTable extends Component {
 
   render() {
     const bids = this.props.bids;
-    // sort in descending order
-    bids.sort(function(a,b){
-      if(a < b)
-        return 1;
-      if(a > b)
-        return -1;
-      return 0;
+    bids.sort(function(a, b){
+      return a.amount-b.amount;
     });
-    const bidRows = bids.map(
+
+    const bidRows = bids.length !== 0 ? bids.map(
       (bid,i) =>
         <TableRow key={"bid"+i}>
           <TableColumn>
@@ -67,7 +63,14 @@ class BidTable extends Component {
               </span>
           </TableColumn>
         </TableRow>
-      );
+      )
+      :
+      <TableRow>
+        <TableColumn />
+        <TableColumn>
+          <i> No bids to show! </i>
+        </TableColumn>
+      </TableRow>;
 
       return (
         <DataTable plain>
@@ -84,7 +87,7 @@ class BidTable extends Component {
             {bidRows}
           </TableBody>
         </DataTable>
-      );
+      )
   }
 }
 

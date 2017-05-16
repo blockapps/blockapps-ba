@@ -2,14 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
 import Button from 'react-md/lib/Buttons/Button';
-import Card from 'react-md/lib/Cards/Card';
-import CardTitle from 'react-md/lib/Cards/CardTitle';
-import CardText from 'react-md/lib/Cards/CardText';
 import Chip from 'react-md/lib/Chips';
 import Toolbar from 'react-md/lib/Toolbars';
 
 import BidModal from '../BidModal/';
-import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 import { fetchProject } from './actions/project.actions';
 import { projectEvent } from './actions/project-event.actions';
 import { openBidModal } from '../BidModal/bidModal.actions';
@@ -29,6 +25,10 @@ class Project extends Component {
     return this.props.login['role'] === 'BUYER'
   }
 
+  get isSupplier() {
+    return this.props.login['role'] === 'SUPPLIER'
+  }
+
   handleProjectEventClick = function(e, projectName, projectEvent) {
     e.stopPropagation();
     // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
@@ -37,114 +37,10 @@ class Project extends Component {
   };
 
   render() {
-    let projectButtons = '';
     const project = this.props.project;
-
-    if (this.isBuyer) {
-      if (project.state === 'INTRANSIT') {
-        projectButtons =
-          <div className="md-cell">
-            <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 3)} label="Mark as Received" />
-          </div>
-      }
-    } else {
-      if (project.state === 'PRODUCTION') {
-        // TODO: check that accepted bid is made by current supplier
-        projectButtons =
-          <div className="md-cell">
-            <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 2)} label="Mark as Shipped" />
-          </div>
-      }
-    }
-
-    const projectContent =
-      <Card className="md-cell md-cell--12">
-        <CardTitle
-          title={project.name ? project.name : ''}
-           subtitle={
-             project.created
-             ? <span>
-                 <FormattedDate
-                   value={new Date(project.created)}
-                   day="numeric"
-                   month="long"
-                   year="numeric"/>, <FormattedTime value={new Date(project.created)} />
-               </span>
-             : ''
-           }
-        />
-        <CardText>
-          <div className="md-grid">
-            {projectButtons}
-            <div className="md-cell md-cell--12">
-              <h4 className="md-title">Status:</h4>
-              {project.state ? project.state : ''}
-            </div>
-          </div>
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              <h4 className="md-title">Description:</h4>
-              {project.description ? project.description : '-'}
-            </div>
-          </div>
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              <h4 className="md-title">Desired price:</h4>
-              {
-                project.price
-                ? <FormattedNumber
-                    value={project.price}
-                    style="currency" //eslint-disable-line
-                    currency="USD" />
-                : ''
-              }
-            </div>
-          </div>
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              <h4 className="md-title ">Deliver by:</h4>
-              {
-                project.targetDelivery
-                ? <FormattedDate
-                    value={new Date(project.targetDelivery)}
-                    day="numeric"
-                    month="long"
-                    year="numeric"/>
-                : ''
-              }
-            </div>
-          </div>
-          {/*<div className="md-grid">*/}
-            {/*<div className="md-cell md-cell--12">*/}
-              {/*<h4 className="md-title ">Deliver address:</h4>*/}
-              {/*/!*{`${project.deliveryAddress.street}, ${project.deliveryAddress.city}, ${project.deliveryAddress.state}, ${project.deliveryAddress.zip}`}*!/*/}
-            {/*</div>*/}
-          {/*</div>*/}
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              <h4 className="md-title ">Specification:</h4>
-              {project.spec ? project.spec : '-'}
-            </div>
-          </div>
-          { project.delivered
-            ? <div className="md-grid">
-                <div className="md-cell md-cell--12">
-                  <h4 className="md-title ">Delivered on:</h4>
-                  <FormattedDate
-                    value={new Date(project.delivered)}
-                    day="numeric"
-                    month="long"
-                    year="numeric"/>, <FormattedTime value={new Date(project.delivered)} />
-                </div>
-              </div>
-            : null
-          }
-        </CardText>
-      </Card>
-
     const actions = [];
-
     const children = [];
+
     if(project && project.name && project.state) {
       //children
       children.push(
@@ -156,21 +52,54 @@ class Project extends Component {
       );
 
       //actions
-      if(!this.isBuyer && project.state === 'OPEN') {
-        actions.push(
-          <Button
-            icon
-            key="gavel"
-            tooltipLabel="Bid"
-            onClick={(e) => {
-                e.stopPropagation();
-                this.props.openBidModal();
-              }
-            }>
-              gavel
-            </Button>
-        );
+      if (this.isBuyer) {
+
+        if (project.state === 'INTRANSIT') {
+            actions.push(
+              <Button
+                icon
+                primary
+                onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
+                tooltipLabel="Mark as Received"
+                key="mood"
+              >
+                mood
+              </Button>
+            );
+        }
       }
+
+      if(this.isSupplier) {
+        if (project.state === 'PRODUCTION') {
+          // TODO: check that accepted bid is made by current supplier
+          actions.push(
+            <Button
+              icon
+              onClick={(e) => this.handleProjectEventClick(e, project.name, 2)}
+              tooltipLabel="Mark as Shipped"
+              key="flight_takeoff"
+            >
+              flight_takeoff
+            </Button>
+          );
+        }
+        if(project.state === 'OPEN') {
+          actions.push(
+            <Button
+              icon
+              key="gavel"
+              tooltipLabel="Bid"
+              onClick={(e) => {
+                  e.stopPropagation();
+                  this.props.openBidModal();
+                }
+              }>
+                gavel
+              </Button>
+          );
+        }
+      }
+
       actions.push(
         <Button
           icon
