@@ -41,12 +41,12 @@ class App extends Component {
     if(this.props.login.authenticated) {
       return (
         <NavigationDrawer
-          defaultVisible={ true }
+          defaultVisible={ false }
           navItems={ navItems }
           drawerTitle="Menu"
           mobileDrawerType={ NavigationDrawer.DrawerTypes.TEMPORARY }
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
-          desktopDrawerType={ NavigationDrawer.DrawerTypes.FULL_HEIGHT }
+          desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           toolbarTitle={ title }
           toolbarActions={ this.userBadge() }
         >
