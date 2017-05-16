@@ -4,7 +4,6 @@ import App from './components/App/';
 import EnsureAuthenticated from './components/EnsureAuthenticated/';
 import Login from "./scenes/Login";
 import Projects from './scenes/Projects/';
-import OpenProjects from './scenes/OpenProjects/';
 import Project from './scenes/Projects/components/Project'
 import ProjectCreate from './scenes/Projects/components/ProjectCreate'
 import Bid from './scenes/Projects/components/Bid/';
@@ -21,7 +20,6 @@ export default (
         <Route path=":pname" component={ Project } />
         <Route path=":name/bid" component={ Bid } />
       </Route>
-      <Route path="/open-projects" component={ OpenProjects } name="Open Projects" icon="view_list" role-access="SUPPLIER"/>
     </Route>
   </Route>
 );

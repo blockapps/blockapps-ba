@@ -1,27 +1,33 @@
 import {
-  FETCH_PROJECTS_LIST,
-  FETCH_PROJECTS_LIST_SUCCESS,
-  FETCH_PROJECTS_LIST_FAILURE,
-} from './projects-list.actions';
+  FETCH_PROJECT_LIST,
+  FETCH_PROJECT_LIST_SUCCESS,
+  FETCH_PROJECT_LIST_FAILURE,
+} from './project-list.actions';
 
 const initialState = {
-  projects: [],
+  projects: {
+    open: [],
+    supplier: [],
+    buyer: []
+  },
   error: null,
 };
 
 const reducer = function (state = initialState, action) {
   switch (action.type) {
-    case FETCH_PROJECTS_LIST:
+    case FETCH_PROJECT_LIST:
       return {
         projects: state.projects,
         error: null,
       };
-    case FETCH_PROJECTS_LIST_SUCCESS:
+    case FETCH_PROJECT_LIST_SUCCESS:
+      let projects = state.projects;
+      projects[action.listType] = action.projects;
       return {
-        projects: action.projects,
+        projects: projects,
         error: null,
       };
-    case FETCH_PROJECTS_LIST_FAILURE:
+    case FETCH_PROJECT_LIST_FAILURE:
       return {
         projects: state.projects,
         error: action.error

@@ -11,13 +11,13 @@ import { routerReducer } from 'react-router-redux';
 import { reducer as formReducer } from 'redux-form';
 import { loadingBarReducer } from 'react-redux-loading-bar';
 import loginReducer from './scenes/Login/login.reducer.js';
-import projectListReducer from './scenes/Projects/components/ProjectsList/projects-list.reducer';
+import projectListReducer from './scenes/Projects/components/ProjectList/project-list.reducer';
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
 import projectBidsReducer from './scenes/Projects/components/BidTable/reducers/projectBids.reducer';
 import projectCreateReducer from './scenes/Projects/components/ProjectCreate/reducers/project-create.reducer';
 
 import watchLoginSubmit from './scenes/Login/login.saga';
-import watchFetchProjectList from './scenes/Projects/components/ProjectsList/projects-list.saga';
+import watchFetchProjectList from './scenes/Projects/components/ProjectList/project-list.saga';
 import watchFetchProject from './scenes/Projects/components/Project/sagas/project.saga';
 import watchProjectCreate from './scenes/Projects/components/ProjectCreate/sagas/project-create.saga';
 import watchProjectEvent from './scenes/Projects/components/Project/sagas/project-event.saga.js';
@@ -37,14 +37,16 @@ const rootReducer = combineReducers({
 });
 
 const rootSaga = function* startForeman() {
-  yield fork(watchLoginSubmit);
-  yield fork(watchFetchProjectList);
-  yield fork(watchFetchProject);
-  yield fork(watchProjectCreate);
-  yield fork(watchProjectEvent);
-  yield fork(watchBidSubmit);
-  yield fork(watchBidAccept);
-  yield fork(watchFetchProjectBids);
+  yield [
+    fork(watchLoginSubmit),
+    fork(watchFetchProjectList),
+    fork(watchFetchProject),
+    fork(watchProjectCreate),
+    fork(watchProjectEvent),
+    fork(watchBidSubmit),
+    fork(watchBidAccept),
+    fork(watchFetchProjectBids)
+  ]
 };
 
 const configureStore = () => {

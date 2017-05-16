@@ -38,11 +38,7 @@ class App extends Component {
           toolbarActions={ userBadge(this.props.login) }
         >
           <LoadingBar />
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              {this.props.children}
-            </div>
-          </div>
+          {this.props.children}
         </NavigationDrawer>
       )
     }
