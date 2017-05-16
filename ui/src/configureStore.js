@@ -10,6 +10,7 @@ import { loadingBarMiddleware } from 'react-redux-loading-bar';
 import { routerReducer } from 'react-router-redux';
 import { reducer as formReducer } from 'redux-form';
 import { loadingBarReducer } from 'react-redux-loading-bar';
+import userMessageReducer from './components/UserMessage/user-message.reducer';
 import loginReducer from './scenes/Login/login.reducer.js';
 import projectListReducer from './scenes/Projects/components/ProjectList/project-list.reducer';
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
@@ -29,6 +30,7 @@ import watchFetchProjectBids from './scenes/Projects/components/Project/componen
 const rootReducer = combineReducers({
   form: formReducer,
   routing: routerReducer,
+  userMessage: userMessageReducer,
   login: loginReducer,
   projects: projectListReducer,
   bids: projectBidsReducer,
