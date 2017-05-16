@@ -1,6 +1,7 @@
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const util = ba.common.util;
+const BigNumber = ba.common.BigNumber;
 const config = ba.common.config;
 
 const contractName = 'UserManager';
@@ -40,9 +41,38 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
+function getAccount(adminName, username, node) {
+  return function (scope) {
+    rest.verbose('getAccount', username);
+    return rest.setScope(scope)
+      .then(function(scope){
+        return rest.getAccount(scope.users[username].address, node)(scope);
+      })
+      .then(function (scope) {
+        scope.result = scope.accounts[scope.users[username].address][0];
+        return scope;
+      });
+  }
+}
+
+function getBalance(adminName, username, node) {
+  return function (scope) {
+    rest.verbose('getBalance', username);
+    return rest.setScope(scope)
+      .then(getAccount(adminName, username, node))
+      .then(function(scope){
+        const account = scope.result;
+        const balance = new BigNumber(account.balance);
+        scope.result = balance;
+        return scope;
+      })
+  }
+}
+
 // throws: ErrorCodes
 // returns: user record from search
-function createUser(adminName, username, pwHash, role) {
+function createUser(adminName, username, password, role) {
+  const pwHash = util.toBytes32(password); // FIXME this is not a hash
   return function(scope) {
     rest.verbose('createUser', username, pwHash);
     // function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
@@ -63,13 +93,8 @@ function createUser(adminName, username, pwHash, role) {
         }
         return scope;
       })
+      .then(rest.createUser(username, password))
       .then(getUser(adminName, username))
-      .then(function(scope) {
-        const user = scope.result;
-        // store new user
-        scope.users[username] = {address: user.address};
-        return scope;
-      })
   }
 }
 
@@ -171,6 +196,8 @@ module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
+  getAccount: getAccount,
+  getBalance: getBalance,
 
   createUser: createUser,
   exists: exists,

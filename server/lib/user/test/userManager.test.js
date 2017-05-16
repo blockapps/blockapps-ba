@@ -5,6 +5,8 @@ const config = common.config;
 const util = common.util;
 const should = common.should;
 const assert = common.assert;
+const constants = common.constants;
+const BigNumber = common.BigNumber;
 const Promise = common.Promise;
 
 const user = require('../user');
@@ -34,18 +36,17 @@ describe('UserManager tests', function() {
 
   it('Create User', function(done) {
     const username = util.uid('User');
-    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const password = util.uid('Pass');
     const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
       // create user
-      .then(userManager.createUser(adminName, username, pwHash, role))
+      .then(userManager.createUser(adminName, username, password, role))
       // returns the user from search
       .then(function(scope) {
         const resultArray = scope.query.slice(-1)[0];
         const result = resultArray[0];
         assert.equal(result.username, username, 'username');
-        assert.equal(result.pwHash, pwHash, 'pwHash');
         assert.equal(result.role, UserRole[role], 'role');
         return scope;
       })
@@ -56,7 +57,7 @@ describe('UserManager tests', function() {
 
   it('Test exists()', function(done) {
     const username = util.uid('User');
-    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const password = util.uid('Pass');
     const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
@@ -69,7 +70,7 @@ describe('UserManager tests', function() {
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash, role))
+      .then(userManager.createUser(adminName, username, password, role))
       // should exist
       .then(userManager.exists(adminName, username))
       .then(function(scope) {
@@ -83,18 +84,18 @@ describe('UserManager tests', function() {
 
   it('Create Duplicate User', function(done) {
     const username = util.uid('User');
-    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const password = util.uid('Pass');
     const role = UserRole.SUPPLIER;
 
     scope.error = undefined;
 
     rest.setScope(scope)
       // create user
-      .then(userManager.createUser(adminName, username, pwHash, role))
+      .then(userManager.createUser(adminName, username, password, role))
       .then(function(scope) {
         // create a duplicate - should FAIL
         return rest.setScope(scope)
-          .then(userManager.createUser(adminName, username, pwHash, role))
+          .then(userManager.createUser(adminName, username, password, role))
           .then(function(scope) {
             // did not FAIL - that is an error
             scope.error = 'Duplicate username was not detected: ' + username;
@@ -125,7 +126,7 @@ describe('UserManager tests', function() {
 
   it('Get User', function(done) {
     const username = util.uid('User');
-    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const password = util.uid('Pass');
     const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
@@ -137,7 +138,7 @@ describe('UserManager tests', function() {
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash, role))
+      .then(userManager.createUser(adminName, username, password, role))
       // get user - should exist
       .then(userManager.getUser(adminName, username))
       .then(function(scope) {
@@ -152,7 +153,7 @@ describe('UserManager tests', function() {
 
   it('Get Users', function(done) {
     const username = util.uid('User');
-    const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
+    const password = util.uid('Pass');
     const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
@@ -167,7 +168,7 @@ describe('UserManager tests', function() {
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash, role))
+      .then(userManager.createUser(adminName, username, password, role))
       // get user - should exist
       .then(userManager.getUsers(adminName))
       .then(function(scope) {
@@ -185,8 +186,7 @@ describe('UserManager tests', function() {
 
   it('User Login', function(done) {
     const username = util.uid('User');
-    const password = '1234';
-    const pwHash = util.toBytes32(password); // FIXME this is not a hash
+    const password = util.uid('Pass');
     const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
@@ -198,7 +198,7 @@ describe('UserManager tests', function() {
         return scope;
       })
       // create user
-      .then(userManager.createUser(adminName, username, pwHash, role))
+      .then(userManager.createUser(adminName, username, password, role))
       // auth
       .then(userManager.login(adminName, username, password))
       .then(function(scope) {
@@ -210,5 +210,96 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
+  it('Get account', function(done) {
+    const buyer = 'Buyer1';
+    const supplier = 'Supplier1';
+    const password = util.uid('Pass');
+
+    rest.setScope(scope)
+      // create buyer/seller
+      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
+      .then(userManager.getAccount(adminName, buyer))
+      .then(function(scope) {
+        const account = scope.result;
+        const balance = new BigNumber(account.balance);
+        const faucetBalance = new BigNumber(1000).times(constants.ETHER);
+        balance.should.be.bignumber.equal(faucetBalance);
+        done();
+      }).catch(done);
+  });
+
+  it('Get balance', function(done) {
+    const buyer = util.uid('Buyer');
+    const password = util.uid('Pass');
+
+    rest.setScope(scope)
+      // create buyer/seller
+      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
+      .then(userManager.getBalance(adminName, buyer))
+      .then(function(scope) {
+        const balance = scope.result;
+        const faucetBalance = new BigNumber(1000).times(constants.ETHER);
+        balance.should.be.bignumber.equal(faucetBalance);
+        done();
+      }).catch(done);
+  });
+
+  it('Send funds', function(done) {
+    const buyer = util.uid('Buyer');
+    const supplier = util.uid('Supplier');
+    const password = util.uid('Pass');
+    const valueEther = 12;
+
+    scope.balances = {};
+
+    rest.setScope(scope)
+      // create buyer/seller
+      .then(rest.createUser(buyer, password))
+      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
+      .then(userManager.getBalance(adminName, buyer))
+      .then(function(scope) {
+        const balance = scope.result;
+        scope.balances[buyer] = balance;
+        return scope;
+      })
+      .then(rest.createUser(supplier, password))
+      .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
+      .then(userManager.getBalance(adminName, supplier))
+      .then(function(scope) {
+        const balance = scope.result;
+        scope.balances[supplier] = balance;
+        return scope;
+      })
+      // send
+      .then(rest.send(buyer, supplier, valueEther))
+      .then(function(scope) {
+        // calculate the fee
+        const txResult = scope.tx.slice(-1)[0].result;
+        scope.fee = new BigNumber(txResult.gasLimit).times(new BigNumber(txResult.gasPrice));
+        return scope;
+      })
+     .then(util.delayPromise(1000*10))
+      // check supplier
+      .then(userManager.getBalance(adminName, supplier))
+      .then(function(scope) {
+        const balance = scope.result;
+        const delta = balance.minus(scope.balances[supplier]);
+        const expectedDelta = constants.ETHER.mul(valueEther);
+        delta.should.be.bignumber.equal(expectedDelta);
+        return scope;
+      })
+      // check buyer
+      .then(userManager.getBalance(adminName, buyer))
+      .then(function(scope) {
+        const balance = scope.result;
+        const delta = balance.minus(scope.balances[buyer]);
+        const expectedDelta = constants.ETHER.mul(valueEther).plus(scope.fee).mul(-1);
+        delta.should.be.bignumber.equal(expectedDelta);
+        return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 
 });
