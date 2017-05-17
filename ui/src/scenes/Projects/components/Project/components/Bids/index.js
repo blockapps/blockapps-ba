@@ -8,7 +8,7 @@ class Bids extends Component {
     const project = this.props.project;
     let bidTable;
     if(project && project.name && project.state) {
-      bidTable = <BidTable name={project.name} projectState={project.state} />
+      bidTable = <BidTable bids={this.props.bids} projectState={project.state} />
     }
 
     return (

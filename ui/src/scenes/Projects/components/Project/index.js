@@ -7,6 +7,7 @@ import Toolbar from 'react-md/lib/Toolbars';
 
 import BidModal from '../BidModal/';
 import { fetchProject } from './actions/project.actions';
+import { fetchProjectBids } from './components/Bids/components/BidTable/actions/projectBids.actions';
 import { projectEvent } from './actions/project-event.actions';
 import { openBidModal } from '../BidModal/bidModal.actions';
 import Status from './components/Status';
@@ -19,6 +20,7 @@ class Project extends Component {
 
   componentWillMount() {
     this.props.fetchProject(encodeURI(this.props.params['pname']));
+    this.props.fetchProjectBids(encodeURI(this.props.params['pname']));
   }
 
   get isBuyer() {
@@ -71,18 +73,24 @@ class Project extends Component {
 
       if(this.isSupplier) {
         if (project.state === 'PRODUCTION') {
-          // TODO: check that accepted bid is made by current supplier
-          actions.push(
-            <Button
-              icon
-              onClick={(e) => this.handleProjectEventClick(e, project.name, 2)}
-              tooltipLabel="Mark as Shipped"
-              key="flight_takeoff"
-            >
-              flight_takeoff
-            </Button>
+          const myBidAccepted = this.props.bids.some(
+            bid =>
+              bid.state === 'ACCEPTED' && bid.supplier === this.props.login.username
           );
+          if (myBidAccepted) {
+            actions.push(
+              <Button
+                icon
+                onClick={(e) => this.handleProjectEventClick(e, project.name, 2)}
+                tooltipLabel="Mark as Shipped"
+                key="flight_takeoff"
+              >
+                flight_takeoff
+              </Button>
+            );
+          }
         }
+
         if(project.state === 'OPEN') {
           actions.push(
             <Button
@@ -132,7 +140,7 @@ class Project extends Component {
             <Detail project={project}/>
           </div>
           <div className="md-cell md-cell--4  md-cell--12-phone">
-            <Bids project={project} />
+            <Bids project={project} bids={this.props.bids} />
           </div>
         </div>
       </section>
@@ -144,7 +152,8 @@ function mapStateToProps(state) {
   return {
     project: state.project.project,
     login: state.login,
+    bids: state.bids.bids
   };
 }
 
-export default connect(mapStateToProps, { fetchProject, projectEvent, openBidModal })(Project);
+export default connect(mapStateToProps, { fetchProject, fetchProjectBids, projectEvent, openBidModal })(Project);

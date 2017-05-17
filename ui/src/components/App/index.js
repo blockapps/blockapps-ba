@@ -50,7 +50,7 @@ class App extends Component {
           toolbarTitle={ title }
           toolbarActions={ this.userBadge() }
         >
-          <LoadingBar style={{position: 'relative', zIndex: 20}} />
+          <LoadingBar style={{position: 'relative', zIndex: 15}} />
           {this.props.children}
         </NavigationDrawer>
       )
