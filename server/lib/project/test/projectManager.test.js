@@ -486,7 +486,7 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it('Accept a Bid, rejects the others, receive project', function(done) {
+  it.only('Accept a Bid, rejects the others, receive project', function(done) {
     const uid = util.uid();
     const projectArgs = createProjectArgs(uid);
     const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];

@@ -139,32 +139,60 @@ function acceptBid(adminName, bidId, name) {
 }
 
 // throws: ErrorCodes
-function receiveProject(adminName, name) {
+function receiveProject(adminName, name, password) {
   return function(scope) {
     rest.verbose('receiveProject', name);
     return rest.setScope(scope)
+      // get project
       .then(getProject(adminName, name))
+      // extract the buyer
       .then(function(scope) {
         const project = scope.result;
-        scope.buyer = project.buyer;
+        scope.buyerName = project.buyer;
         return scope;
       })
+      // get the buyer info
+      .then(function(scope) {
+        return userManager.getUser(adminName, scope.buyerName)(scope);
+      })
+      .then(function(scope) {
+        scope.buyer = scope.result;
+        return scope;
+      })
+      // get project bids
       .then(getBidsByName(name))
+      // extract the supplier out of the accepted bid
       .then(function(scope) {
         const bids = scope.result;
+        // find the accepted bid
         const accepted = bids.filter(function(bid) {
           return bid.state == BidState[BidState.ACCEPTED];
         });
         if (accepted.length != 1) {
           throw(new Error(ErrorCodes.NOT_FOUND));
         }
-        scope.supplier = accepted[0].supplier;
+        // supplier NAME
+        scope.supplierName = accepted[0].supplier;
         scope.valueEther = accepted[0].amount;
         return scope;
       })
-      .then(handleEvent(adminName, name, ProjectEvent.RECEIVE))
+      // get the supplier info
       .then(function(scope) {
-        return rest.send(scope.buyer, scope.supplier, scope.valueEther)(scope);
+        return userManager.getUser(adminName, scope.supplierName)(scope)
+      })
+      .then(function(scope) {
+        scope.supplier = scope.result;
+        return scope;
+      })
+      // RECEIVE the project
+      .then(handleEvent(adminName, name, ProjectEvent.RECEIVE))
+      // send the funds
+      .then(function(scope) {
+        //{fromUser, password, fromAddress, toAddress, valueEther, node}
+        const fromUser = scope.buyer.username;
+        const fromAddress = scope.buyer.account;
+        const toAddress = scope.supplier.account;
+        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
       })
   }
 }
