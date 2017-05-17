@@ -1,8 +1,7 @@
 import {
   USER_LOGIN_SUBMIT,
   USER_LOGIN_SUCCESS,
-  USER_LOGIN_FAILURE,
-  USER_LOGOUT,
+  USER_LOGIN_FAILURE
 } from './login.actions';
 
 const initialState = {
@@ -24,7 +23,7 @@ const reducer = function loginReducer (state = initialState, action) {
         error: null,
         authenticated: true,
         loginFailed: false
-      };
+      }
     case USER_LOGIN_FAILURE:
       return {
         username: null,
@@ -32,12 +31,10 @@ const reducer = function loginReducer (state = initialState, action) {
         error: action.error,
         authenticated: false,
         loginFailed: true
-      };
-    case USER_LOGOUT:
-      return initialState;
+      }
     default:
       return state;
   }
-};
+}
 
 export default reducer;

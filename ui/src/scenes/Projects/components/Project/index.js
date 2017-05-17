@@ -1,34 +1,23 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
+import { Link } from 'react-router';
 import Button from 'react-md/lib/Buttons/Button';
-import Chip from 'react-md/lib/Chips';
-import Toolbar from 'react-md/lib/Toolbars';
-
-import BidModal from '../BidModal/';
+import Card from 'react-md/lib/Cards/Card';
+import CardTitle from 'react-md/lib/Cards/CardTitle';
+import CardText from 'react-md/lib/Cards/CardText';
+import BidTable from '../BidTable/';
+import { FormattedDate, FormattedTime, FormattedNumber } from 'react-intl';
 import { fetchProject } from './actions/project.actions';
-import { fetchProjectBids } from './components/Bids/components/BidTable/actions/projectBids.actions';
 import { projectEvent } from './actions/project-event.actions';
-import { openBidModal } from '../BidModal/bidModal.actions';
-import Status from './components/Status';
-import Detail from './components/Detail';
-import Bids from './components/Bids';
-
-import './Project.css';
 
 class Project extends Component {
 
   componentWillMount() {
     this.props.fetchProject(encodeURI(this.props.params['pname']));
-    this.props.fetchProjectBids(encodeURI(this.props.params['pname']));
   }
 
   get isBuyer() {
     return this.props.login['role'] === 'BUYER'
-  }
-
-  get isSupplier() {
-    return this.props.login['role'] === 'SUPPLIER'
   }
 
   handleProjectEventClick = function(e, projectName, projectEvent) {
@@ -39,109 +28,141 @@ class Project extends Component {
   };
 
   render() {
-    const project = this.props.project;
-    const actions = [];
-    const children = [];
+    let projectContent;
+    let projectButtons = '';
 
-    if(project && project.name && project.state) {
-      //children
-      children.push(
-        <Chip
-          key="state"
-          label={project.state}
-          className="state-chip"
-        />
-      );
+    if (this.props.project && this.props.project['name']) {
+      const project = this.props.project;
 
-      //actions
       if (this.isBuyer) {
-
         if (project.state === 'INTRANSIT') {
-            actions.push(
-              <Button
-                icon
-                primary
-                onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
-                tooltipLabel="Mark as Received"
-                key="mood"
-              >
-                mood
-              </Button>
-            );
+          projectButtons =
+            <div className="md-cell">
+              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 3)} label="Mark as Received" />
+            </div>
         }
-      }
-
-      if(this.isSupplier) {
+      } else {
         if (project.state === 'PRODUCTION') {
-          const myBidAccepted = this.props.bids.some(
-            bid =>
-              bid.state === 'ACCEPTED' && bid.supplier === this.props.login.username
-          );
-          if (myBidAccepted) {
-            actions.push(
-              <Button
-                icon
-                onClick={(e) => this.handleProjectEventClick(e, project.name, 2)}
-                tooltipLabel="Mark as Shipped"
-                key="flight_takeoff"
-              >
-                flight_takeoff
-              </Button>
-            );
-          }
-        }
-
-        if(project.state === 'OPEN') {
-          actions.push(
-            <Button
-              icon
-              key="gavel"
-              tooltipLabel="Bid"
-              onClick={(e) => {
-                  e.stopPropagation();
-                  this.props.openBidModal();
-                }
-              }>
-                gavel
-              </Button>
-          );
+          // TODO: check that accepted bid is made by current supplier
+          projectButtons =
+            <div className="md-cell">
+              <Button raised primary onClick={(e) => this.handleProjectEventClick(e, project.name, 2)} label="Mark as Shipped" />
+            </div>
         }
       }
 
-      actions.push(
-        <Button
-          icon
-          key="home"
-          tooltipLabel="Home"
-          onClick={(e) => {
-              e.stopPropagation();
-              browserHistory.push('/projects');
+        projectContent =
+        <Card className="md-cell md-cell--12">
+          <CardTitle
+            title={project.name ? project.name : ''}
+             subtitle={
+               project.created
+               ? <span>
+                   <FormattedDate
+                     value={new Date(project.created)}
+                     day="numeric"
+                     month="long"
+                     year="numeric"/>, <FormattedTime value={new Date(project.created)} />
+                 </span>
+               : ''
+             }
+          />
+          <CardText>
+            <div className="md-grid">
+              {projectButtons}
+              <div className="md-cell md-cell--12">
+                <h4 className="md-title">Status:</h4>
+                {project.state ? project.state : ''}
+              </div>
+            </div>
+            <div className="md-grid">
+              <div className="md-cell md-cell--12">
+                <h4 className="md-title">Description:</h4>
+                {project.description ? project.description : '-'}
+              </div>
+            </div>
+            <div className="md-grid">
+              <div className="md-cell md-cell--12">
+                <h4 className="md-title">Desired price:</h4>
+                {
+                  project.price
+                  ? <FormattedNumber
+                      value={project.price}
+                      style="currency" //eslint-disable-line
+                      currency="USD" />
+                  : ''
+                }
+              </div>
+            </div>
+            <div className="md-grid">
+              <div className="md-cell md-cell--12">
+                <h4 className="md-title ">Deliver by:</h4>
+                {
+                  project.targetDelivery
+                  ? <FormattedDate
+                      value={new Date(project.targetDelivery)}
+                      day="numeric"
+                      month="long"
+                      year="numeric"/>
+                  : ''
+                }
+              </div>
+            </div>
+            {/*<div className="md-grid">*/}
+              {/*<div className="md-cell md-cell--12">*/}
+                {/*<h4 className="md-title ">Deliver address:</h4>*/}
+                {/*/!*{`${project.deliveryAddress.street}, ${project.deliveryAddress.city}, ${project.deliveryAddress.state}, ${project.deliveryAddress.zip}`}*!/*/}
+              {/*</div>*/}
+            {/*</div>*/}
+            <div className="md-grid">
+              <div className="md-cell md-cell--12">
+                <h4 className="md-title ">Specification:</h4>
+                {project.spec ? project.spec : '-'}
+              </div>
+            </div>
+            { project.delivered
+              ? <div className="md-grid">
+                  <div className="md-cell md-cell--12">
+                    <h4 className="md-title ">Delivered on:</h4>
+                    <FormattedDate
+                      value={new Date(project.delivered)}
+                      day="numeric"
+                      month="long"
+                      year="numeric"/>, <FormattedTime value={new Date(project.delivered)} />
+                  </div>
+                </div>
+              : null
             }
-          }>
-            home
-        </Button>
-      );
+            <div className="md-grid">
+              <div className="md-cell md-cell--11">
+                <h4 className="md-title ">Bids</h4>
+              </div>
+              {
+                !this.isBuyer && project.state === 'OPEN'
+                ? <div className="md-cell md-cell--1">
+                    <Link className="md-cell--right" to={'/projects/' + project.name + "/bid"}>
+                      <Button raised primary label="Add Bid" />
+                    </Link>
+                  </div>
+                : ''
+              }
+              {
+                project.name && project.name.length > 0
+                ? <div className="md-cell md-cell--12">
+                    <BidTable name={project.name} projectState={project.state} />
+                  </div>
+                : ''
+              }
+            </div>
+          </CardText>
+        </Card>
     }
 
     return (
       <section>
-        <Toolbar
-          themed
-          title={project.name}
-          actions={actions}
-          children={children}
-        />
-        <BidModal name={project.name}/>
+        <h2>Project</h2>
         <div className="md-grid">
-          <div className="md-cell md-cell--4 md-cell--12-phone">
-            <Status state={project.state} />
-          </div>
-          <div className="md-cell md-cell--4 md-cell--12-phone">
-            <Detail project={project}/>
-          </div>
-          <div className="md-cell md-cell--4  md-cell--12-phone">
-            <Bids project={project} bids={this.props.bids} />
-          </div>
+          {projectContent}
         </div>
       </section>
     );
@@ -152,8 +173,7 @@ function mapStateToProps(state) {
   return {
     project: state.project.project,
     login: state.login,
-    bids: state.bids.bids
   };
 }
 
-export default connect(mapStateToProps, { fetchProject, fetchProjectBids, projectEvent, openBidModal })(Project);
+export default connect(mapStateToProps, { fetchProject, projectEvent })(Project);

@@ -7,7 +7,6 @@ import CardTitle from 'react-md/lib/Cards/CardTitle';
 import { reduxForm, Field } from 'redux-form';
 import { projectCreate } from './actions/project-create.actions';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
-import { Link } from 'react-router';
 import './ProjectCreate.css';
 
 
@@ -36,8 +35,7 @@ class ProjectCreate extends Component {
     return (
       <section>
         <div className="md-grid">
-          <div className="md-cell md-cell--3-desktop md-cell--2-tablet md-cell--phone-hidden" />
-          <Card className="md-cell md-cell--6-desktop md-cell--8-tablet md-cell--12-phone">
+          <Card className="md-cell md-cell--12">
             <CardTitle
               title="New Project"
             />
@@ -50,17 +48,19 @@ class ProjectCreate extends Component {
                     type="text"
                     label="Short name"
                     required
-                    maxLength={100}
-                    className="md-cell md-cell--12"
+                    maxLength={50}
+                    className="md-cell--4"
                     component={ReduxedTextField} />
+                  <div className="md-cell--12" />
                   <Field
                     id="description"
                     name="description"
                     type="text"
                     label="Description"
-                    required
-                    className="md-cell md-cell--12"
+                    maxLength={50}
+                    className="md-cell--4"
                     component={ReduxedTextField} />
+                  <div className="md-cell--12" />
                   <Field
                     id="price"
                     name="price"
@@ -69,17 +69,19 @@ class ProjectCreate extends Component {
                     min="1"
                     step="1"
                     required
-                    className="md-cell md-cell--12"
+                    className="md-cell--4"
                     component={ReduxedTextField} />
+                  <div className="md-cell--12" />
                   <Field
                     id="targetDelivery"
                     name="targetDelivery"
                     label="Desired delivery date"
-                    className="md-cell md-cell--12"
+                    className="md-cell--4"
                     required
                     type="date" // ignore the console warnings, todo: implement Date Picker with redux form
                     component={ReduxedTextField}
                   />
+                  <div className="md-cell--12" />
                   {/*<Field*/}
                     {/*id="addressStreet"*/}
                     {/*name="addressStreet"*/}
@@ -113,6 +115,7 @@ class ProjectCreate extends Component {
                     {/*maxLength={5}*/}
                     {/*className="md-cell--4"*/}
                     {/*component={ReduxedTextField} />*/}
+                  {/*<div className="md-cell--12" />*/}
                   <Field
                     id="spec"
                     name="spec"
@@ -120,15 +123,10 @@ class ProjectCreate extends Component {
                     label="Specification"
                     maxLength={1000}
                     rows={6}
-                    className="md-cell md-cell--12"
+                    className="md-cell--4"
                     component={ReduxedTextField} />
-                  <div className="md-cell md-cell--12" />
-                  <div className="md-cell md-cell--12 md-text-right">
-                    <Button raised primary label="Create" type="submit" />
-                    <Link to="/projects">
-                      <Button className="margin-left" raised label="Cancel" />
-                    </Link>
-                  </div>
+                  <div className="md-cell--12" />
+                  <Button raised primary label="Create" type="submit" />
                 </div>
               </form>
             </CardText>

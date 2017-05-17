@@ -4,10 +4,10 @@ import {
 import {
   API_URL,
   API_MOCK
-} from '../../../../../../../../../environment';
+} from '../../../../../environment';
 import {
   handleApiError
-} from '../../../../../../../../../lib/apiErrorHandler';
+} from '../../../../../lib/apiErrorHandler';
 import {
   FETCH_PROJECT_BIDS,
   fetchProjectBidsSuccess,

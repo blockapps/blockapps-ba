@@ -1,26 +1,26 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Dialog from 'react-md/lib/Dialogs';
+import { browserHistory } from 'react-router';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { reduxForm, Field } from 'redux-form';
 //import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
-import { bidSubmit, closeBidModal } from './bidModal.actions';
-import './BidModal.css';
+import { bidSubmit } from './bid.actions';
+import './Bid.css';
 
-class BidModal extends Component {
+class Bid extends Component {
 
   closeDialog = () => {
-    this.props.closeBidModal();
+    browserHistory.goBack();
   }
 
   submit = (values) => {
     this.props.bidSubmit({
-      name: this.props.name,
+      name: this.props.params.name,
       supplier: this.props.supplier,
       amount: values.amount
     });
-    this.props.closeBidModal();
   }
 
   render() {
@@ -31,8 +31,8 @@ class BidModal extends Component {
     return(
       <Dialog
       id="simpleDialogExample"
-      visible={this.props.isOpen}
-      title={ "Bid for " + this.props.name }
+      visible={true}
+      title={ "Bid for " + this.props.params.name }
       onHide={this.closeDialog}>
       <form onSubmit={handleSubmit(this.submit)}>
         <div className="md-grid">
@@ -58,7 +58,6 @@ class BidModal extends Component {
           <div className="md-cell--12">
             <Button raised primary label="Bid" type="submit" className="bid-button"/>
           </div>
-
         </div>
       </form>
     </Dialog>
@@ -69,12 +68,11 @@ class BidModal extends Component {
 
 function mapStateToProps(state) {
   return {
-    supplier: state.login.username,
-    isOpen: state.bidModal.isOpen
+    supplier: state.login.username
   };
 }
 
-const connected = connect(mapStateToProps, { bidSubmit, closeBidModal })(BidModal);
+const connected = connect(mapStateToProps, { bidSubmit })(Bid);
 
 const formedComponent = reduxForm({ form: 'bid'})(connected);
 

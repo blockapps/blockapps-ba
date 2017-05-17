@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 import Button from 'react-md/lib/Buttons/Button';
-import Toolbar from 'react-md/lib/Toolbars';
-import ProjectList from './components/ProjectList';
+
+import ProjectsList from './components/ProjectsList';
 
 class Projects extends Component {
 
@@ -18,43 +18,30 @@ class Projects extends Component {
   }
 
   render() {
-    const actions = this.isBuyer
-      ?
-      <Button
-        flat
-        key="add_circle_outline"
-        label="Create New Project"
-        onClick={(e) => this.handleNewProjectClick(e)}>
-          add_circle_outline
-        </Button>
-      :
-      '';
-
-    const projectView = this.isBuyer
-      ?
-      <div className="md-grid">
-        <div className="md-cell md-cell--12">
-          <ProjectList listType="buyer" listTitle="My Projects" />
-        </div>
-      </div>
-      :
-      <div className="md-grid">
-        <div className="md-cell md-cell--12">
-          <ProjectList listType="supplier" listTitle="My Bids" />
-        </div>
-        <div className="md-cell md-cell--12">
-          <ProjectList listType="open" listTitle="Open Projects" />
-        </div>
-      </div>;
 
     return (
       <section>
-        <Toolbar
-          themed
-          title="Projects"
-          actions={actions}
-        />
-        {projectView}
+        <h2>Projects</h2>
+        <div className="md-grid">
+          {
+            this.isBuyer
+            ? <div className="md-cell">
+                <Button flat primary label="New Project" onClick={(e) => this.handleNewProjectClick(e)}>add_circle</Button>
+              </div>
+            : ''
+          }
+
+            {
+              this.isBuyer
+              ? <div className="md-cell--12">
+                  <ProjectsList listType="buyer" listTitle="My Projects" />
+                </div>
+              : <div className="md-cell--12">
+                  <ProjectsList listType="supplier" listTitle="My Bids" />
+                </div>
+            }
+
+        </div>
       </section>
     )
   }

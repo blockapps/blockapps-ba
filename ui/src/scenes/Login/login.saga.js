@@ -51,7 +51,7 @@ function* submitLogin(action) {
     yield put(hideLoading());
     if(response.data.authenticate) {
       yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
-
+      browserHistory.push('/projects');
     }
   }
   catch(err)
@@ -59,7 +59,6 @@ function* submitLogin(action) {
     yield put(userLoginFailure(err));
     yield put(hideLoading());
   }
-  browserHistory.push('/projects');
 }
 
 export default function* watchLoginSubmit() {
