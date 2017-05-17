@@ -8,6 +8,9 @@ const userManager = require(process.cwd() + '/' + config.libPath + '/user/userMa
 const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
 const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
+const ErrorCodes = ba.rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
+
 
 // ========== Admin (super user) ==========
 
@@ -237,13 +240,13 @@ function getBids(adminName, name) {
 }
 
 // handle project event
-function handleEvent(adminName, name, projectEvent, username) {
+function handleEvent(adminName, name, projectEvent, username, password) {
   return function(scope) {
     rest.verbose('dapp: project handleEvent', {name, projectEvent, username});
 
     switch(projectEvent) {
       case ProjectEvent.RECEIVE:
-        return projectManager.receiveProject(adminName, name, username)(scope);
+        return receiveProject(adminName, name, password)(scope);
       default:
         return projectManager.handleEvent(adminName, name, projectEvent)(scope);
     }
@@ -281,7 +284,7 @@ function receiveProject(adminName, name, password) {
         return scope;
       })
       // get project bids
-      .then(getBidsByName(name))
+      .then(projectManager.getBidsByName(name))
       // extract the supplier out of the accepted bid
       .then(function(scope) {
         const bids = scope.result;
@@ -306,14 +309,15 @@ function receiveProject(adminName, name, password) {
         return scope;
       })
       // RECEIVE the project
-      .then(handleEvent(adminName, name, ProjectEvent.RECEIVE))
+      .then(projectManager.handleEvent(adminName, name, ProjectEvent.RECEIVE))
       // send the funds
       .then(function(scope) {
         //{fromUser, password, fromAddress, toAddress, valueEther, node}
         const fromUser = scope.buyer.username;
         const fromAddress = scope.buyer.account;
         const toAddress = scope.supplier.account;
-        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
+        return scope;
+        //return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
       })
   }
 }
