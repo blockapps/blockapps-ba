@@ -482,6 +482,55 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it.only('Accept a Bid, rejects the others, receive project', function(done) {
+    const projectArgs = createProjectArgs(util.uid());
+    const buyer = 'Buyer1';
+    const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
+    const amount = 5678;
+    const password = '1234';
+
+    rest.setScope(scope)
+      // create the users
+      .then(rest.createUser(buyer, password))
+      .then(rest.createUser(suppliers[0], password))
+      .then(rest.createUser(suppliers[1], password))
+      .then(rest.createUser(suppliers[2], password))
+      // create project
+      .then(projectManager.createProject(adminName, projectArgs))
+      // create bids
+      .then(createMultipleBids(adminName, projectArgs.name, suppliers))
+      .then(projectManager.getBidsByName(projectArgs.name))
+      // accept one bid
+      .then(function(scope) {
+        const bids = scope.result;
+        scope.acceptedBid = bids[0].id; // accept bid 0
+        return projectManager.acceptBid(adminName, scope.acceptedBid, projectArgs.name)(scope);
+      })
+      // get all the bids for this project
+      .then(function(scope) {
+        return projectManager.getBidsByName(projectArgs.name)(scope);
+      })
+      // check that the accepted bid is ACCEPTED and all others are REJECTED
+      .then(function(scope) {
+        const bids = scope.result;
+        bids.map(function(bid) {
+          if (bid.id === scope.acceptedBid) {
+            assert.equal(bid.state, BidState[BidState.ACCEPTED]);
+          } else {
+            assert.equal(bid.state, BidState[BidState.REJECTED]);
+          }
+        });
+        return scope;
+      })
+      // deliver the project
+      .then(projectManager.handleEvent(adminName, projectArgs.name, ProjectEvent.DELIVER))
+      // receive the project
+      .then(projectManager.receiveProject(adminName, projectArgs.name))
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
   it('Get projects by supplier', function(done) {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
@@ -504,4 +553,5 @@ describe('ProjectManager tests', function() {
         done();
       }).catch(done);
   });
+
 });

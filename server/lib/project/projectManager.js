@@ -9,6 +9,7 @@ const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
+const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const projectContractName = require('./project').contractName;
 
@@ -132,7 +133,40 @@ function acceptBid(adminName, bidId, name) {
         }).then(function() { // all done
           return scope;
         });
-      });
+      })
+      .then(handleEvent(adminName, name, ProjectEvent.ACCEPT));
+  }
+}
+
+// throws: ErrorCodes
+function receiveProject(adminName, name) {
+  return function(scope) {
+    rest.verbose('receiveProject', name);
+    return rest.setScope(scope)
+      .then(getProject(adminName, name))
+      .then(function(scope) {
+        const project = scope.result;
+        scope.buyer = project.buyer;
+        return scope;
+      })
+      .then(getBidsByName(name))
+      .then(function(scope) {
+        const bids = scope.result;
+        const accepted = bids.filter(function(bid) {
+          return bid.state == BidState[BidState.ACCEPTED];
+        });
+        if (accepted.length != 1) {
+          throw(new Error(ErrorCodes.NOT_FOUND));
+        }
+        scope.supplier = accepted[0].supplier;
+        scope.valueEther = accepted[0].amount;
+        return scope;
+      })
+      .then(handleEvent(adminName, name, ProjectEvent.RECEIVE))
+      .then(function(scope) {
+        console.log('>>>>>>>>>>>>>>>>>>>>>>', scope.users);
+          return rest.send(scope.buyer, scope.supplier, scope.valueEther)(scope);
+      })
   }
 }
 
@@ -343,6 +377,10 @@ function handleEvent(adminName, name, projectEvent) {
         // returns (ErrorCodes, ProjectState)
         const tupleString = scope.contracts[contractName].calls[method];
         const tupleArray = tupleString.split(',');
+        const errorCode = tupleArray[0];
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
+        }
         scope.result = {errorCode: tupleArray[0], state: tupleArray[1]};
         return scope;
       });
@@ -367,4 +405,5 @@ module.exports = {
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
   handleEvent: handleEvent,
+  receiveProject: receiveProject,
 };
