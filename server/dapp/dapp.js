@@ -254,7 +254,7 @@ function getBalance(adminName, username) {
   return function(scope) {
     rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(projectManager.getBalance(adminName, username));
+      .then(userManager.getBalance(adminName, username));
   }
 }
 
@@ -272,6 +272,7 @@ module.exports = function (libPath) {
     // business functions
     login: login,
     createProject: createProject,
+    getBalance: getBalance,
     getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
