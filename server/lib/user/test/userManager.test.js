@@ -218,7 +218,7 @@ describe('UserManager tests', function() {
     rest.setScope(scope)
       // create buyer/seller
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getAccount(adminName, buyer))
+      .then(userManager.getAccount(buyer))
       .then(function(scope) {
         const account = scope.result;
         const balance = new BigNumber(account.balance);
@@ -235,7 +235,7 @@ describe('UserManager tests', function() {
     rest.setScope(scope)
       // create buyer/seller
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getBalance(adminName, buyer))
+      .then(userManager.getBalance(buyer))
       .then(function(scope) {
         const balance = scope.result;
         const faucetBalance = new BigNumber(1000).times(constants.ETHER);
@@ -256,7 +256,7 @@ describe('UserManager tests', function() {
       // create buyer/seller
       .then(rest.createUser(buyer, password))
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getBalance(adminName, buyer))
+      .then(userManager.getBalance(buyer))
       .then(function(scope) {
         const balance = scope.result;
         scope.balances[buyer] = balance;
@@ -264,7 +264,7 @@ describe('UserManager tests', function() {
       })
       .then(rest.createUser(supplier, password))
       .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
-      .then(userManager.getBalance(adminName, supplier))
+      .then(userManager.getBalance(supplier))
       .then(function(scope) {
         const balance = scope.result;
         scope.balances[supplier] = balance;
@@ -280,7 +280,7 @@ describe('UserManager tests', function() {
       })
      .then(util.delayPromise(1000*10))
       // check supplier
-      .then(userManager.getBalance(adminName, supplier))
+      .then(userManager.getBalance(supplier))
       .then(function(scope) {
         const balance = scope.result;
         const delta = balance.minus(scope.balances[supplier]);
@@ -289,7 +289,7 @@ describe('UserManager tests', function() {
         return scope;
       })
       // check buyer
-      .then(userManager.getBalance(adminName, buyer))
+      .then(userManager.getBalance(buyer))
       .then(function(scope) {
         const balance = scope.result;
         const delta = balance.minus(scope.balances[buyer]);
