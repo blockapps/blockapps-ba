@@ -142,7 +142,8 @@ const projectsController = {
         dapp.handleEvent(
           deploy.adminName,
           req.params.name,
-          req.body.projectEvent
+          req.body.projectEvent,
+          req.body.username
         )
       )
       .then(scope => {

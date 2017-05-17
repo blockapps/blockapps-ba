@@ -15,7 +15,7 @@ import { setUserMessage } from '../../../../../components/UserMessage/user-messa
 
 const url = API_URL + '/projects/:projectName/events';
 
-function projectEventCall(projectName, projectEvent) {
+function projectEventCall(projectName, projectEvent, username) {
 
   if(API_MOCK) {
     return new Promise(function(resolve,reject){
@@ -31,7 +31,7 @@ function projectEventCall(projectName, projectEvent) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({projectEvent: projectEvent})
+      body: JSON.stringify({projectEvent: projectEvent, username: username})
     })
       .then(handleApiError)
       .then(function(response) {
@@ -46,7 +46,7 @@ function projectEventCall(projectName, projectEvent) {
 function* projectEvent(action){
   try {
     yield put(showLoading());
-    yield call(projectEventCall, action.projectName, action.projectEvent);
+    yield call(projectEventCall, action.projectName, action.projectEvent, action.username);
     yield put(projectEventSuccess());
     yield put(hideLoading());
     yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent]));
