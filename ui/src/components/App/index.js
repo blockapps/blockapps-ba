@@ -27,7 +27,7 @@ class App extends Component {
           toolbarTitle={ title }
           toolbarActions={ <UserBadge username={this.props.login.username} /> }
         >
-          <LoadingBar style={{position: 'relative', zIndex: 20}} />
+          <LoadingBar style={{position: 'fixed', zIndex: 15}} />
           {this.props.children}
         </NavigationDrawer>
       )

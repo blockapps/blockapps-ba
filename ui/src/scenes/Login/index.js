@@ -24,7 +24,7 @@ class Login extends Component {
       <div className="md-grid md-toolbar--relative login-margin-top">
         <div className="md-cell md-cell--4 md-cell--1-tablet md-cell--phone-hidden" />
         <div className="md-cell md-cell--4 md-cell--10-tablet md-cell--12-phone">
-          <Paper className="login-paper" zDepth={5}>
+          <Paper className="login-paper" zDepth={3}>
             <Toolbar colored title="Login" />
             <form onSubmit={handleSubmit(this.submit)}>
               <div className="md-grid">
