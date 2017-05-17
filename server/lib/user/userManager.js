@@ -41,7 +41,7 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
-function getAccount(adminName, username, node) {
+function getAccount(username, node) {
   return function (scope) {
     rest.verbose('getAccount', username);
     return rest.setScope(scope)
@@ -55,11 +55,11 @@ function getAccount(adminName, username, node) {
   }
 }
 
-function getBalance(adminName, username, node) {
+function getBalance(username, node) {
   return function (scope) {
     rest.verbose('getBalance', username);
     return rest.setScope(scope)
-      .then(getAccount(adminName, username, node))
+      .then(getAccount(username, node))
       .then(function(scope){
         const account = scope.result;
         const balance = new BigNumber(account.balance);

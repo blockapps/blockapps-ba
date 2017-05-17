@@ -250,11 +250,11 @@ function handleEvent(adminName, name, projectEvent) {
 }
 
 // getBalance
-function getBalance(adminName, username) {
+function getBalance(username) {
   return function(scope) {
     rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(projectManager.getBalance(adminName, username));
+      .then(userManager.getBalance(username));
   }
 }
 
