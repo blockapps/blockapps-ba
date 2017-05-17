@@ -1,5 +1,5 @@
 import {
-  takeLatest,
+  takeEvery,
   put,
   call
 } from 'redux-saga/effects';
@@ -11,10 +11,10 @@ import {
   handleApiError
 } from '../../../../lib/apiErrorHandler';
 import {
-  FETCH_PROJECTS_LIST,
-  fetchProjectsListSuccess,
-  fetchProjectsListFailure
-} from './projects-list.actions';
+  FETCH_PROJECT_LIST,
+  fetchProjectListSuccess,
+  fetchProjectListFailure
+} from './project-list.actions';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const url = API_URL + '/projects?{0}';
@@ -68,11 +68,10 @@ function getProjectsMock() {
   });
 }
 
-function getProjectsList(listType, username) {
+function getProjectList(listType, username) {
   if (API_MOCK) {
     return getProjectsMock();
   }
-
   let query;
   switch (listType) {
     case 'buyer':
@@ -105,19 +104,19 @@ function getProjectsList(listType, username) {
     });
 }
 
-function* fetchProjectsList(action) {
+function* fetchProjectList(action) {
   try {
     yield put(showLoading());
-    let response = yield call(getProjectsList, action.listType, action.username);
+    let response = yield call(getProjectList, action.listType, action.username);
     yield put(hideLoading());
-    yield put(fetchProjectsListSuccess(response.data['projects']));
+    yield put(fetchProjectListSuccess(action.listType, response.data['projects']));
   }
   catch (err) {
-    yield put(fetchProjectsListFailure(err.message));
+    yield put(fetchProjectListFailure(err.message));
     yield put(hideLoading());
   }
 }
 
-export default function* watchFetchProjectsList() {
-  yield takeLatest(FETCH_PROJECTS_LIST, fetchProjectsList);
+export default function* watchFetchProjectList() {
+  yield takeEvery(FETCH_PROJECT_LIST, fetchProjectList);
 }

@@ -21,49 +21,41 @@ class Login extends Component {
     } = this.props;
 
     return (
-      <div className="md-grid md-toolbar--relative">
-        <div className="md-cell--4 md-cell--phone-hidden" />
-        <div className="md-cell--4 md-cell--12-phone">
-          <Paper className="login-paper" zDepth={5}>
+      <div className="md-grid md-toolbar--relative login-margin-top">
+        <div className="md-cell md-cell--4 md-cell--1-tablet md-cell--phone-hidden" />
+        <div className="md-cell md-cell--4 md-cell--10-tablet md-cell--12-phone">
+          <Paper className="login-paper" zDepth={3}>
             <Toolbar colored title="Login" />
             <form onSubmit={handleSubmit(this.submit)}>
               <div className="md-grid">
-                <div className="md-cell--12">
-                  <div className="md-grid md-grid--no-spacing">
-                    <div className="md-cell--2" />
-                    <Field
-                      id="username"
-                      name="username"
-                      type="text"
-                      label="Enter Username"
-                      className="md-cell--8 md-cell--top"
-                      component={ReduxedTextField} />
-                    <div className="md-cell--2" />
-                  </div>
+                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                <Field
+                  id="username"
+                  name="username"
+                  type="text"
+                  label="Enter Username"
+                  className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
+                  component={ReduxedTextField} />
+                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                <Field
+                  id="password"
+                  name="password"
+                  type="password"
+                  label="Enter Password"
+                  className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
+                  component={ReduxedTextField} />
+                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                <div className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">
+                  <Button raised primary label="Login" type="submit" />
                 </div>
-                <div className="md-cell--12">
-                  <div className="md-grid md-grid--no-spacing">
-                    <div className="md-cell--2" />
-                    <Field
-                      id="password"
-                      name="password"
-                      type="password"
-                      label="Enter Password"
-                      className="md-cell--8 md-cell--bottom"
-                      component={ReduxedTextField} />
-                    <div className="md-cell--2" />
-                  </div>
-                </div>
-                <div className="md-cell--12" />
-                <div className="md-cell--right login-cell">
-                  <Button className="md-cell--right" raised primary label="Login" type="submit" />
-                </div>
-                <div className="md-cell--3" />
+                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
               </div>
             </form>
           </Paper>
         </div>
-        <div className="md-cell--4 md-cell--phone-hidden" />
+        <div className="md-cell md-cell--4 md-cell--1-tablet md-cell--phone-hidden" />
       </div>
     );
   }
