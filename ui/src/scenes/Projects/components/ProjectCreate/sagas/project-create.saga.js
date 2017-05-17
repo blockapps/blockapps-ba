@@ -8,6 +8,7 @@ import { browserHistory } from 'react-router';
 import { API_URL } from '../../../../../environment';
 import { handleApiError } from '../../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
+import { setUserMessage } from '../../../../../components/UserMessage/user-message.action';
 
 const projectsUrl = API_URL + '/projects';
 
@@ -37,6 +38,7 @@ function* submitProjectCreate(action) {
     if(response.data.project) {
       yield put(projectCreateSuccess(response.data.project));
       browserHistory.push('/projects');
+      yield put(setUserMessage('Contract Created Successfully'));
     }
   }
   catch(err)
