@@ -30,8 +30,10 @@ describe('User tests', function() {
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
     const role = user.UserRole.SUPPLIER;
+    const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     const args = {
+      _account: account,
       _username: username,
       _pwHash: pwHash,
       _id: id,
@@ -45,6 +47,7 @@ describe('User tests', function() {
       .then(function(scope) {
         const result = scope.result;
 
+        assert.equal(result.account, account, 'account');
         assert.equal(result.username, username, 'username');
         assert.equal(util.fixBytes(result.pwHash), pwHash, 'pwHash');
         assert.equal(result.id, id, 'id');
@@ -64,8 +67,10 @@ describe('User tests', function() {
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
     const role = user.UserRole.SUPPLIER;
+    const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     const args = {
+      _account: account,
       _username: username,
       _pwHash: pwHash,
       _id: id,

@@ -31,13 +31,13 @@ contract UserManager is ErrorCodes, Util, UserRole {
     return users[userId];
   }
 
-  function createUser(string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+  function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
     // fail if username exists
     if (exists(username)) return ErrorCodes.EXISTS;
     // add user
     uint userId = users.length;
     usernameToIdMap[b32(username)] = userId;
-    users.push(new User(username, pwHash, userId, role));
+    users.push(new User(account, username, pwHash, userId, role));
     return ErrorCodes.SUCCESS;
   }
 

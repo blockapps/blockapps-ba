@@ -1,9 +1,9 @@
-url: 'http://strato-int.centralus.cloudapp.azure.com/bloc/'
-adminName: Admin_11907_20133774049
+url: 'http://bayar6.eastus.cloudapp.azure.com/bloc/'
+adminName: Admin_12240_20159897986
 adminPassword: '1234'
-adminAddress: 7cad3ff7feccc75c117acf5624a920c156f8344e
+adminAddress: 763cfa33a455ed8c6efc5f2627118fdb5d482869
 AdminInterface:
-  address: 85dfb0a237797592e104c349ca2c801771d10f63
+  address: d92d8f16bebb20e3050284849f0313d00151f23d
 users:
   - username: Supplier1
     password: '1234'

@@ -34,8 +34,7 @@ class Project extends Component {
   handleProjectEventClick = function(e, projectName, projectEvent) {
     e.stopPropagation();
     // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
-    this.props.projectEvent(projectName, projectEvent);
-
+    this.props.projectEvent(projectName, projectEvent, this.props.login['username']);
   };
 
   render() {

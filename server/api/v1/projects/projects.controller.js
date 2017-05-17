@@ -142,7 +142,11 @@ const projectsController = {
         dapp.handleEvent(
           deploy.adminName,
           req.params.name,
-          req.body.projectEvent
+          req.body.projectEvent,
+          req.body.username,
+          deploy.users.filter(function(user){
+            return user.username == req.body.username;
+          })[0].password
         )
       )
       .then(scope => {

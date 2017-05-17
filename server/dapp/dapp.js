@@ -8,6 +8,9 @@ const userManager = require(process.cwd() + '/' + config.libPath + '/user/userMa
 const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
 const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
+const ErrorCodes = ba.rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
+
 
 // ========== Admin (super user) ==========
 
@@ -135,6 +138,8 @@ function login(adminName, username, password) {
   return function(scope) {
     rest.verbose('dapp: login', {username, password});
     return setScope(scope)
+    .then(userManager.getUser(adminName, username))
+    .then(userManager.exists(adminName, username))
       .then(userManager.login(adminName, username, password))
       .then(function(scope) {
         // auth failed
@@ -235,14 +240,13 @@ function getBids(adminName, name) {
 }
 
 // handle project event
-function handleEvent(adminName, name, projectEvent) {
+function handleEvent(adminName, name, projectEvent, username, password) {
   return function(scope) {
-    rest.verbose('dapp: project handleEvent', {name, projectEvent});
+    rest.verbose('dapp: project handleEvent', {name, projectEvent, username});
 
     switch(projectEvent) {
       case ProjectEvent.RECEIVE:
-        const buyer = 'Buyer1';
-        return projectManager.receiveProject(adminName, name, buyer)(scope);
+        return receiveProject(adminName, name, password)(scope);
       default:
         return projectManager.handleEvent(adminName, name, projectEvent)(scope);
     }
@@ -250,13 +254,73 @@ function handleEvent(adminName, name, projectEvent) {
 }
 
 // getBalance
-function getBalance(adminName, username) {
+function getBalance(username) {
   return function(scope) {
     rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(userManager.getBalance(adminName, username));
+      .then(userManager.getBalance(username));
   }
 }
+
+// throws: ErrorCodes
+function receiveProject(adminName, name, password) {
+  return function(scope) {
+    rest.verbose('receiveProject', name);
+    return rest.setScope(scope)
+      // get project
+      .then(getProject(adminName, name))
+      // extract the buyer
+      .then(function(scope) {
+        const project = scope.result;
+        scope.buyerName = project.buyer;
+        return scope;
+      })
+      // get the buyer info
+      .then(function(scope) {
+        return userManager.getUser(adminName, scope.buyerName)(scope);
+      })
+      .then(function(scope) {
+        scope.buyer = scope.result;
+        return scope;
+      })
+      // get project bids
+      .then(projectManager.getBidsByName(name))
+      // extract the supplier out of the accepted bid
+      .then(function(scope) {
+        const bids = scope.result;
+        // find the accepted bid
+        const accepted = bids.filter(function(bid) {
+          return bid.state == BidState[BidState.ACCEPTED];
+        });
+        if (accepted.length != 1) {
+          throw(new Error(ErrorCodes.NOT_FOUND));
+        }
+        // supplier NAME
+        scope.supplierName = accepted[0].supplier;
+        scope.valueEther = accepted[0].amount;
+        return scope;
+      })
+      // get the supplier info
+      .then(function(scope) {
+        return userManager.getUser(adminName, scope.supplierName)(scope)
+      })
+      .then(function(scope) {
+        scope.supplier = scope.result;
+        return scope;
+      })
+      // RECEIVE the project
+      .then(projectManager.handleEvent(adminName, name, ProjectEvent.RECEIVE))
+      // send the funds
+      .then(function(scope) {
+        //{fromUser, password, fromAddress, toAddress, valueEther, node}
+        const fromUser = scope.buyer.username;
+        const fromAddress = scope.buyer.account;
+        const toAddress = scope.supplier.account;
+        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
+      })
+  }
+}
+
 
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
