@@ -1,0 +1,19 @@
+url: 'http://192.168.0.106/bloc'
+adminName: Admin_74305_12953009641
+adminPassword: '1234'
+adminAddress: a4a785078a386f5a2d3022cbc777cf606e5cd409
+AdminInterface:
+  address: 5d7523a07fba12b37f93e18aefff66071a6a72a7
+users:
+  - username: Supplier1
+    password: '1234'
+    role: SUPPLIER
+  - username: Supplier2
+    password: '1234'
+    role: SUPPLIER
+  - username: Buyer1
+    password: '1234'
+    role: BUYER
+  - username: Buyer2
+    password: '1234'
+    role: BUYER
