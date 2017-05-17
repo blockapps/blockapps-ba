@@ -84,6 +84,11 @@ function createUser(adminName, username, password, role) {
     };
 
     return rest.setScope(scope)
+      .then(rest.createUser(username, password))
+      .then(function(scope) {
+        args.account = scope.users[username].address;
+        return scope;
+      })
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes)
@@ -93,7 +98,6 @@ function createUser(adminName, username, password, role) {
         }
         return scope;
       })
-      .then(rest.createUser(username, password))
       .then(getUser(adminName, username))
   }
 }
