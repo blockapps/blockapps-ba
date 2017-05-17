@@ -1,9 +1,11 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { fetchProjectBids } from './actions/projectBids.actions';
 import { acceptBid } from './actions/acceptBid.actions';
+import Avatar from 'react-md/lib/Avatars';
 import Button from 'react-md/lib/Buttons/Button';
+import Chip from 'react-md/lib/Chips';
 import DataTable from 'react-md/lib/DataTables/DataTable';
+import FontIcon from 'react-md/lib/FontIcons';
 import TableHeader from 'react-md/lib/DataTables/TableHeader';
 import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
@@ -12,9 +14,6 @@ import { FormattedNumber } from 'react-intl';
 //import './BidTable.css';
 
 class BidTable extends Component {
-  componentWillMount(){
-    this.props.fetchProjectBids(this.props.name);
-  }
 
   // TODO: move to common place
   get isBuyer() {
@@ -38,14 +37,24 @@ class BidTable extends Component {
           <TableColumn>
             {
               this.props['projectState'] === 'OPEN' && this.isBuyer
-                ? <Button
+                ?
+                  <Button
                     flat
                     label="Accept bid"
                     onClick={
                       (e) => this.handleBidAcceptClick(e, bid)
                     }
                   >gavel</Button>
-                : ''
+                :
+                  (bid.state === 'ACCEPTED')
+                  ?
+                    <Chip
+                      label="ACCEPTED"
+                      avatar={<Avatar icon={<FontIcon>check</FontIcon>}/>}
+                    />
+                  :
+                    ''
+
             }
           </TableColumn>
 
@@ -76,7 +85,7 @@ class BidTable extends Component {
         <DataTable plain>
           <TableHeader>
             <TableRow
-              // autoAdjust={false}
+              autoAdjust={false}
             >
               <TableColumn header={true}></TableColumn>
               <TableColumn header={true}>Supplier</TableColumn>
@@ -93,8 +102,7 @@ class BidTable extends Component {
 
 function mapStateToProps(state) {
   return {
-    login: state.login,
-    bids: state.bids.bids
+    login: state.login
   };
 }
-export default connect(mapStateToProps, { fetchProjectBids, acceptBid })(BidTable);
+export default connect(mapStateToProps, { acceptBid })(BidTable);

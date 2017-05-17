@@ -18,17 +18,20 @@ class Projects extends Component {
   }
 
   render() {
-    const actions = this.isBuyer ?
+    const actions = this.isBuyer
+      ?
       <Button
-        icon
+        flat
         key="add_circle_outline"
-        tooltipLabel="Create New Project"
+        label="Create New Project"
         onClick={(e) => this.handleNewProjectClick(e)}>
           add_circle_outline
         </Button>
-        : <span></span>;
+      :
+      '';
 
-    const projectView = this.isBuyer ?
+    const projectView = this.isBuyer
+      ?
       <div className="md-grid">
         <div className="md-cell md-cell--12">
           <ProjectList listType="buyer" listTitle="My Projects" />

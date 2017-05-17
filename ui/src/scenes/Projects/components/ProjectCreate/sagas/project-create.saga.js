@@ -39,6 +39,7 @@ function* submitProjectCreate(action) {
       yield put(projectCreateSuccess(response.data.project));
       yield put(setUserMessage('Contract Created Successfully'));
       browserHistory.push('/projects');
+      yield put(setUserMessage('Contract Created Successfully'));
     }
   }
   catch(err)
