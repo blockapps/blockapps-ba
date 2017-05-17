@@ -135,6 +135,8 @@ function login(adminName, username, password) {
   return function(scope) {
     rest.verbose('dapp: login', {username, password});
     return setScope(scope)
+    .then(userManager.getUser(adminName, username))
+    .then(userManager.exists(adminName, username))
       .then(userManager.login(adminName, username, password))
       .then(function(scope) {
         // auth failed

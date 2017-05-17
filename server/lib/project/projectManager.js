@@ -373,5 +373,4 @@ module.exports = {
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
   handleEvent: handleEvent,
-  receiveProject: receiveProject,
 };
