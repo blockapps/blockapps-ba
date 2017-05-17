@@ -316,8 +316,8 @@ function receiveProject(adminName, name, password) {
         const fromUser = scope.buyer.username;
         const fromAddress = scope.buyer.account;
         const toAddress = scope.supplier.account;
-        return scope;
-        //return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
+        //return scope;
+        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
       })
   }
 }
