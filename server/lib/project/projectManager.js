@@ -164,8 +164,7 @@ function receiveProject(adminName, name) {
       })
       .then(handleEvent(adminName, name, ProjectEvent.RECEIVE))
       .then(function(scope) {
-        console.log('>>>>>>>>>>>>>>>>>>>>>>', scope.users);
-          return rest.send(scope.buyer, scope.supplier, scope.valueEther)(scope);
+        return rest.send(scope.buyer, scope.supplier, scope.valueEther)(scope);
       })
   }
 }

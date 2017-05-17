@@ -9,10 +9,12 @@ const Promise = common.Promise;
 
 const project = require('../project');
 const projectManager = require('../projectManager');
+const userManager = require('../../user/userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 const BidState = rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -27,8 +29,10 @@ describe('ProjectManager tests', function() {
     rest.setScope(scope)
       // create admin
       .then(rest.createUser(adminName, adminPassword))
-      // upload UserManager
+      // upload ProjectManager
       .then(projectManager.uploadContract(adminName, adminPassword))
+      // upload UserManager
+      .then(userManager.uploadContract(adminName, adminPassword))
       .then(function (scope) {
         done();
       }).catch(done);
@@ -483,18 +487,19 @@ describe('ProjectManager tests', function() {
   });
 
   it('Accept a Bid, rejects the others, receive project', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-    const buyer = 'Buyer1';
-    const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
+    const uid = util.uid();
+    const projectArgs = createProjectArgs(uid);
+    const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
     const amount = 5678;
     const password = '1234';
+    const role = UserRole.SUPPLIER;
 
     rest.setScope(scope)
       // create the users
-      .then(rest.createUser(buyer, password))
-      .then(rest.createUser(suppliers[0], password))
-      .then(rest.createUser(suppliers[1], password))
-      .then(rest.createUser(suppliers[2], password))
+      .then(userManager.createUser(adminName, projectArgs.buyer, password, role))
+      .then(userManager.createUser(adminName, suppliers[0], password, role))
+      .then(userManager.createUser(adminName, suppliers[1], password, role))
+      .then(userManager.createUser(adminName, suppliers[2], password, role))
       // create project
       .then(projectManager.createProject(adminName, projectArgs))
       // create bids
