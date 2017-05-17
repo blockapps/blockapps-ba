@@ -246,6 +246,7 @@ function handleEvent(adminName, name, projectEvent) {
       default:
         return projectManager.handleEvent(adminName, name, projectEvent)(scope);
     }
+  }
 }
 
 // getBalance
