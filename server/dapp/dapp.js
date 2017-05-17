@@ -241,11 +241,12 @@ function handleEvent(adminName, name, projectEvent) {
 
     switch(projectEvent) {
       case ProjectEvent.RECEIVE:
-        const buyer = 'Byuer1';
+        const buyer = 'Buyer1';
         return projectManager.receiveProject(adminName, name, buyer)(scope);
       default:
         return projectManager.handleEvent(adminName, name, projectEvent)(scope);
     }
+  }
 }
 
 // getBalance
