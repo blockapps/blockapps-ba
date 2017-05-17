@@ -235,14 +235,13 @@ function getBids(adminName, name) {
 }
 
 // handle project event
-function handleEvent(adminName, name, projectEvent) {
+function handleEvent(adminName, name, projectEvent, username) {
   return function(scope) {
-    rest.verbose('dapp: project handleEvent', {name, projectEvent});
+    rest.verbose('dapp: project handleEvent', {name, projectEvent, username});
 
     switch(projectEvent) {
       case ProjectEvent.RECEIVE:
-        const buyer = 'Buyer1';
-        return projectManager.receiveProject(adminName, name, buyer)(scope);
+        return projectManager.receiveProject(adminName, name, username)(scope);
       default:
         return projectManager.handleEvent(adminName, name, projectEvent)(scope);
     }
