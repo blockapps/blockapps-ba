@@ -253,8 +253,7 @@ describe('UserManager tests', function() {
     scope.balances = {};
 
     rest.setScope(scope)
-      // create buyer/seller
-      .then(rest.createUser(buyer, password))
+      // SETUP: create buyer/seller
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
       .then(userManager.getBalance(buyer))
       .then(function(scope) {
@@ -262,7 +261,6 @@ describe('UserManager tests', function() {
         scope.balances[buyer] = balance;
         return scope;
       })
-      .then(rest.createUser(supplier, password))
       .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
       .then(userManager.getBalance(supplier))
       .then(function(scope) {
@@ -270,8 +268,32 @@ describe('UserManager tests', function() {
         scope.balances[supplier] = balance;
         return scope;
       })
+      // TRANSACTION
+      // get the buyer's info
+      .then(userManager.getUser(adminName, buyer))
+      .then(function(scope) {
+        const buyer = scope.result;
+        console.log('>>>>>>>>>>>>>>>>>>>>>>', buyer);
+        scope.buyer = buyer;
+        return scope;
+      })
+      // get the supplier's info
+      .then(userManager.getUser(adminName, supplier))
+      .then(function(scope) {
+        const supplier = scope.result;
+        console.log('>>>>>>>>>>>>>>>>>>>>>>', supplier);
+        scope.supplier = supplier;
+        return scope;
+      })
       // send
-      .then(rest.send(buyer, supplier, valueEther))
+      .then(function(scope) {
+        //{fromUser, password, fromAddress, toAddress, valueEther, node}
+        const fromUser = scope.buyer.username;
+        const fromAddress = scope.buyer.account;
+        const toAddress = scope.supplier.account;
+        return rest.sendAddress(fromUser, password, fromAddress, toAddress, valueEther)(scope);
+      })
+      // VALIDATE
       .then(function(scope) {
         // calculate the fee
         const txResult = scope.tx.slice(-1)[0].result;

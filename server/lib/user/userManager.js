@@ -74,7 +74,8 @@ function getBalance(username, node) {
 function createUser(adminName, username, password, role) {
   const pwHash = util.toBytes32(password); // FIXME this is not a hash
   return function(scope) {
-    rest.verbose('createUser', username, pwHash);
+    rest.verbose('createUser', {adminName, username, password, role});
+    console.log(scope.users);
     // function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
     const method = 'createUser';
     const args = {
@@ -84,6 +85,14 @@ function createUser(adminName, username, password, role) {
     };
 
     return rest.setScope(scope)
+      // create eth account
+      .then(rest.createUser(username, password))
+      .then(function(scope) {
+        // save the eth account
+        args.account = scope.users[username].address;
+        return scope;
+      })
+      // create the data user, with the eth account
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes)
@@ -93,7 +102,6 @@ function createUser(adminName, username, password, role) {
         }
         return scope;
       })
-      .then(rest.createUser(username, password))
       .then(getUser(adminName, username))
   }
 }

@@ -75,9 +75,8 @@ function createPresetUsers(adminName, users) {
       // add all users
       .then(function(scope) {
         return Promise.each(users, function(user) { // for each user
-          const pwHash = util.toBytes32(user.password);
           const role = UserRole[user.role];
-          return (userManager.createUser(adminName, user.username, pwHash, role)(scope)); // create user
+          return (userManager.createUser(adminName, user.username, user.password, role)(scope)); // create user
         }).then(function() { // all done
           return scope;
         });
