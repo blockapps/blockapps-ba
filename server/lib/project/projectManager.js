@@ -134,10 +134,6 @@ function acceptBid(buyer, bidId, name) {
           return scope;
         });
       })
-      .then(function(scope){
-        console.log('>>>>>>>>>>>>>>>>>> finished >>>>>>>>>>>>>>>>>')
-        return scope;
-      })
       .then(handleEvent(buyer, name, ProjectEvent.ACCEPT));
   }
 }
@@ -152,10 +148,6 @@ function setBidState(buyer, bidAddress, state, valueEther) {
       newState: state,
     };
     return rest.setScope(scope)
-      .then(function(scope){
-        console.log('>>>>>>>>>>>>>>>> users >>>>>>>>>>>>>>>>',scope.users);
-        return scope;
-      })
       // function callMethodAddress(userName, contractName, contractAddress, methodName, args, value, node) {
       .then(rest.callMethodAddress(buyer, contractName, bidAddress, method, args, valueEther))
       .then(function(scope) {

@@ -246,11 +246,36 @@ function getBids(adminName, name) {
 // handle project event
 function handleEvent(adminName, name, projectEvent, username, password) {
   return function(scope) {
-    rest.verbose('dapp: project handleEvent', {name, projectEvent, username});
+    rest.verbose('dapp: project handleEvent', {adminName, name, projectEvent, username});
 
     switch(projectEvent) {
       case ProjectEvent.RECEIVE:
-        return receiveProject(adminName, name, password)(scope);
+        return setScope(scope)
+          .then(projectManager.getBidsByName(name))
+          .then(function(scope){
+            const bids = scope.result;
+            // find the accepted bid
+            const accepted = bids.filter(function(bid) {
+              return bid.state == BidState[BidState.ACCEPTED];
+            });
+            if (accepted.length != 1) {
+              throw(new Error(ErrorCodes.NOT_FOUND));
+            }
+            // supplier NAME
+            scope.supplierName = accepted[0].supplier;
+            scope.valueEther = accepted[0].amount;
+            scope.bidAddress = accepted[0].address;
+            return scope;
+          })
+          .then(function(scope) {
+            return userManager.getUser(adminName, scope.supplierName)(scope);
+          })
+          .then(function(scope) {
+            const supplier = scope.result;
+            return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
+          });
+
+        //return receiveProject(adminName, name, password)(scope);
       default:
         return projectManager.handleEvent(adminName, name, projectEvent)(scope);
     }
