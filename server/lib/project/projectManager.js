@@ -154,7 +154,30 @@ function setBidState(buyer, bidAddress, state, valueEther) {
       .then(function(scope) {
         // returns (ErrorCodes)
         const errorCode = scope.contracts[contractName].calls[method];
-        console.log(errorCode);
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
+        }
+        return scope;
+      });
+  }
+}
+
+function settleProject(buyer, projectName, supplierAddress, bidAddress) {
+  return function(scope) {
+    rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
+    // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
+    const method = 'settleProject';
+    const args = {
+      name: projectName,
+      supplierAddress: supplierAddress,
+      bidAddress: bidAddress,
+    };
+
+    return rest.setScope(scope)
+      .then(rest.callMethod(buyer, contractName, method, args))
+      .then(function(scope) {
+        // returns (ErrorCodes)
+        const errorCode = scope.contracts[contractName].calls[method];
         if (errorCode != ErrorCodes.SUCCESS) {
           throw new Error(errorCode);
         }
@@ -375,4 +398,5 @@ module.exports = {
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
   handleEvent: handleEvent,
+  settleProject: settleProject,
 };

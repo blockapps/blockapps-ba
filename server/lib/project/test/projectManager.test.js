@@ -595,12 +595,15 @@ describe('ProjectManager tests', function() {
         balance.should.be.bignumber.equal(bidAmount);
         return scope;
       })
+      // deliver the project
+      .then(projectManager.handleEvent(adminName, projectArgs.name, ProjectEvent.DELIVER))
+      // *** receive the project ***
+      .then(receiveProject(adminName, projectArgs.name, password))
+      // done
       .then(function(scope) {
         done();
       }).catch(done);
   });
-
-
 
   it('Get projects by supplier', function(done) {
     const projectArgs = createProjectArgs(util.uid());
@@ -710,30 +713,20 @@ function receiveProject(adminName, name, password) {
         // supplier NAME
         scope.supplierName = accepted[0].supplier;
         scope.valueEther = accepted[0].amount;
+        scope.bidAddress = accepted[0].address;
         return scope;
       })
       // get the supplier info
       .then(function(scope) {
-        return userManager.getUser(adminName, scope.supplierName)(scope)
+        return userManager.getUser(adminName, scope.supplierName)(scope);
       })
       .then(function(scope) {
         scope.supplier = scope.result;
         return scope;
       })
-      // RECEIVE the project
-      .then(projectManager.handleEvent(adminName, name, ProjectEvent.RECEIVE))
-      // send the funds
+      // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
       .then(function(scope) {
-        //{fromUser, password, fromAddress, toAddress, valueEther, node}
-        const fromUser = scope.buyer.username;
-        const fromAddress = scope.buyer.account;
-        const toAddress = scope.supplier.account;
-        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
-      })
-      .then(function(scope) {
-        const txResult = scope.tx.slice(-1)[0].result;
-        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', txResult);
-        return scope.result;
-      })
+        return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
+      });
   }
 }
