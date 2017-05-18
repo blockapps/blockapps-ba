@@ -296,6 +296,7 @@ function receiveProject(adminName, name, password) {
         // supplier NAME
         scope.supplierName = accepted[0].supplier;
         scope.valueEther = accepted[0].amount;
+        scope.bidAddress = accepted[0].address;
         return scope;
       })
       // get the supplier info
@@ -306,8 +307,10 @@ function receiveProject(adminName, name, password) {
         scope.supplier = scope.result;
         return scope;
       })
-      // RECEIVE the project
-      .then(projectManager.handleEvent(adminName, name, ProjectEvent.RECEIVE))
+      // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
+      .then(function(scope) {
+        return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
+      });
       // send the funds
       .then(function(scope) {
         //{fromUser, password, fromAddress, toAddress, valueEther, node}
