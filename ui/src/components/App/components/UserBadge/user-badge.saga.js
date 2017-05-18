@@ -21,7 +21,6 @@ function balanceApiCall(username) {
     });
   }
   else {
-    console.log('balanceApiCall called');
     return fetch(balanceUrl.replace(':username',username), {
       method: 'GET',
       headers: {

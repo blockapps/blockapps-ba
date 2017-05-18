@@ -21,9 +21,8 @@ class UserBadge extends Component {
   };
 
   render() {
-    console.log('>>>> view balance >>>>', this.props.balance);
     return (
-      <div className="md-grid user-balance">
+      <div className="md-grid md-grid--no-spacing user-balance">
         <Avatar className="md-cell md-cell--3 md-avatar--color" icon={<FontIcon>account_circle</FontIcon>} />
         <div className="md-cell md-cell--8 pad-left">
           <span className="md-font-bold">{this.props.username}</span>
