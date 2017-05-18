@@ -6,6 +6,7 @@ import Avatar from 'react-md/lib/Avatars';
 import { userLogout } from '../../../../scenes/Login/login.actions';
 import { setUserMessage } from '../../../UserMessage/user-message.action';
 import { userBalanceSubmit } from './user-badge.actions';
+import mixpanel from 'mixpanel-browser';
 
 
 class UserBadge extends Component {
@@ -16,6 +17,7 @@ class UserBadge extends Component {
 
   handleLogoutClick = (e) => {
     e.stopPropagation();
+    mixpanel.track('logout click');
     this.props.userLogout();
     this.props.setUserMessage('You logged out');
   };

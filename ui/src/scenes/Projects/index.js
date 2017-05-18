@@ -4,11 +4,13 @@ import { connect } from 'react-redux';
 import Button from 'react-md/lib/Buttons/Button';
 import Toolbar from 'react-md/lib/Toolbars';
 import ProjectList from './components/ProjectList';
+import mixpanel from 'mixpanel-browser';
 
 class Projects extends Component {
 
   handleNewProjectClick = function(e) {
     e.stopPropagation();
+    mixpanel.track('create_project_modal_click');
     browserHistory.push(`/projects/create`);
   };
 

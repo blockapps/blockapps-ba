@@ -47,6 +47,7 @@ function loginApiCall(username,password) {
 function* submitLogin(action) {
   try {
     yield put(showLoading());
+
     const response = yield call(loginApiCall, action.username, action.password);
     yield put(hideLoading());
     if(response.data.authenticate) {

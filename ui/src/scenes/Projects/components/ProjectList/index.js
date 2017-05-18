@@ -10,6 +10,7 @@ import TableHeader from 'react-md/lib/DataTables/TableHeader';
 import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
+import mixpanel from 'mixpanel-browser';
 
 import { fetchProjectList } from './project-list.actions';
 
@@ -22,6 +23,7 @@ class ProjectList extends Component {
 
   handleProjectClick = function(e, projectName) {
     e.stopPropagation();
+    mixpanel.track('project_click');
     browserHistory.push(`/projects/${encodeURI(projectName)}`);
   };
 
