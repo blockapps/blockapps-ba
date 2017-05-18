@@ -12,24 +12,24 @@ import { handleApiError } from '../../../../../../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 import { setUserMessage } from '../../../../../../../../../components/UserMessage/user-message.action';
 
-const url = API_URL + '/projects/:projectName/bids/:id';
+const url = API_URL + '/projects/:projectName/events';
 
 function acceptBidCall(projectName, id) {
-
   if(API_MOCK) {
     return new Promise(function(resolve,reject){
       resolve({});
     });
   }
   else {
-    const apiUrl = url.replace(':projectName', projectName).replace(':id', id);
+    const apiUrl = url.replace(':projectName', projectName);
 
     return fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
-      }
+      },
+      body: JSON.stringify({projectEvent: 1, bidId: id})
     })
       .then(handleApiError)
       .then(function(response) {
