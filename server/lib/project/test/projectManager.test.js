@@ -593,6 +593,7 @@ describe('ProjectManager tests', function() {
         const balance = new BigNumber(balanceWei).div(constants.ETHER);
         const bidAmount = new BigNumber(scope.acceptedBid.amount);
         balance.should.be.bignumber.equal(bidAmount);
+        return scope;
       })
       .then(function(scope) {
         done();

@@ -122,18 +122,4 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
     }
     return (ErrorCodes.ERROR, state);
   }
-
-  function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
-    Bid bid = Bid(bidAddress);
-    BidState currentState = bid.getState();
-    if (currentState == BidState.OPEN  &&  state == BidState.ACCEPTED) {
-      bid.setState(state);
-      return ErrorCodes.SUCCESS;
-    }
-    if (currentState == BidState.OPEN  &&  state == BidState.REJECTED) {
-      bid.setState(state);
-      return ErrorCodes.SUCCESS;
-    }
-    return ErrorCodes.ERROR;
-  }
 }

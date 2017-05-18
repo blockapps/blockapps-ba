@@ -139,20 +139,22 @@ function acceptBid(buyer, bidId, name) {
 }
 
 function setBidState(buyer, bidAddress, state, valueEther) {
+  const contractName = 'Bid' ; // FIXME: move to bid.js
   return function(scope) {
     rest.verbose('setBidState', {bidAddress, state, valueEther});
     // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
     const method = 'setBidState';
     const args = {
-      bidAddress: bidAddress,
-      state: state,
+      newState: state,
     };
 
     return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args, valueEther))
+      // function callMethodAddress(userName, contractName, contractAddress, methodName, args, value, node) {
+      .then(rest.callMethodAddress(buyer, contractName, bidAddress, method, args, valueEther))
       .then(function(scope) {
         // returns (ErrorCodes)
         const errorCode = scope.contracts[contractName].calls[method];
+        console.log(errorCode);
         if (errorCode != ErrorCodes.SUCCESS) {
           throw new Error(errorCode);
         }
