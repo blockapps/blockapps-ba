@@ -117,7 +117,7 @@ function createBid(buyer, name, supplier, amount) {
 // throws: ErrorCodes
 function acceptBid(buyer, bidId, name) {
   return function(scope) {
-    rest.verbose('acceptBid', name, bidId);
+    rest.verbose('acceptBid', {buyer, bidId, name});
     return rest.setScope(scope)
       .then(getBidsByName(name))
       .then(function(scope) {
@@ -134,6 +134,10 @@ function acceptBid(buyer, bidId, name) {
           return scope;
         });
       })
+      .then(function(scope){
+        console.log('>>>>>>>>>>>>>>>>>> finished >>>>>>>>>>>>>>>>>')
+        return scope;
+      })
       .then(handleEvent(buyer, name, ProjectEvent.ACCEPT));
   }
 }
@@ -141,14 +145,17 @@ function acceptBid(buyer, bidId, name) {
 function setBidState(buyer, bidAddress, state, valueEther) {
   const contractName = 'Bid' ; // FIXME: move to bid.js
   return function(scope) {
-    rest.verbose('setBidState', {bidAddress, state, valueEther});
+    rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
     // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
     const method = 'setBidState';
     const args = {
       newState: state,
     };
-
     return rest.setScope(scope)
+      .then(function(scope){
+        console.log('>>>>>>>>>>>>>>>> users >>>>>>>>>>>>>>>>',scope.users);
+        return scope;
+      })
       // function callMethodAddress(userName, contractName, contractAddress, methodName, args, value, node) {
       .then(rest.callMethodAddress(buyer, contractName, bidAddress, method, args, valueEther))
       .then(function(scope) {
@@ -351,7 +358,7 @@ function getProjectsByName(names) {
 
 function handleEvent(buyer, name, projectEvent) {
   return function(scope) {
-    rest.verbose('handleEvent', {name, projectEvent});
+    rest.verbose('handleEvent', {buyer, name, projectEvent});
 
     const method = 'handleEvent';
 

@@ -202,11 +202,17 @@ function createBid(adminName, name, supplier, amount) {
 }
 
 // accept bid
-function acceptBid(adminName, bidId, name) {
+function acceptBid(adminName, buyer, bidId, name) {
   return function(scope) {
-    rest.verbose('dapp: acceptBid', bidId);
+    rest.verbose('dapp: acceptBid', {adminName, buyer, bidId, name});
     return setScope(scope)
-      .then(projectManager.acceptBid(adminName, bidId, name));
+      .then(userManager.getUser(adminName, buyer))
+      .then(function(scope){
+        const user = scope.result;
+        scope.users[buyer].address = user.account;
+        return scope;
+      })
+      .then(projectManager.acceptBid(buyer, bidId, name));
   }
 }
 
@@ -311,14 +317,6 @@ function receiveProject(adminName, name, password) {
       .then(function(scope) {
         return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
       });
-      // send the funds
-      .then(function(scope) {
-        //{fromUser, password, fromAddress, toAddress, valueEther, node}
-        const fromUser = scope.buyer.username;
-        const fromAddress = scope.buyer.account;
-        const toAddress = scope.supplier.account;
-        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
-      })
   }
 }
 

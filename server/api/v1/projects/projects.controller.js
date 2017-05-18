@@ -114,12 +114,24 @@ const projectsController = {
   },
 
   acceptBid: function(req, res) {
+    console.log('>>>>>>>>>>>>>>>>>>>>>>  USERNAME >>>>>>>>>>>>>>',req.params);
     const deploy = req.app.get('deploy');
+    const username = req.body.username;
+    // TODO: password should ideally be supplied by the user
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
+      .then(function(scope){
+        scope.users[username] = {
+          password: deploy.users.filter(function(user) {
+            return user.username === username;
+          })[0].password
+        };
+        return scope;
+      })
       .then(
         dapp.acceptBid(
           deploy.adminName,
+          username,
           req.params.id,
           req.params.name
         )

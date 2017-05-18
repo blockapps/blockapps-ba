@@ -14,7 +14,7 @@ import { setUserMessage } from '../../../../../../../../../components/UserMessag
 
 const url = API_URL + '/projects/:projectName/bids/:id';
 
-function acceptBidCall(projectName, id) {
+function acceptBidCall(username, projectName, id) {
 
   if(API_MOCK) {
     return new Promise(function(resolve,reject){
@@ -29,22 +29,23 @@ function acceptBidCall(projectName, id) {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
-      }
+      },
+      body: JSON.stringify({ username })
     })
-      .then(handleApiError)
-      .then(function(response) {
-        return response.json();
-      })
-      .catch(function(error){
-        throw error;
-      });
+    .then(handleApiError)
+    .then(function(response) {
+      return response.json();
+    })
+    .catch(function(error){
+      throw error;
+    });
   }
 }
 
 function* acceptBid(action){
   try {
     yield put(showLoading());
-    yield call(acceptBidCall, action.projectName, action.id);
+    yield call(acceptBidCall, action.username, action.projectName, action.id);
     yield put(hideLoading());
     yield put(acceptBidSuccess());
     yield put(setUserMessage('Bid Accepted'));
