@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Toolbar from 'react-md/lib/Toolbars';
 import NavigationDrawer from 'react-md/lib/NavigationDrawers';
+import Button from 'react-md/lib/Buttons';
+import { API_URL } from '../../environment';
 import FontIcon from 'react-md/lib/FontIcons';
 import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
@@ -36,6 +38,11 @@ class App extends Component {
     this.props.setUserMessage('You logged out');
   };
 
+  getExplorerUrl() {
+    const array = API_URL.split(':');
+    return array[0] + ':' + array[1]
+  }
+
   // get type of app bar based on login state
   getAppBar(title, navItems) {
     if(this.props.login.authenticated) {
@@ -62,6 +69,7 @@ class App extends Component {
             colored
             title={ title }
             className="md-paper md-paper--2"
+            actions={<Button flat href={this.getExplorerUrl()} target="_blank" label="Explorer">explore</Button>}
           />
           <LoadingBar />
           {this.props.children}
