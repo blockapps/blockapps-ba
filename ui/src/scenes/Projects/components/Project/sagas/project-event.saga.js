@@ -12,6 +12,7 @@ import { handleApiError } from '../../../../../lib/apiErrorHandler';
 import { PROJECT_EVENTS } from '../../../../../constants';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 import { setUserMessage } from '../../../../../components/UserMessage/user-message.action'
+import { userBalanceSubmit } from '../../../../../components/App/components/UserBadge/user-badge.actions';
 
 const url = API_URL + '/projects/:projectName/events';
 
@@ -48,6 +49,7 @@ function* projectEvent(action){
     yield put(showLoading());
     yield call(projectEventCall, action.projectName, action.projectEvent, action.username);
     yield put(projectEventSuccess());
+    yield put(userBalanceSubmit(action.username));
     yield put(hideLoading());
     yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent]));
     browserHistory.goBack(); // todo: update current project data on the page instead?

@@ -6,6 +6,7 @@ const common = ba.common;
 const should = ba.common.should;
 const assert = ba.common.assert;
 const expect = ba.common.expect;
+const constants = common.constants;
 const BigNumber = common.BigNumber;
 
 chai.use(chaiHttp);

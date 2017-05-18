@@ -254,11 +254,11 @@ function handleEvent(adminName, name, projectEvent, username, password) {
 }
 
 // getBalance
-function getBalance(username) {
+function getBalance(adminName, username) {
   return function(scope) {
     rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(userManager.getBalance(username));
+      .then(userManager.getBalance(adminName, username));
   }
 }
 

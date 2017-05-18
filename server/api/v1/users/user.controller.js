@@ -14,14 +14,11 @@ const usersController = {
     const username = decodeURI(req.params['username']);
     dapp.setScope()
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-      .then(dapp.getBalance(
-        deploy.adminName,
-        username
-      ))
+      .then(dapp.getBalance(deploy.adminName, username))
       .then(scope => {
         util.response.status200(res, {
           // this is a bignumber
-          balance: scope.result
+          balance: scope.result.toString()
         });
       })
       .catch(err => {

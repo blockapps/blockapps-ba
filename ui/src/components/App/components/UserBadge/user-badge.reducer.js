@@ -5,7 +5,7 @@ import {
 } from './user-badge.actions';
 
 const initialState = {
-  balance: 0,
+  balance: '',
   error: ''
 };
 
@@ -15,7 +15,7 @@ const reducer = function loginReducer (state = initialState, action) {
       return state;
     case USER_BALANCE_SUCCESS:
       return {
-        username: action.balance,
+        balance: action.balance,
         error: null
       };
     case USER_BALANCE_FAILURE:

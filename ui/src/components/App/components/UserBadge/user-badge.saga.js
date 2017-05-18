@@ -8,7 +8,7 @@ import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 
-const balanceUrl = API_URL + '/balance?username=:username';
+const balanceUrl = API_URL + '/users/:username/balance';
 
 function balanceApiCall(username) {
   if(API_MOCK) {
@@ -21,6 +21,7 @@ function balanceApiCall(username) {
     });
   }
   else {
+    console.log('balanceApiCall called');
     return fetch(balanceUrl.replace(':username',username), {
       method: 'GET',
       headers: {
@@ -40,7 +41,7 @@ function balanceApiCall(username) {
 
 function* submitGetBalance(action) {
   try {
-    const response = yield call(balanceApiCall, action.username, action.password);
+    const response = yield call(balanceApiCall, action.username);
     yield put(userBalanceSuccess(response.data.balance));
   }
   catch(err)
