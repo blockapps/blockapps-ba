@@ -21,7 +21,7 @@ const usersController = {
         util.response.status200(res, {
           // this is a bignumber
           balance: scope.result,
-          balanceBigNumber: new BigNumber(scope.result).div(constants.ETHER).toString()
+          balanceString: new BigNumber(scope.result).div(constants.ETHER).toString()
         });
       })
       .catch(err => {
