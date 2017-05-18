@@ -29,7 +29,7 @@ function acceptBidCall(projectName, id) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({projectEvent: 'ACCEPT', bidId: id})
+      body: JSON.stringify({projectEvent: 1, bidId: id})
     })
       .then(handleApiError)
       .then(function(response) {
