@@ -3,18 +3,23 @@ import { connect } from 'react-redux';
 import Toolbar from 'react-md/lib/Toolbars';
 import NavigationDrawer from 'react-md/lib/NavigationDrawers';
 import Button from 'react-md/lib/Buttons';
-import { API_URL } from '../../environment';
 import FontIcon from 'react-md/lib/FontIcons';
 import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
 import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
+import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
 import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
 
 
 class App extends Component {
+
+  componentWillMount() {
+    this.props.getExplorerUrl();
+  }
+
   userBadge = () => {
     const login = this.props.login;
     return (
@@ -38,10 +43,6 @@ class App extends Component {
     this.props.setUserMessage('You logged out');
   };
 
-  getExplorerUrl() {
-    const array = API_URL.split(':');
-    return array[0] + ':' + array[1]
-  }
 
   // get type of app bar based on login state
   getAppBar(title, navItems) {
@@ -69,7 +70,13 @@ class App extends Component {
             colored
             title={ title }
             className="md-paper md-paper--2"
-            actions={<Button flat href={this.getExplorerUrl()} target="_blank" label="Explorer">explore</Button>}
+            actions={
+              <Button flat
+                      href={this.props.explorerUrl}
+                      target="_blank"
+                      label="Explorer">explore
+              </Button>
+            }
           />
           <LoadingBar />
           {this.props.children}
@@ -127,7 +134,8 @@ function mapStateToProps(state) {
     routing: state.routing,
     login: state.login,
     userMessage: state.userMessage,
+    explorerUrl: state.explorerUrl.explorerUrl,
   };
 }
 
-export default connect(mapStateToProps, {resetUserMessage, setUserMessage, userLogout})(App);
+export default connect(mapStateToProps, {resetUserMessage, setUserMessage, userLogout, getExplorerUrl})(App);

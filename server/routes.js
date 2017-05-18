@@ -2,8 +2,10 @@ const routes = require('express').Router();
 const heartbeat = require('./api/v1/heartbeat');
 const login = require('./api/v1/login');
 const projects = require('./api/v1/projects');
+const system = require('./api/v1/system');
 
 routes.use('/api/v1/heartbeat', heartbeat);
+routes.use('/api/v1/system', system);
 routes.use('/api/v1/login', login);
 routes.use('/api/v1/projects', projects);
 /**

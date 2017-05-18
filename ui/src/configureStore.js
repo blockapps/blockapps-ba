@@ -12,12 +12,14 @@ import { reducer as formReducer } from 'redux-form';
 import { loadingBarReducer } from 'react-redux-loading-bar';
 import userMessageReducer from './components/UserMessage/user-message.reducer';
 import loginReducer from './scenes/Login/login.reducer.js';
+import explorerUrlReducer from './components/ExplorerUrl/explorer.reducer';
 import projectListReducer from './scenes/Projects/components/ProjectList/project-list.reducer';
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
 import projectBidsReducer from './scenes/Projects/components/Project/components/Bids/components/BidTable/reducers/projectBids.reducer';
 import projectCreateReducer from './scenes/Projects/components/ProjectCreate/reducers/project-create.reducer';
 import bidModalReducer from './scenes/Projects/components/BidModal/bidModal.reducer';
 
+import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
 import watchLoginSubmit from './scenes/Login/login.saga';
 import watchFetchProjectList from './scenes/Projects/components/ProjectList/project-list.saga';
 import watchFetchProject from './scenes/Projects/components/Project/sagas/project.saga';
@@ -32,6 +34,7 @@ const rootReducer = combineReducers({
   routing: routerReducer,
   userMessage: userMessageReducer,
   login: loginReducer,
+  explorerUrl: explorerUrlReducer,
   projects: projectListReducer,
   bids: projectBidsReducer,
   bidModal: bidModalReducer,
@@ -43,6 +46,7 @@ const rootReducer = combineReducers({
 const rootSaga = function* startForeman() {
   yield [
     fork(watchLoginSubmit),
+    fork(watchExplorerUrl),
     fork(watchFetchProjectList),
     fork(watchFetchProject),
     fork(watchProjectCreate),
