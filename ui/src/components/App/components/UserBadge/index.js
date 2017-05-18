@@ -22,7 +22,7 @@ class UserBadge extends Component {
 
   render() {
     return (
-      <div className="md-grid md-grid--no-spacing user-balance">
+      <div className="md-grid user-balance">
         <Avatar className="md-cell md-cell--3 md-avatar--color" icon={<FontIcon>account_circle</FontIcon>} />
         <div className="md-cell md-cell--8 pad-left">
           <span className="md-font-bold">{this.props.username}</span>
