@@ -60,9 +60,20 @@ function getBalance(adminName, username, node) {
     rest.verbose('getBalance', username);
     return rest.setScope(scope)
       .then(getUser(adminName, username))
-      .then(function(scope){
+      .then(function(scope) {
         const user = scope.result;
-        return getAccount(user.account, node)(scope);
+        const accountAddress = user.account;
+        return getBalanceAddress(accountAddress)(scope);
+      });
+  }
+}
+
+function getBalanceAddress(accountAddress) {
+  return function (scope) {
+    rest.verbose('getBalance', accountAddress);
+    return rest.setScope(scope)
+      .then(function(scope){
+        return getAccount(accountAddress)(scope);
       })
       .then(function(scope){
         const account = scope.result;
@@ -210,6 +221,7 @@ module.exports = {
   uploadContract: uploadContract,
   getAccount: getAccount,
   getBalance: getBalance,
+  getBalanceAddress: getBalanceAddress,
 
   createUser: createUser,
   exists: exists,

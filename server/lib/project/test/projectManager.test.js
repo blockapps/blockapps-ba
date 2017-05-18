@@ -5,7 +5,9 @@ const config = common.config;
 const util = common.util;
 const should = common.should;
 const assert = common.assert;
+const constants = common.constants;
 const Promise = common.Promise;
+const BigNumber = common.BigNumber;
 
 const project = require('../project');
 const projectManager = require('../projectManager');
@@ -416,13 +418,13 @@ describe('ProjectManager tests', function() {
   it('Accept a Bid and rejects the others', function(done) {
     const projectArgs = createProjectArgs(util.uid());
     const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
-    const amount = 5678;
+    const amount = 32;
 
     rest.setScope(scope)
       // create project
       .then(projectManager.createProject(adminName, projectArgs))
       // create bids
-      .then(createMultipleBids(adminName, projectArgs.name, suppliers))
+      .then(createMultipleBids(adminName, projectArgs.name, suppliers, amount))
       .then(projectManager.getBidsByName(projectArgs.name))
       // accept one bid
       .then(function(scope) {
@@ -452,9 +454,8 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  function createMultipleBids(adminName, name, suppliers) {
+  function createMultipleBids(adminName, name, suppliers, amount) {
     return function(scope) {
-      const amount = 5678;
       return Promise.each(suppliers, function(supplier) { // for each project
         return projectManager.createBid(adminName, name, supplier, amount)(scope); // create project
       }).then(function() { // all done
@@ -490,9 +491,9 @@ describe('ProjectManager tests', function() {
     const uid = util.uid();
     const projectArgs = createProjectArgs(uid);
     const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
-    const amount = 5678;
     const password = '1234';
     const role = UserRole.SUPPLIER;
+    const amount = 5678;
 
     rest.setScope(scope)
       // create the users
@@ -503,7 +504,7 @@ describe('ProjectManager tests', function() {
       // create project
       .then(projectManager.createProject(adminName, projectArgs))
       // create bids
-      .then(createMultipleBids(adminName, projectArgs.name, suppliers))
+      .then(createMultipleBids(adminName, projectArgs.name, suppliers, amount))
       .then(projectManager.getBidsByName(projectArgs.name))
       // accept one bid
       .then(function(scope) {
@@ -536,6 +537,70 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it.only('Accept a Bid, rejects the others, send funds into accepted bid', function(done) {
+    const uid = util.uid();
+    const projectArgs = createProjectArgs(uid);
+    const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
+    const password = '1234';
+    const amount = 23;
+
+    rest.setScope(scope)
+      // create the users
+      .then(userManager.createUser(adminName, projectArgs.buyer, password, UserRole.BUYER))
+      .then(userManager.createUser(adminName, suppliers[0], password, UserRole.SUPPLIER))
+      // .then(userManager.createUser(adminName, suppliers[1], password, UserRole.SUPPLIER))
+      // .then(userManager.createUser(adminName, suppliers[2], password, UserRole.SUPPLIER))
+      // create project
+      .then(projectManager.createProject(adminName, projectArgs))
+      // create bids
+      .then(createMultipleBids(adminName, projectArgs.name, suppliers, amount))
+      .then(projectManager.getBidsByName(projectArgs.name))
+      // accept one bid
+      .then(function(scope) {
+        const bids = scope.result;
+        scope.acceptedBid = bids[0]; // accept bid 0
+        return projectManager.acceptBid(projectArgs.buyer, scope.acceptedBid.id, projectArgs.name)(scope);
+      })
+      .then(userManager.getBalance(adminName, projectArgs.buyer))
+      .then(function(scope) {
+        const balanceWei = scope.result; // in WEI
+        const balance = new BigNumber(balanceWei).div(constants.ETHER);
+        const initialBalance = new BigNumber(1000) ; // faucet award
+        const bidAmount = new BigNumber(scope.acceptedBid.amount);
+
+        const gasPrice = new BigNumber('50000000000');
+        const gasLimit = new BigNumber('21000');
+        const fee = new BigNumber(gasLimit).times(new BigNumber(gasPrice)).div(constants.ETHER);
+
+        const expectedBalance = new BigNumber(initialBalance).minus(bidAmount);
+
+        balance.should.be.bignumber.lt(expectedBalance);
+        return scope;
+      })
+      // get all the bids for this project
+      .then(projectManager.getBidsByName(projectArgs.name))
+      .then(function(scope) {
+        const bids = scope.result;
+        console.log(bids);
+        const acceptedBid = bids.filter(function (bid) {
+          return bid.state === BidState[BidState.ACCEPTED];
+        })[0];
+        console.log(acceptedBid);
+        return userManager.getBalanceAddress(acceptedBid.address)(scope);
+      })
+      .then(function(scope) {
+        const balanceWei = scope.result; // in WEI
+        const balance = new BigNumber(balanceWei).div(constants.ETHER);
+        const bidAmount = new BigNumber(scope.acceptedBid.amount);
+        balance.should.be.bignumber.equal(bidAmount);
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+
+
   it('Get projects by supplier', function(done) {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
@@ -559,6 +624,51 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
+  it('Send fund to project', function(done) {
+    const uid = util.uid();
+    const projectArgs = createProjectArgs(uid);
+    const buyer = 'Buyer_' + uid;
+    const supplier = 'Supplier_' + uid;
+    const password = 'Pass_' + uid;
+    const valueEther = 12;
+
+    rest.setScope(scope)
+
+    rest.setScope(scope)
+    // create buyer/supplier
+      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
+      .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
+      // create project
+      .then(projectManager.createProject(adminName, projectArgs))
+
+      // returns the record from search
+      .then(projectManager.getProject(adminName, projectArgs.name))
+      .then(function(scope) {
+        scope.project = scope.result;
+        return scope;
+      })
+      .then(userManager.getUser(adminName, buyer))
+      .then(function(scope) {
+        scope.buyer = scope.result;
+        return scope;
+      })
+      .then(userManager.getUser(adminName, supplier))
+      .then(function(scope) {
+        scope.supplier = scope.result;
+        return scope;
+      })
+      // send buyer-> contract
+      .then(function(scope) {
+        //{fromUser, password, fromAddress, toAddress, valueEther, node}
+        const fromUser = scope.buyer.username;
+        const fromAddress = scope.buyer.account;
+        const toAddress = scope.project.address;
+        return rest.sendAddress(fromUser, password, fromAddress, toAddress, valueEther)(scope);
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
 });
 
 
@@ -618,6 +728,11 @@ function receiveProject(adminName, name, password) {
         const fromAddress = scope.buyer.account;
         const toAddress = scope.supplier.account;
         return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
+      })
+      .then(function(scope) {
+        const txResult = scope.tx.slice(-1)[0].result;
+        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', txResult);
+        return scope.result;
       })
   }
 }
