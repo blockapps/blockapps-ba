@@ -61,11 +61,12 @@ npm run start
 
 ```
 cd ui
-npm run start
+API_URL="<api-server-url>" npm run start
 ```
+where <api-server-url> - broadcasted API URL in format http://url:port (e.g. http://example.com:3000)
 
 ### Testing
 
 ```
-mocha tests/v1
+npm run test
 ```
