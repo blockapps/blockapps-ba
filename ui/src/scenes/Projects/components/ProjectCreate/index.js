@@ -119,6 +119,7 @@ class ProjectCreate extends Component {
                     type="text"
                     label="Specification"
                     maxLength={1000}
+                    required
                     rows={6}
                     className="md-cell md-cell--12"
                     component={ReduxedTextField} />

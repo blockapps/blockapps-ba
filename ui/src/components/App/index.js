@@ -25,7 +25,7 @@ class App extends Component {
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           toolbarTitle={ title }
-          toolbarActions={ <UserBadge username={this.props.login.username} /> }
+          toolbarActions={ <UserBadge username={this.props.login.username} role={this.props.login.role} /> }
         >
           <LoadingBar style={{position: 'fixed', zIndex: 15}} />
           {this.props.children}
