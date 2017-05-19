@@ -112,7 +112,7 @@ function* fetchProjectList(action) {
     yield put(fetchProjectListSuccess(action.listType, response.data['projects']));
   }
   catch (err) {
-    yield put(fetchProjectListFailure(err.message));
+    yield put(fetchProjectListFailure(err));
     yield put(hideLoading());
   }
 }

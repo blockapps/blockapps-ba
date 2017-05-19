@@ -23,7 +23,8 @@ const loginController = {
         });
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('Login Error:', err);
+        util.response.status(401, res, 'Login failed');
       });
   }
 }

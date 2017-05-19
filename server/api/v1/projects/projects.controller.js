@@ -23,7 +23,8 @@ const projectsController = {
         });
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('Create Project Error:', err);
+        util.response.status500(res, 'Unable to create project');
       });
   },
 
@@ -42,7 +43,8 @@ const projectsController = {
         });
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('Get Projects Error:', err);
+        util.response.status500(res, 'Cannot fetch projects');
       });
   },
 
@@ -76,7 +78,8 @@ const projectsController = {
         });
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('List Projects Error', err);
+        util.response.status500(res, 'Error occurred while trying to list projects');
       });
   },
 
@@ -95,7 +98,8 @@ const projectsController = {
         })
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('Bid Error:', err);
+        util.response.status500(res, 'Error occurred while trying to submit bid');
       })
   },
 
@@ -110,7 +114,8 @@ const projectsController = {
         })
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('Get Bids Error:', err);
+        util.response.status500(res, 'Error occurred while trying to fetch bids');
       })
   },
 
@@ -197,7 +202,8 @@ const projectsController = {
         })
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('Handle Event Error:', err);
+        util.response.status500(res, 'Error while trying to submit event');
       })
   },
 
