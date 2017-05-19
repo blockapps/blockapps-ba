@@ -7,6 +7,7 @@ const path = require('path');
 const serverPath = './server';
 const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
+const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 
 const projectsController = {
   create: function(req, res) {
@@ -113,38 +114,41 @@ const projectsController = {
       })
   },
 
-  acceptBid: function(req, res) {
-    const deploy = req.app.get('deploy');
-    const username = req.body.username;
-    // TODO: password should ideally be supplied by the user
-    dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-      .then(function(scope){
-        scope.users[username] = {
-          password: deploy.users.filter(function(user) {
-            return user.username === username;
-          })[0].password
-        };
-        return scope;
-      })
-      .then(
-        dapp.acceptBid(
-          deploy.adminName,
-          username,
-          req.params.id,
-          req.params.name
-        )
-      )
-      .then(scope => {
-        util.response.status200(res, {
-          bid: scope.result
-        })
-      })
-      .catch(err => {
-        util.response.status500(res, err);
-      })
-  },
-
+// <<<<<<< HEAD
+//   acceptBid: function(req, res) {
+//     const deploy = req.app.get('deploy');
+//     const username = req.body.username;
+//     // TODO: password should ideally be supplied by the user
+//     dapp.setScope()
+//       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
+//       .then(function(scope){
+//         scope.users[username] = {
+//           password: deploy.users.filter(function(user) {
+//             return user.username === username;
+//           })[0].password
+//         };
+//         return scope;
+//       })
+//       .then(
+//         dapp.acceptBid(
+//           deploy.adminName,
+//           username,
+//           req.params.id,
+//           req.params.name
+//         )
+//       )
+//       .then(scope => {
+//         util.response.status200(res, {
+//           bid: scope.result
+//         })
+//       })
+//       .catch(err => {
+//         util.response.status500(res, err);
+//       })
+//   },
+//
+// =======
+// >>>>>>> develop
   handleEvent: function(req, res) {
     const deploy = req.app.get('deploy');
     const username = req.body.username;
@@ -159,17 +163,34 @@ const projectsController = {
         };
         return scope;
       })
-      .then(
-        dapp.handleEvent(
+
+      // .then(
+      //   dapp.handleEvent(
+      //     deploy.adminName,
+      //     req.params.name,
+      //     req.body.projectEvent,
+      //     req.body.username,
+      //     deploy.users.filter(function(user){
+      //       return user.username == username;
+      //     })[0].password
+      //   )
+
+      .then(function(scope) {
+        const args = {
+          projectEvent: req.body.projectEvent,
+          name: req.params.name,
+          username : req.body.username
+        }
+
+        if(req.body.projectEvent == ProjectEvent.ACCEPT) {
+          args.bidId = req.body.bidId;
+        }
+
+        return dapp.handleEvent(
           deploy.adminName,
-          req.params.name,
-          req.body.projectEvent,
-          req.body.username,
-          deploy.users.filter(function(user){
-            return user.username == username;
-          })[0].password
-        )
-      )
+          args
+        )(scope);
+      })
       .then(scope => {
         util.response.status200(res, {
           bid: scope.result
@@ -179,6 +200,7 @@ const projectsController = {
         util.response.status500(res, err);
       })
   },
+
 };
 
 module.exports = projectsController;

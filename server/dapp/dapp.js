@@ -244,11 +244,14 @@ function getBids(adminName, name) {
 }
 
 // handle project event
-function handleEvent(adminName, name, projectEvent, username, password) {
-  return function(scope) {
-    rest.verbose('dapp: project handleEvent', {adminName, name, projectEvent, username});
+function handleEvent(adminName,/*, name, projectEvent, username, password*/ args) {
+  const name = args.name;
 
-    switch(projectEvent) {
+  return function(scope) {
+    rest.verbose('dapp: project handleEvent', { args });
+
+
+    switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
         return setScope(scope)
           .then(projectManager.getBidsByName(name))
@@ -275,9 +278,11 @@ function handleEvent(adminName, name, projectEvent, username, password) {
             return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
           });
 
-        //return receiveProject(adminName, name, password)(scope);
+      case ProjectEvent.ACCEPT:
+        return acceptBid(adminName, args.username, args.bidId, name)(scope);
+
       default:
-        return projectManager.handleEvent(adminName, name, projectEvent)(scope);
+        return projectManager.handleEvent(adminName, name, args.projectEvent)(scope);
     }
   }
 }

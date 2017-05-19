@@ -41,7 +41,7 @@ function balanceApiCall(username) {
 function* submitGetBalance(action) {
   try {
     const response = yield call(balanceApiCall, action.username);
-    yield put(userBalanceSuccess(response.data.balance));
+    yield put(userBalanceSuccess(response.data.balanceString));
   }
   catch(err)
   {

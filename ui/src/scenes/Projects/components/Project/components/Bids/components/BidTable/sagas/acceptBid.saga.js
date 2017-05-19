@@ -11,18 +11,17 @@ import { API_URL, API_MOCK } from '../../../../../../../../../environment';
 import { handleApiError } from '../../../../../../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 import { setUserMessage } from '../../../../../../../../../components/UserMessage/user-message.action';
-
-const url = API_URL + '/projects/:projectName/bids/:id';
+import { userBalanceSubmit } from '../../../../../../../../../components/App/components/UserBadge/user-badge.actions';
+const url = API_URL + '/projects/:projectName/events';
 
 function acceptBidCall(username, projectName, id) {
-
   if(API_MOCK) {
     return new Promise(function(resolve,reject){
       resolve({});
     });
   }
   else {
-    const apiUrl = url.replace(':projectName', projectName).replace(':id', id);
+    const apiUrl = url.replace(':projectName', projectName);
 
     return fetch(apiUrl, {
       method: 'POST',
@@ -30,7 +29,7 @@ function acceptBidCall(username, projectName, id) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ username })
+      body: JSON.stringify({ username, projectEvent: 1, bidId: id})
     })
     .then(handleApiError)
     .then(function(response) {
@@ -48,6 +47,7 @@ function* acceptBid(action){
     yield call(acceptBidCall, action.username, action.projectName, action.id);
     yield put(hideLoading());
     yield put(acceptBidSuccess());
+    yield put(userBalanceSubmit(action.username));
     yield put(setUserMessage('Bid Accepted'));
     browserHistory.goBack(); // todo: update current project data on the page instead?
   }
