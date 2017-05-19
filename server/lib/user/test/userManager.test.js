@@ -247,7 +247,7 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Send funds', function(done) {
+  it('Send funds', function(done) {
     const buyer = util.uid('Buyer');
     const supplier = util.uid('Supplier');
     const password = util.uid('Pass');
