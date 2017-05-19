@@ -156,6 +156,22 @@ function login(adminName, username, password) {
   }
 }
 
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
+function createUser(adminName, username, password, role) {
+  return function(scope) {
+    rest.verbose('dapp: login', {username, password});
+    return setScope(scope)
+    .then(userManager.createUser(adminName, username, password, role))
+    .then(function(scope) {
+      const user = scope.result;
+      scope.result = {authenticate: true, user: user};
+      return scope;
+    })
+      /* .catch( (err) => { console.log(err) })*/
+  }
+}
+
 function createProject(adminName, args) {
   return function(scope) {
     rest.verbose('dapp: createProject', {adminName, args});
@@ -364,6 +380,7 @@ module.exports = function (libPath) {
     setScope: setScope,
     // business functions
     login: login,
+    createUser: createUser,
     createProject: createProject,
     getBalance: getBalance,
     getProjects: getProjects,
