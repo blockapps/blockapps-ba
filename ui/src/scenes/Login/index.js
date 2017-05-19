@@ -2,11 +2,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Button from 'react-md/lib/Buttons/Button';
 import Paper from 'react-md/lib/Papers';
-import Toolbar from 'react-md/lib/Toolbars';
+import Card from 'react-md/lib/Cards/Card';
+import CardTitle from 'react-md/lib/Cards/CardTitle';
 import { reduxForm, Field } from 'redux-form';
 import { userLoginSubmit } from './login.actions';
 import { browserHistory } from 'react-router';
 import ReduxedTextField from '../../components/ReduxedTextField/';
+import Media, { MediaOverlay } from 'react-md/lib/Media';
 import mixpanel from 'mixpanel-browser';
 import './Login.css';
 
@@ -28,45 +30,48 @@ class Login extends Component {
 
     return (
       <div className="md-grid md-toolbar--relative login-margin-top">
-        <div className="md-cell md-cell--4 md-cell--1-tablet md-cell--phone-hidden" />
-        <div className="md-cell md-cell--4 md-cell--10-tablet md-cell--12-phone">
-          <Paper className="login-paper" zDepth={3}>
-            <Toolbar colored title="Login" />
-            <form onSubmit={handleSubmit(this.submit)}>
-              <div className="md-grid">
-                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                <Field
-                  id="username"
-                  name="username"
-                  type="text"
-                  label="Enter Username"
-                  className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                  component={ReduxedTextField} />
-                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                <Field
-                  id="password"
-                  name="password"
-                  type="password"
-                  label="Enter Password"
-                  className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                  component={ReduxedTextField} />
-                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                <div className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">
-                  <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--5-phone md-text-right login-cell login-buttons">
-                    <Button raised primary label="Login" type="submit" />
+        <div className="md-cell md-cell--3-desktop md-cell--2-tablet md-cell--phone-hidden" />
+        <div className="md-cell md-cell--6-desktop md-cell--8-tablet md-cell--12-phone">
+          <Card>
+            <Media>
+              <img src="img/supply-chain.jpeg" alt="Login splash" />
+              <MediaOverlay>
+                <CardTitle title="Blockchain Enabled SCM" >
+                </CardTitle>
+              </MediaOverlay>
+            </Media>
+            <Paper className="login-paper" zDepth={3}>
+              <form onSubmit={handleSubmit(this.submit)}>
+                <div className="md-grid">
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <Field
+                    id="username"
+                    name="username"
+                    type="text"
+                    label="Enter Username"
+                    className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
+                    component={ReduxedTextField} />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <Field
+                    id="password"
+                    name="password"
+                    type="password"
+                    label="Enter Password"
+                    className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
+                    component={ReduxedTextField} />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">
+                      <Button raised primary label="Login" type="submit" className="login-buttons" />
+                      <Button raised secondary label="Sign Up" onClick={handleSignup}className="login-buttons" />
                   </div>
-                  <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--5-phone md-text-right login-cell login-buttons">
-                    <Button raised secondary label="Sign Up" onClick={handleSignup} />
-                  </div>
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                 </div>
-                <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-              </div>
-            </form>
-          </Paper>
+              </form>
+            </Paper>
+          </Card>
         </div>
-        <div className="md-cell md-cell--4 md-cell--1-tablet md-cell--phone-hidden" />
       </div>
     );
   }

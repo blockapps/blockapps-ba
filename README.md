@@ -47,8 +47,6 @@ Replace <server-name> with your actual server name in the above file and then ru
 SERVER=<server-name> npm run deploy
 ```
 
-Replace the `config.yaml` in the root with the newly minted `<server-name>.config.yaml` in `./server/config/`. This is a temporary measure and will be streamlined soon.
-
 ### Launch the API
 
 From the root
