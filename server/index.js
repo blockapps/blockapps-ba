@@ -38,7 +38,7 @@ const routes = require('./routes');
 app.use('/', routes);
 
 
-// get the intended port number, use port 3001 if not provided
+// get the intended port number, use port 3031 if not provided
 const port = process.env.PORT || 3031;
 
 const server = app.listen(port, (err) => {
