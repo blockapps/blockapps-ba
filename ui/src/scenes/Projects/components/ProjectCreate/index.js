@@ -8,12 +8,14 @@ import { reduxForm, Field } from 'redux-form';
 import { projectCreate } from './actions/project-create.actions';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { Link } from 'react-router';
+import mixpanel from 'mixpanel-browser';
 import './ProjectCreate.css';
 
 
 class ProjectCreate extends Component {
 
   submit = (values) => {
+    mixpanel.track('create_project_click');
     this.props.projectCreate(
       {
         name: values['name'],

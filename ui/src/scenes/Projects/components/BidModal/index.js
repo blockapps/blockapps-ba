@@ -6,6 +6,7 @@ import { reduxForm, Field } from 'redux-form';
 //import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
 import { bidSubmit, closeBidModal } from './bidModal.actions';
+import mixpanel from 'mixpanel-browser';
 import './BidModal.css';
 
 class BidModal extends Component {
@@ -15,6 +16,7 @@ class BidModal extends Component {
   }
 
   submit = (values) => {
+    mixpanel.track('create_bid_click');
     this.props.bidSubmit({
       name: this.props.name,
       supplier: this.props.supplier,

@@ -8,10 +8,13 @@ import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
 import UserBadge from './components/UserBadge/';
+import mixpanel from 'mixpanel-browser';
 import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
 import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
 import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
+
+mixpanel.init('17bfafc2d7d8643cfe775c63898f4ced');
 
 class App extends Component {
 
@@ -23,6 +26,8 @@ class App extends Component {
   // get type of app bar based on login state
   getAppBar(title, navItems) {
     if(this.props.login.authenticated) {
+      mixpanel.alias(this.props.login.username); // FIXME Should only make this call once on user signup
+      mixpanel.identify(this.props.login.username);
       return (
         <NavigationDrawer
           defaultVisible={ false }

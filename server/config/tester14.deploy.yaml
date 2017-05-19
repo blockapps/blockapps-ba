@@ -1,9 +1,9 @@
 url: 'http://tester14.eastus.cloudapp.azure.com/bloc/'
-adminName: Admin_19332_20663126247
+adminName: Admin_20316_20709006442
 adminPassword: '1234'
-adminAddress: 4cbacbbb10b694ee8b35bb0e6bb50c3720feb244
+adminAddress: ce2548008d3e43000d9fed3bab39d24658fa2eec
 AdminInterface:
-  address: 3729f599cbd57613e08620b0b614662ba540fab4
+  address: 9656500e715a39157a8645fdfe131507566a9bdb
 users:
   - username: Supplier1
     password: '1234'

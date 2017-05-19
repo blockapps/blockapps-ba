@@ -13,6 +13,7 @@ import { openBidModal } from '../BidModal/bidModal.actions';
 import Status from './components/Status';
 import Detail from './components/Detail';
 import Bids from './components/Bids';
+import mixpanel from 'mixpanel-browser';
 
 import './Project.css';
 
@@ -34,6 +35,8 @@ class Project extends Component {
   handleProjectEventClick = function(e, projectName, projectEvent) {
     e.stopPropagation();
     // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
+    const location = 'project_event_' + projectEvent;
+    mixpanel.track(location);
     this.props.projectEvent(projectName, projectEvent, this.props.login['username']);
   };
 
@@ -98,6 +101,7 @@ class Project extends Component {
               tooltipLabel="Bid"
               onClick={(e) => {
                   e.stopPropagation();
+                  mixpanel.track('open_bid_modal_click');
                   this.props.openBidModal();
                 }
               }>
@@ -114,6 +118,7 @@ class Project extends Component {
           tooltipLabel="Home"
           onClick={(e) => {
               e.stopPropagation();
+              mixpanel.track('home_click');
               browserHistory.push('/projects');
             }
           }>

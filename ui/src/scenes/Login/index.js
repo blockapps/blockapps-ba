@@ -6,11 +6,13 @@ import Toolbar from 'react-md/lib/Toolbars';
 import { reduxForm, Field } from 'redux-form';
 import { userLoginSubmit } from './login.actions';
 import ReduxedTextField from '../../components/ReduxedTextField/';
+import mixpanel from 'mixpanel-browser';
 import './Login.css';
 
 class Login extends Component {
 
   submit = (values) => {
+    mixpanel.track('login_click');
     this.props.userLoginSubmit(values.username, values.password);
   }
 
