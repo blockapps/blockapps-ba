@@ -3,6 +3,7 @@ import { Route, IndexRedirect, IndexRoute } from 'react-router';
 import App from './components/App/';
 import EnsureAuthenticated from './components/EnsureAuthenticated/';
 import Login from "./scenes/Login";
+import Signup from "./scenes/Signup"
 import Projects from './scenes/Projects/';
 import Project from './scenes/Projects/components/Project'
 import ProjectCreate from './scenes/Projects/components/ProjectCreate'
@@ -11,6 +12,7 @@ import ProjectCreate from './scenes/Projects/components/ProjectCreate'
 export default (
   <Route path="/" component={ App }>
     <Route path="/login" component={ Login } />
+    <Route path='/signup' component={ Signup } />
     <IndexRedirect to="/projects" />
     <Route component={EnsureAuthenticated}>
       <Route path="/projects" name="My Projects" icon="playlist_add_check">

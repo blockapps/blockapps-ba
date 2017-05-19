@@ -12,6 +12,7 @@ import { reducer as formReducer } from 'redux-form';
 import { loadingBarReducer } from 'react-redux-loading-bar';
 import userMessageReducer from './components/UserMessage/user-message.reducer';
 import loginReducer from './scenes/Login/login.reducer.js';
+import signupReducer from './scenes/Signup/signup.reducer';
 import explorerUrlReducer from './components/ExplorerUrl/explorer.reducer';
 import projectListReducer from './scenes/Projects/components/ProjectList/project-list.reducer';
 import projectReducer from './scenes/Projects/components/Project/reducers/project.reducer';
@@ -22,6 +23,7 @@ import userBalanceReducer from './components/App/components/UserBadge/user-badge
 
 import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
 import watchLoginSubmit from './scenes/Login/login.saga';
+import watchSignupSubmit from './scenes/Signup/signup.saga';
 import watchFetchProjectList from './scenes/Projects/components/ProjectList/project-list.saga';
 import watchFetchProject from './scenes/Projects/components/Project/sagas/project.saga';
 import watchProjectCreate from './scenes/Projects/components/ProjectCreate/sagas/project-create.saga';
@@ -36,6 +38,7 @@ const rootReducer = combineReducers({
   routing: routerReducer,
   userMessage: userMessageReducer,
   login: loginReducer,
+  signup: signupReducer,
   explorerUrl: explorerUrlReducer,
   projects: projectListReducer,
   bids: projectBidsReducer,
@@ -58,6 +61,7 @@ const rootSaga = function* startForeman() {
     fork(watchBidAccept),
     fork(watchFetchProjectBids),
     fork(watchBalanceSubmit),
+    fork(watchSignupSubmit),
   ]
 };
 

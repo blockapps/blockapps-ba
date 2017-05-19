@@ -4,6 +4,13 @@ export const ROLES = {
   SUPPLIER: 'SUPPLIER'
 }
 
+export const USER_ROLES = {
+  NULL: 0,
+  ADMIN: 1,
+  BUYER: 2,
+  SUPPLIER: 3,
+}
+
 export const STATES = {
   OPEN: {
     state: 'OPEN',

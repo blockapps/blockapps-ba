@@ -39,7 +39,6 @@ const loginController = {
       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
       .then(dapp.createUser(deploy.adminName, username, password, role))
       .then(scope => {
-        console.log(scope.result);
         util.response.status200(res, {
           user: scope.result.user
         });
