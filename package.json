@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server/index.js",
+    "start:back": "node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "deploy": "mocha server/dapp/dapp.deploy.js --config server/config/${SERVER:-localhost}.config.yaml -b && cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml",
     "test": "npm run test:user && npm run test:project && npm run test:routes",
     "test:project": "mocha server/lib/project/test/ --config server/config/${SERVER:-localhost}.config.yaml -b",
