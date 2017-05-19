@@ -21,7 +21,7 @@ npm i
 
 ### Deployment
 
-##### If you are deploying using STRATO on `localhost` (Linux users only):
+##### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 Run the following from the **project root**:
 ```
 npm run deploy
@@ -69,7 +69,7 @@ npm run start
 ```
 
 ### Launch the UI
-##### If you are deploying using STRATO on `localhost` (Linux users only):
+##### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 ```
 cd ui
 npm run start
