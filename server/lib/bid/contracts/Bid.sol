@@ -27,4 +27,29 @@ contract Bid is ErrorCodes, BidState {
   function setState(BidState _state) {
     state = _state;
   }
+
+  function setBidState(BidState newState) returns (ErrorCodes) {
+    if (state == BidState.OPEN  &&  newState == BidState.ACCEPTED) {
+      setState(newState);
+      return ErrorCodes.SUCCESS;
+    }
+    if (state == BidState.OPEN  &&  newState == BidState.REJECTED) {
+      setState(newState);
+      return ErrorCodes.SUCCESS;
+    }
+    return ErrorCodes.ERROR;
+  }
+
+  function settle(address supplierAddress) returns (ErrorCodes) {
+    // confirm balance, to return error
+    if (this.balance < amount) {
+      return ErrorCodes.INSUFFICIENT_BALANCE;
+    }
+    uint fee = 10000000 wei; // supplier absorbs the fee
+    uint amountWei = amount * 1 ether;
+
+    // transfer will throw
+    supplierAddress.send(amountWei-fee);
+    return ErrorCodes.SUCCESS;
+  }
 }

@@ -7,12 +7,14 @@ import "./UserRole.sol";
  */
 contract User is ErrorCodes, Version, UserRole {
   // NOTE: members must be public to be indexed for search
+  address public account;
   string public username;
   bytes32 public pwHash;
   uint public id;
   UserRole public role;
 
-  function User(string _username, bytes32 _pwHash, uint _id, UserRole _role) {
+  function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
+    account = _account;
     username = _username;
     pwHash = _pwHash;
     id = _id;

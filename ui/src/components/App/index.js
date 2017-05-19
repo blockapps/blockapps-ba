@@ -2,51 +2,45 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Toolbar from 'react-md/lib/Toolbars';
 import NavigationDrawer from 'react-md/lib/NavigationDrawers';
+import Button from 'react-md/lib/Buttons';
 import FontIcon from 'react-md/lib/FontIcons';
-import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
-import { resetErrorMessage } from '../ErrorMessage/error-message.action';
+import UserBadge from './components/UserBadge/';
+import mixpanel from 'mixpanel-browser';
+import { resetUserMessage } from '../UserMessage/user-message.action';
+import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
+import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
 
-const userBadge = (login) => {
-  return (
-    <div className="md-grid user-balance">
-      <Avatar className="md-cell--3 md-avatar--color" icon={<FontIcon>account_circle</FontIcon>} />
-      <div className="md-cell--8 pad-left">
-        <span className="md-font-bold">{login.username}</span>
-        <br />
-        <span className="md-font-medium">Balance: 0.00</span>
-      </div>
-    </div>
-  );
-};
-
-
+mixpanel.init('17bfafc2d7d8643cfe775c63898f4ced');
 
 class App extends Component {
+
+  componentWillMount() {
+    this.props.getExplorerUrl();
+  }
+
+
   // get type of app bar based on login state
   getAppBar(title, navItems) {
     if(this.props.login.authenticated) {
+      mixpanel.alias(this.props.login.username); // FIXME Should only make this call once on user signup
+      mixpanel.identify(this.props.login.username);
       return (
         <NavigationDrawer
-          defaultVisible={ true }
+          defaultVisible={ false }
           navItems={ navItems }
           drawerTitle="Menu"
           mobileDrawerType={ NavigationDrawer.DrawerTypes.TEMPORARY }
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
-          desktopDrawerType={ NavigationDrawer.DrawerTypes.FULL_HEIGHT }
+          desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           toolbarTitle={ title }
-          toolbarActions={ userBadge(this.props.login) }
+          toolbarActions={ <UserBadge username={this.props.login.username} role={this.props.login.role} /> }
         >
-          <LoadingBar style={{position: 'relative', zIndex: 20}}/>
-          <div className="md-grid">
-            <div className="md-cell md-cell--12">
-              <div className="md-grid" />
-              {this.props.children}
-            </div>
-          </div>
+          <LoadingBar style={{position: 'fixed', zIndex: 15}} />
+          {this.props.children}
         </NavigationDrawer>
       )
     }
@@ -57,6 +51,13 @@ class App extends Component {
             colored
             title={ title }
             className="md-paper md-paper--2"
+            actions={
+              <Button flat
+                      href={this.props.explorerUrl}
+                      target="_blank"
+                      label="Explorer">explore
+              </Button>
+            }
           />
           <LoadingBar />
           {this.props.children}
@@ -96,14 +97,14 @@ class App extends Component {
 
     return (
       <section>
-        {this.getAppBar("BlockApps Marketplace", navItems)}
+        {this.getAppBar("Supply Chain", navItems)}
         <Snackbar
           toasts={
-            this.props.errorMessage
-              ? [{text: this.props.errorMessage.toString(), action: 'Dismiss' }]
+            this.props.userMessage
+              ? [{text: this.props.userMessage.toString(), action: 'Dismiss' }]
               : []
           }
-          onDismiss={() => {this.props.resetErrorMessage()}} />
+          onDismiss={() => {this.props.resetUserMessage()}} />
       </section>
     )
   }
@@ -113,8 +114,9 @@ function mapStateToProps(state) {
   return {
     routing: state.routing,
     login: state.login,
-    errorMessage: state.errorMessage,
+    userMessage: state.userMessage,
+    explorerUrl: state.explorerUrl.explorerUrl,
   };
 }
 
-export default connect(mapStateToProps, {resetErrorMessage})(App);
+export default connect(mapStateToProps, {resetUserMessage, userLogout, getExplorerUrl})(App);

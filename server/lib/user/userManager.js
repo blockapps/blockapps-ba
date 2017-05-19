@@ -41,15 +41,15 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
-function getAccount(adminName, username, node) {
+function getAccount(account, node) {
   return function (scope) {
-    rest.verbose('getAccount', username);
+    rest.verbose('getAccount', account);
     return rest.setScope(scope)
       .then(function(scope){
-        return rest.getAccount(scope.users[username].address, node)(scope);
+        return rest.getAccount(account, node)(scope);
       })
       .then(function (scope) {
-        scope.result = scope.accounts[scope.users[username].address][0];
+        scope.result = scope.accounts[account][0];
         return scope;
       });
   }
@@ -59,7 +59,22 @@ function getBalance(adminName, username, node) {
   return function (scope) {
     rest.verbose('getBalance', username);
     return rest.setScope(scope)
-      .then(getAccount(adminName, username, node))
+      .then(getUser(adminName, username))
+      .then(function(scope) {
+        const user = scope.result;
+        const accountAddress = user.account;
+        return getBalanceAddress(accountAddress)(scope);
+      });
+  }
+}
+
+function getBalanceAddress(accountAddress) {
+  return function (scope) {
+    rest.verbose('getBalance', accountAddress);
+    return rest.setScope(scope)
+      .then(function(scope){
+        return getAccount(accountAddress)(scope);
+      })
       .then(function(scope){
         const account = scope.result;
         const balance = new BigNumber(account.balance);
@@ -74,7 +89,8 @@ function getBalance(adminName, username, node) {
 function createUser(adminName, username, password, role) {
   const pwHash = util.toBytes32(password); // FIXME this is not a hash
   return function(scope) {
-    rest.verbose('createUser', username, pwHash);
+    rest.verbose('createUser', {adminName, username, password, role});
+    console.log(scope.users);
     // function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
     const method = 'createUser';
     const args = {
@@ -84,6 +100,14 @@ function createUser(adminName, username, password, role) {
     };
 
     return rest.setScope(scope)
+      // create eth account
+      .then(rest.createUser(username, password))
+      .then(function(scope) {
+        // save the eth account
+        args.account = scope.users[username].address;
+        return scope;
+      })
+      // create the data user, with the eth account
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes)
@@ -93,7 +117,6 @@ function createUser(adminName, username, password, role) {
         }
         return scope;
       })
-      .then(rest.createUser(username, password))
       .then(getUser(adminName, username))
   }
 }
@@ -198,6 +221,7 @@ module.exports = {
   uploadContract: uploadContract,
   getAccount: getAccount,
   getBalance: getBalance,
+  getBalanceAddress: getBalanceAddress,
 
   createUser: createUser,
   exists: exists,

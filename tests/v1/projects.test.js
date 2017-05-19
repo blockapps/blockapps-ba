@@ -153,8 +153,11 @@ describe("Projects Test", function() {
   it('Should accept bid', function(done){
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectArgs.name + '/bids/' + bidId)
-      .send()
+      .post('/api/v1/projects/' + projectArgs.name + '/events/')
+      .send({
+        projectEvent: ProjectEvent.ACCEPT,
+        username: projectArgs.buyer,
+      })
       .end((err, res) => {
         assert.apiSuccess(res);
         res.body.should.have.property('data');
@@ -167,8 +170,11 @@ describe("Projects Test", function() {
   it('should change project state to INTRANSIT', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectArgs.name + '/events')
-      .send({projectEvent: ProjectEvent.DELIVER})
+      .post('/api/v1/projects/' + projectArgs.name + '/events/')
+      .send({
+        projectEvent: ProjectEvent.DELIVER,
+        username: supplier,
+      })
       .end((err, res) => {
         const data = assert.apiData(err, res); // returns { bid: { errorCode: '1', state: '3' } } TODO: why `bid`?
         assert.equal(data.bid.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
@@ -176,7 +182,9 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should change project state to RECEIVED', function(done) {
+  // NOTE: in order to receive, a payment must be made.
+  // to run properly, this test will requires the creation of users
+  it.skip('should change project state to RECEIVED', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/events')

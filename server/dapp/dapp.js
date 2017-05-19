@@ -8,6 +8,9 @@ const userManager = require(process.cwd() + '/' + config.libPath + '/user/userMa
 const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
 const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
+const ErrorCodes = ba.rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
+
 
 // ========== Admin (super user) ==========
 
@@ -135,8 +138,8 @@ function login(adminName, username, password) {
   return function(scope) {
     rest.verbose('dapp: login', {username, password});
     return setScope(scope)
-      .then(userManager.login(adminName, username, password))
-      .then(function(scope) {
+    .then(userManager.login(adminName, username, password))
+    .then(function(scope) {
         // auth failed
         if (!scope.result) {
           scope.result = {authenticate: false};
@@ -199,11 +202,17 @@ function createBid(adminName, name, supplier, amount) {
 }
 
 // accept bid
-function acceptBid(adminName, bidId, name) {
+function acceptBid(adminName, buyer, bidId, name) {
   return function(scope) {
-    rest.verbose('dapp: acceptBid', bidId);
+    rest.verbose('dapp: acceptBid', {adminName, buyer, bidId, name});
     return setScope(scope)
-      .then(projectManager.acceptBid(adminName, bidId, name));
+      .then(userManager.getUser(adminName, buyer))
+      .then(function(scope){
+        const user = scope.result;
+        scope.users[buyer].address = user.account;
+        return scope;
+      })
+      .then(projectManager.acceptBid(buyer, bidId, name));
   }
 }
 
@@ -235,16 +244,45 @@ function getBids(adminName, name) {
 }
 
 // handle project event
-function handleEvent(adminName, name, projectEvent) {
-  return function(scope) {
-    rest.verbose('dapp: project handleEvent', {name, projectEvent});
+function handleEvent(adminName,/*, name, projectEvent, username, password*/ args) {
+  const name = args.name;
 
-    switch(projectEvent) {
+  return function(scope) {
+    rest.verbose('dapp: project handleEvent', { args });
+
+
+    switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
-        const buyer = 'Buyer1';
-        return projectManager.receiveProject(adminName, name, buyer)(scope);
+        return setScope(scope)
+          .then(projectManager.getBidsByName(name))
+          .then(function(scope){
+            const bids = scope.result;
+            // find the accepted bid
+            const accepted = bids.filter(function(bid) {
+              return bid.state == BidState[BidState.ACCEPTED];
+            });
+            if (accepted.length != 1) {
+              throw(new Error(ErrorCodes.NOT_FOUND));
+            }
+            // supplier NAME
+            scope.supplierName = accepted[0].supplier;
+            scope.valueEther = accepted[0].amount;
+            scope.bidAddress = accepted[0].address;
+            return scope;
+          })
+          .then(function(scope) {
+            return userManager.getUser(adminName, scope.supplierName)(scope);
+          })
+          .then(function(scope) {
+            const supplier = scope.result;
+            return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
+          });
+
+      case ProjectEvent.ACCEPT:
+        return acceptBid(adminName, args.username, args.bidId, name)(scope);
+
       default:
-        return projectManager.handleEvent(adminName, name, projectEvent)(scope);
+        return projectManager.handleEvent(adminName, name, args.projectEvent)(scope);
     }
   }
 }
@@ -254,9 +292,64 @@ function getBalance(adminName, username) {
   return function(scope) {
     rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(projectManager.getBalance(adminName, username));
+      .then(userManager.getBalance(adminName, username));
   }
 }
+
+// throws: ErrorCodes
+function receiveProject(adminName, name, password) {
+  return function(scope) {
+    rest.verbose('receiveProject', name);
+    return rest.setScope(scope)
+      // get project
+      .then(getProject(adminName, name))
+      // extract the buyer
+      .then(function(scope) {
+        const project = scope.result;
+        scope.buyerName = project.buyer;
+        return scope;
+      })
+      // get the buyer info
+      .then(function(scope) {
+        return userManager.getUser(adminName, scope.buyerName)(scope);
+      })
+      .then(function(scope) {
+        scope.buyer = scope.result;
+        return scope;
+      })
+      // get project bids
+      .then(projectManager.getBidsByName(name))
+      // extract the supplier out of the accepted bid
+      .then(function(scope) {
+        const bids = scope.result;
+        // find the accepted bid
+        const accepted = bids.filter(function(bid) {
+          return bid.state == BidState[BidState.ACCEPTED];
+        });
+        if (accepted.length != 1) {
+          throw(new Error(ErrorCodes.NOT_FOUND));
+        }
+        // supplier NAME
+        scope.supplierName = accepted[0].supplier;
+        scope.valueEther = accepted[0].amount;
+        scope.bidAddress = accepted[0].address;
+        return scope;
+      })
+      // get the supplier info
+      .then(function(scope) {
+        return userManager.getUser(adminName, scope.supplierName)(scope)
+      })
+      .then(function(scope) {
+        scope.supplier = scope.result;
+        return scope;
+      })
+      // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
+      .then(function(scope) {
+        return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
+      });
+  }
+}
+
 
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
@@ -272,6 +365,7 @@ module.exports = function (libPath) {
     // business functions
     login: login,
     createProject: createProject,
+    getBalance: getBalance,
     getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
