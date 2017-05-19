@@ -312,10 +312,10 @@ describe('ProjectManager tests', function() {
   function createProjectArgs(uid) {
     const projectArgs = {
       name: 'Project_' + uid,
-      buyer: 'Buyer1',
+      buyer: 'Buyer_' + uid,
       description: 'description_' + uid,
       spec: 'spec_' + uid,
-      price: 1234,
+      price: 234,
 
       created: new Date().getTime(),
       targetDelivery: new Date().getTime() + 3 * 24*60*60*1000, // 3 days
@@ -373,7 +373,7 @@ describe('ProjectManager tests', function() {
   it('Accept a Bid', function(done) {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
-    const amount = 5678;
+    const amount = 67;
 
     rest.setScope(scope)
       // create project
@@ -409,6 +409,55 @@ describe('ProjectManager tests', function() {
         const bid = scope.result;
         assert.equal(bid.state, BidState[BidState.ACCEPTED], 'state ACCEPTED');
         return scope;
+      })
+      .then(function(scope) {
+        done();
+      }).catch(done);
+  });
+
+  it('Accept a Bid - insufficient balance', function(done) {
+    const projectArgs = createProjectArgs(util.uid());
+    const supplier = 'Supplier1';
+    const amount = 1000 + 234; // faucet allowance + more
+
+    rest.setScope(scope)
+      // create project
+      .then(projectManager.createProject(adminName, projectArgs))
+      // create a bid
+      .then(projectManager.createBid(adminName, projectArgs.name, supplier, amount))
+      // save the bid ID
+      .then(function(scope) {
+        const bid = scope.result;
+        scope.bidId = bid.id;
+        return scope;
+      })
+      // get the bid
+      .then(function(scope) {
+        return projectManager.getBid(scope.bidId)(scope)
+      })
+      // check that state is OPEN
+      .then(function(scope) {
+        const bid = scope.result;
+        assert.equal(bid.state, BidState[BidState.OPEN], 'state OPEN');
+        return scope;
+      })
+      // accept the bid
+      .then(function(scope) {
+        return projectManager.acceptBid(adminName, scope.bidId, projectArgs.name)(scope)
+          .then(function(scope) {
+            // should not reach here
+            done(new Error('Should have failed INSUFFICIENT FUNDS'));
+            return;
+          })
+          .catch(function(error) {
+            // should be IF
+            const string = 'InsufficientFunds';
+            const index = error.message.indexOf(string);
+            if (index >= 0) {
+              return scope;
+            }
+            done(error);
+          });
       })
       .then(function(scope) {
         done();
@@ -493,7 +542,7 @@ describe('ProjectManager tests', function() {
     const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
     const password = '1234';
     const role = UserRole.SUPPLIER;
-    const amount = 5678;
+    const amount = 234; //
 
     rest.setScope(scope)
       // create the users
@@ -537,7 +586,7 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it.only('Accept a Bid, rejects the others, send funds into accepted bid', function(done) {
+  it('Accept a Bid, rejects the others, send funds into accepted bid', function(done) {
     const uid = util.uid();
     const projectArgs = createProjectArgs(uid);
     const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
@@ -548,8 +597,8 @@ describe('ProjectManager tests', function() {
       // create the users
       .then(userManager.createUser(adminName, projectArgs.buyer, password, UserRole.BUYER))
       .then(userManager.createUser(adminName, suppliers[0], password, UserRole.SUPPLIER))
-      // .then(userManager.createUser(adminName, suppliers[1], password, UserRole.SUPPLIER))
-      // .then(userManager.createUser(adminName, suppliers[2], password, UserRole.SUPPLIER))
+      .then(userManager.createUser(adminName, suppliers[1], password, UserRole.SUPPLIER))
+      .then(userManager.createUser(adminName, suppliers[2], password, UserRole.SUPPLIER))
       // create project
       .then(projectManager.createProject(adminName, projectArgs))
       // create bids
@@ -628,51 +677,6 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it('Send fund to project', function(done) {
-    const uid = util.uid();
-    const projectArgs = createProjectArgs(uid);
-    const buyer = 'Buyer_' + uid;
-    const supplier = 'Supplier_' + uid;
-    const password = 'Pass_' + uid;
-    const valueEther = 12;
-
-    rest.setScope(scope)
-
-    rest.setScope(scope)
-    // create buyer/supplier
-      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-
-      // returns the record from search
-      .then(projectManager.getProject(adminName, projectArgs.name))
-      .then(function(scope) {
-        scope.project = scope.result;
-        return scope;
-      })
-      .then(userManager.getUser(adminName, buyer))
-      .then(function(scope) {
-        scope.buyer = scope.result;
-        return scope;
-      })
-      .then(userManager.getUser(adminName, supplier))
-      .then(function(scope) {
-        scope.supplier = scope.result;
-        return scope;
-      })
-      // send buyer-> contract
-      .then(function(scope) {
-        //{fromUser, password, fromAddress, toAddress, valueEther, node}
-        const fromUser = scope.buyer.username;
-        const fromAddress = scope.buyer.account;
-        const toAddress = scope.project.address;
-        return rest.sendAddress(fromUser, password, fromAddress, toAddress, valueEther)(scope);
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
-  });
 });
 
 
