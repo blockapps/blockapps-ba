@@ -7,10 +7,14 @@
     "start": "node server/index.js",
     "start:back": "node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "deploy": "mocha server/dapp/dapp.deploy.js --config server/config/${SERVER:-localhost}.config.yaml -b && cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml",
+    "deploy-windows": "mocha server/dapp/dapp.deploy.js --config server/config/%SERVER%.config.yaml -b",
     "test": "npm run test:user && npm run test:project && npm run test:routes",
     "test:project": "mocha server/lib/project/test/ --config server/config/${SERVER:-localhost}.config.yaml -b",
     "test:user": "mocha server/lib/user/test/ --config server/config/${SERVER:-localhost}.config.yaml -b",
-    "test:routes": "mocha tests/v1/ -b"
+    "test:routes": "mocha tests/v1/ -b",
+    "test-windows": "npm run test-windows:user && npm run test-windows:project && npm run test:routes",
+    "test-windows:project": "mocha server/lib/project/test/ --config server/config/%SERVER%.config.yaml -b",
+    "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
   },
   "dependencies": {
     "blockapps-rest": "git+https://github.com/blockapps/blockapps-rest#develop",
