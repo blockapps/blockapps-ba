@@ -2,16 +2,23 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Toolbar from 'react-md/lib/Toolbars';
 import NavigationDrawer from 'react-md/lib/NavigationDrawers';
+import Button from 'react-md/lib/Buttons';
 import FontIcon from 'react-md/lib/FontIcons';
 import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
-import { resetUserMessage } from '../UserMessage/user-message.action';
 import UserBadge from './components/UserBadge/';
-
+import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
+import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
+import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
 
 class App extends Component {
+
+  componentWillMount() {
+    this.props.getExplorerUrl();
+  }
+
 
   // get type of app bar based on login state
   getAppBar(title, navItems) {
@@ -39,6 +46,13 @@ class App extends Component {
             colored
             title={ title }
             className="md-paper md-paper--2"
+            actions={
+              <Button flat
+                      href={this.props.explorerUrl}
+                      target="_blank"
+                      label="Explorer">explore
+              </Button>
+            }
           />
           <LoadingBar />
           {this.props.children}
@@ -96,7 +110,8 @@ function mapStateToProps(state) {
     routing: state.routing,
     login: state.login,
     userMessage: state.userMessage,
+    explorerUrl: state.explorerUrl.explorerUrl,
   };
 }
 
-export default connect(mapStateToProps, {resetUserMessage})(App);
+export default connect(mapStateToProps, {resetUserMessage, setUserMessage, userLogout, getExplorerUrl})(App);
