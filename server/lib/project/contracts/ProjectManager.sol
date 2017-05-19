@@ -84,6 +84,18 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
     return (ErrorCodes.SUCCESS, bidId);
   }
 
+  function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
+    // validity
+    if (!exists(name)) return (ErrorCodes.NOT_FOUND);
+    // set project state
+    address projectAddress = getProject(name);
+    var (errorCode, state) = handleEvent(projectAddress, ProjectEvent.RECEIVE);
+    if (errorCode != ErrorCodes.SUCCESS) return errorCode;
+    // settle
+    Bid bid = Bid(bidAddress);
+    return bid.settle(supplierAddress);
+  }
+
   /**
    * handleEvent - transition project to a new state based on incoming event
    */
@@ -121,19 +133,5 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
         return (ErrorCodes.SUCCESS, ProjectState.RECEIVED);
     }
     return (ErrorCodes.ERROR, state);
-  }
-
-  function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
-    Bid bid = Bid(bidAddress);
-    BidState currentState = bid.getState();
-    if (currentState == BidState.OPEN  &&  state == BidState.ACCEPTED) {
-      bid.setState(state);
-      return ErrorCodes.SUCCESS;
-    }
-    if (currentState == BidState.OPEN  &&  state == BidState.REJECTED) {
-      bid.setState(state);
-      return ErrorCodes.SUCCESS;
-    }
-    return ErrorCodes.ERROR;
   }
 }

@@ -25,7 +25,6 @@ function submitBidApiCall(
   }
   else {
     const apiUrl = bidUrl.replace(':name',name);
-
     return fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -58,8 +57,8 @@ function* submitBid(action){
     browserHistory.goBack();
   }
   catch(err) {
-    yield put(bidFailure(err));
     yield put(hideLoading());
+    yield put(bidFailure(err));
   }
 }
 

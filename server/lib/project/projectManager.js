@@ -38,18 +38,18 @@ function getState() {
   }
 }
 
-function uploadContract(adminName, adminPassword, args) {
+function uploadContract(buyer, adminPassword, args) {
   return function(scope) {
     return rest.setScope(scope)
       .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(adminName, adminPassword, contractName, args))
+      .then(rest.uploadContract(buyer, adminPassword, contractName, args))
       // .then(rest.waitNextBlock());
   }
 }
 
 // throws: ErrorCodes
 // returns: record from search
-function createProject(adminName, args) {
+function createProject(buyer, args) {
   return function(scope) {
     rest.verbose('createProject', args);
     // function createProject(
@@ -64,7 +64,7 @@ function createProject(adminName, args) {
     const method = 'createProject';
 
     return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes)
         const errorCode = scope.contracts[contractName].calls[method];
@@ -74,13 +74,13 @@ function createProject(adminName, args) {
         return scope;
       })
       // get the contract data from search
-      .then(getProject(adminName, args.name));
+      .then(getProject(buyer, args.name));
   }
 }
 
 // throws: ErrorCodes
 // returns: record from search
-function createBid(adminName, name, supplier, amount) {
+function createBid(buyer, name, supplier, amount) {
   return function(scope) {
     rest.verbose('createBid', {name, supplier, amount});
     // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
@@ -92,7 +92,7 @@ function createBid(adminName, name, supplier, amount) {
     };
 
     return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes, uint)
         const tuppleString = scope.contracts[contractName].calls[method];
@@ -115,9 +115,9 @@ function createBid(adminName, name, supplier, amount) {
 }
 
 // throws: ErrorCodes
-function acceptBid(adminName, bidId, name) {
+function acceptBid(buyer, bidId, name) {
   return function(scope) {
-    rest.verbose('acceptBid', name, bidId);
+    rest.verbose('acceptBid', {buyer, bidId, name});
     return rest.setScope(scope)
       .then(getBidsByName(name))
       .then(function(scope) {
@@ -126,30 +126,54 @@ function acceptBid(adminName, bidId, name) {
         return Promise.each(bids, function(bid) { // for each bid
           // accept the selected bid - reject the others
           if (bid.id == bidId) {
-            return setBidState(adminName, bid.address, BidState.ACCEPTED)(scope); // ACCEPT
+            return setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount)(scope); // ACCEPT
           } else {
-            return setBidState(adminName, bid.address, BidState.REJECTED)(scope); // REJECT
+            return setBidState(buyer, bid.address, BidState.REJECTED, 0)(scope); // REJECT
           }
         }).then(function() { // all done
           return scope;
         });
       })
-      .then(handleEvent(adminName, name, ProjectEvent.ACCEPT));
+      .then(handleEvent(buyer, name, ProjectEvent.ACCEPT));
   }
 }
 
-function setBidState(adminName, bidAddress, state) {
+function setBidState(buyer, bidAddress, state, valueEther) {
+  const contractName = 'Bid' ; // FIXME: move to bid.js
   return function(scope) {
-    rest.verbose('setBidState', {bidAddress, state});
+    rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
     // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
     const method = 'setBidState';
     const args = {
+      newState: state,
+    };
+    return rest.setScope(scope)
+      // function callMethodAddress(userName, contractName, contractAddress, methodName, args, value, node) {
+      .then(rest.callMethodAddress(buyer, contractName, bidAddress, method, args, valueEther))
+      .then(function(scope) {
+        // returns (ErrorCodes)
+        const errorCode = scope.contracts[contractName].calls[method];
+        if (errorCode != ErrorCodes.SUCCESS) {
+          throw new Error(errorCode);
+        }
+        return scope;
+      });
+  }
+}
+
+function settleProject(buyer, projectName, supplierAddress, bidAddress) {
+  return function(scope) {
+    rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
+    // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
+    const method = 'settleProject';
+    const args = {
+      name: projectName,
+      supplierAddress: supplierAddress,
       bidAddress: bidAddress,
-      state: state,
     };
 
     return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes)
         const errorCode = scope.contracts[contractName].calls[method];
@@ -194,7 +218,7 @@ function getBidsBySupplier(supplier) {
   }
 }
 
-function exists(adminName, name) {
+function exists(buyer, name) {
   return function(scope) {
     rest.verbose('exists', name);
     // function exists(string name) returns (bool) {
@@ -204,7 +228,7 @@ function exists(adminName, name) {
     };
 
     return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns bool
         const exists = scope.contracts[contractName].calls[method];
@@ -214,7 +238,7 @@ function exists(adminName, name) {
   }
 }
 
-function getProject(adminName, name) {
+function getProject(buyer, name) {
   return function(scope) {
     rest.verbose('getProject', name);
     // function getProject(string name) returns (address) {
@@ -224,7 +248,7 @@ function getProject(adminName, name) {
     };
 
     return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
+      .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns address
         const address = scope.contracts[contractName].calls[method];
@@ -324,14 +348,14 @@ function getProjectsByName(names) {
   }
 }
 
-function handleEvent(adminName, name, projectEvent) {
+function handleEvent(buyer, name, projectEvent) {
   return function(scope) {
-    rest.verbose('handleEvent', {name, projectEvent});
+    rest.verbose('handleEvent', {buyer, name, projectEvent});
 
     const method = 'handleEvent';
 
     return rest.setScope(scope)
-      .then( getProject(adminName, name) )
+      .then( getProject(buyer, name) )
       .then(function (scope) {
         // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
         const projectAddress = scope.result.address;
@@ -339,7 +363,7 @@ function handleEvent(adminName, name, projectEvent) {
           projectAddress: projectAddress,
           projectEvent: projectEvent,
         };
-        return rest.callMethod(adminName, contractName, method, args)(scope);
+        return rest.callMethod(buyer, contractName, method, args)(scope);
       })
       .then(function(scope) {
         // returns (ErrorCodes, ProjectState)
@@ -373,4 +397,5 @@ module.exports = {
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
   handleEvent: handleEvent,
+  settleProject: settleProject,
 };

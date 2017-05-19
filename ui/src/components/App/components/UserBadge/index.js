@@ -23,7 +23,7 @@ class UserBadge extends Component {
   render() {
     const userIcon = <Avatar
       className="md-cell md-cell--3 md-avatar--color md-cell--middle"
-      icon={this.props.role === ROLES.BUYER ? <FontIcon>money</FontIcon> : <FontIcon>build</FontIcon>}
+      icon={this.props.role === ROLES.BUYER ? <FontIcon>account_balance_wallet</FontIcon> : <FontIcon>build</FontIcon>}
     />;
     return (
       <div className="md-grid user-balance">
