@@ -1,4 +1,3 @@
-import mixpanel from 'mixpanel-browser';
 
 export const ROLES = {
   BUYER:'BUYER',

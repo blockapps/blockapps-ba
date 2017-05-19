@@ -202,11 +202,17 @@ function createBid(adminName, name, supplier, amount) {
 }
 
 // accept bid
-function acceptBid(adminName, bidId, name) {
+function acceptBid(adminName, buyer, bidId, name) {
   return function(scope) {
-    rest.verbose('dapp: acceptBid', bidId);
+    rest.verbose('dapp: acceptBid', {adminName, buyer, bidId, name});
     return setScope(scope)
-      .then(projectManager.acceptBid(adminName, bidId, name));
+      .then(userManager.getUser(adminName, buyer))
+      .then(function(scope){
+        const user = scope.result;
+        scope.users[buyer].address = user.account;
+        return scope;
+      })
+      .then(projectManager.acceptBid(buyer, bidId, name));
   }
 }
 
@@ -239,16 +245,44 @@ function getBids(adminName, name) {
 
 // handle project event
 function handleEvent(adminName,/*, name, projectEvent, username, password*/ args) {
+  const name = args.name;
+
   return function(scope) {
     rest.verbose('dapp: project handleEvent', { args });
-    
+
+
     switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
-        return receiveProject(adminName, args.name, args.password)(scope);
-      case ProjectEvent.ACCEPTED:
-        return acceptBid(adminName, args.bidId, args.name)(scope);
+        return setScope(scope)
+          .then(projectManager.getBidsByName(name))
+          .then(function(scope){
+            const bids = scope.result;
+            // find the accepted bid
+            const accepted = bids.filter(function(bid) {
+              return bid.state == BidState[BidState.ACCEPTED];
+            });
+            if (accepted.length != 1) {
+              throw(new Error(ErrorCodes.NOT_FOUND));
+            }
+            // supplier NAME
+            scope.supplierName = accepted[0].supplier;
+            scope.valueEther = accepted[0].amount;
+            scope.bidAddress = accepted[0].address;
+            return scope;
+          })
+          .then(function(scope) {
+            return userManager.getUser(adminName, scope.supplierName)(scope);
+          })
+          .then(function(scope) {
+            const supplier = scope.result;
+            return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
+          });
+
+      case ProjectEvent.ACCEPT:
+        return acceptBid(adminName, args.username, args.bidId, name)(scope);
+
       default:
-        return projectManager.handleEvent(adminName, args.name, args.projectEvent)(scope);
+        return projectManager.handleEvent(adminName, name, args.projectEvent)(scope);
     }
   }
 }
@@ -298,6 +332,7 @@ function receiveProject(adminName, name, password) {
         // supplier NAME
         scope.supplierName = accepted[0].supplier;
         scope.valueEther = accepted[0].amount;
+        scope.bidAddress = accepted[0].address;
         return scope;
       })
       // get the supplier info
@@ -308,16 +343,10 @@ function receiveProject(adminName, name, password) {
         scope.supplier = scope.result;
         return scope;
       })
-      // RECEIVE the project
-      .then(projectManager.handleEvent(adminName, name, ProjectEvent.RECEIVE))
-      // send the funds
+      // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
       .then(function(scope) {
-        //{fromUser, password, fromAddress, toAddress, valueEther, node}
-        const fromUser = scope.buyer.username;
-        const fromAddress = scope.buyer.account;
-        const toAddress = scope.supplier.account;
-        return rest.sendAddress(fromUser, password, fromAddress, toAddress, scope.valueEther)(scope);
-      })
+        return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
+      });
   }
 }
 

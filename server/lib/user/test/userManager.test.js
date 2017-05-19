@@ -218,7 +218,10 @@ describe('UserManager tests', function() {
     rest.setScope(scope)
       // create buyer/seller
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getAccount(buyer))
+      .then(function(scope) {
+        const user = scope.result;
+        return userManager.getAccount(user.account)(scope);
+      })
       .then(function(scope) {
         const account = scope.result;
         const balance = new BigNumber(account.balance);
@@ -235,7 +238,7 @@ describe('UserManager tests', function() {
     rest.setScope(scope)
       // create buyer/seller
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getBalance(buyer))
+      .then(userManager.getBalance(adminName, buyer))
       .then(function(scope) {
         const balance = scope.result;
         const faucetBalance = new BigNumber(1000).times(constants.ETHER);
@@ -244,7 +247,7 @@ describe('UserManager tests', function() {
       }).catch(done);
   });
 
-  it('Send funds', function(done) {
+  it.only('Send funds', function(done) {
     const buyer = util.uid('Buyer');
     const supplier = util.uid('Supplier');
     const password = util.uid('Pass');
@@ -255,14 +258,14 @@ describe('UserManager tests', function() {
     rest.setScope(scope)
       // SETUP: create buyer/seller
       .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getBalance(buyer))
+      .then(userManager.getBalance(adminName, buyer))
       .then(function(scope) {
         const balance = scope.result;
         scope.balances[buyer] = balance;
         return scope;
       })
       .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
-      .then(userManager.getBalance(supplier))
+      .then(userManager.getBalance(adminName, supplier))
       .then(function(scope) {
         const balance = scope.result;
         scope.balances[supplier] = balance;
@@ -273,7 +276,6 @@ describe('UserManager tests', function() {
       .then(userManager.getUser(adminName, buyer))
       .then(function(scope) {
         const buyer = scope.result;
-        console.log('>>>>>>>>>>>>>>>>>>>>>>', buyer);
         scope.buyer = buyer;
         return scope;
       })
@@ -281,7 +283,6 @@ describe('UserManager tests', function() {
       .then(userManager.getUser(adminName, supplier))
       .then(function(scope) {
         const supplier = scope.result;
-        console.log('>>>>>>>>>>>>>>>>>>>>>>', supplier);
         scope.supplier = supplier;
         return scope;
       })
@@ -297,12 +298,14 @@ describe('UserManager tests', function() {
       .then(function(scope) {
         // calculate the fee
         const txResult = scope.tx.slice(-1)[0].result;
+        console.log(txResult);
         scope.fee = new BigNumber(txResult.gasLimit).times(new BigNumber(txResult.gasPrice));
+        console.log(scope.fee);
         return scope;
       })
      .then(util.delayPromise(1000*10))
       // check supplier
-      .then(userManager.getBalance(supplier))
+      .then(userManager.getBalance(adminName, supplier))
       .then(function(scope) {
         const balance = scope.result;
         const delta = balance.minus(scope.balances[supplier]);
@@ -311,7 +314,7 @@ describe('UserManager tests', function() {
         return scope;
       })
       // check buyer
-      .then(userManager.getBalance(buyer))
+      .then(userManager.getBalance(adminName, buyer))
       .then(function(scope) {
         const balance = scope.result;
         const delta = balance.minus(scope.balances[buyer]);
