@@ -19,6 +19,8 @@ npm i
 
 ### Deployment
 
+The deployment part can be skipped if you are deploying to `localhost`.
+
 Make sure there is a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. The contents of the file should be as follows.
 
 ```
