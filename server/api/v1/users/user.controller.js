@@ -25,7 +25,8 @@ const usersController = {
         });
       })
       .catch(err => {
-        util.response.status500(res, err);
+        console.log('User Balance Error:', err);
+        util.response.status500(res, 'Could not get user balance');
       });
   }
 }

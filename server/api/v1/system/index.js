@@ -12,9 +12,7 @@ router.get('/explorer-url', function(req, res){
       explorerUrl: config.getExplorerUrl()
     })
   } else {
-    util.response.status500(res, {
-      error: 'explorer url is not set on server'
-    })
+    util.response.status500(res, 'Explorer url is not set on server');
   }
 });
 

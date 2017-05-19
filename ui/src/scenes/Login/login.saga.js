@@ -52,7 +52,6 @@ function* submitLogin(action) {
     yield put(hideLoading());
     if(response.data.authenticate) {
       yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
-
     }
   }
   catch(err)

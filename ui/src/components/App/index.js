@@ -9,7 +9,7 @@ import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
 import UserBadge from './components/UserBadge/';
 import mixpanel from 'mixpanel-browser';
-import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
+import { resetUserMessage } from '../UserMessage/user-message.action';
 import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
 import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
@@ -97,7 +97,7 @@ class App extends Component {
 
     return (
       <section>
-        {this.getAppBar("BlockApps Marketplace", navItems)}
+        {this.getAppBar("Supply Chain", navItems)}
         <Snackbar
           toasts={
             this.props.userMessage
@@ -119,4 +119,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, {resetUserMessage, setUserMessage, userLogout, getExplorerUrl})(App);
+export default connect(mapStateToProps, {resetUserMessage, userLogout, getExplorerUrl})(App);
