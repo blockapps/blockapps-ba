@@ -41,25 +41,29 @@ function uploadContract(adminName, adminPassword, args) {
   }
 }
 
-function getAccount(username, node) {
+function getAccount(account, node) {
   return function (scope) {
-    rest.verbose('getAccount', username);
+    rest.verbose('getAccount', account);
     return rest.setScope(scope)
       .then(function(scope){
-        return rest.getAccount(scope.users[username].address, node)(scope);
+        return rest.getAccount(account, node)(scope);
       })
       .then(function (scope) {
-        scope.result = scope.accounts[scope.users[username].address][0];
+        scope.result = scope.accounts[account][0];
         return scope;
       });
   }
 }
 
-function getBalance(username, node) {
+function getBalance(adminName, username, node) {
   return function (scope) {
     rest.verbose('getBalance', username);
     return rest.setScope(scope)
-      .then(getAccount(username, node))
+      .then(getUser(adminName, username))
+      .then(function(scope){
+        const user = scope.result;
+        return getAccount(user.account, node)(scope);
+      })
       .then(function(scope){
         const account = scope.result;
         const balance = new BigNumber(account.balance);

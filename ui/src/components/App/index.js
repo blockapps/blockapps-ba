@@ -4,44 +4,20 @@ import Toolbar from 'react-md/lib/Toolbars';
 import NavigationDrawer from 'react-md/lib/NavigationDrawers';
 import Button from 'react-md/lib/Buttons';
 import FontIcon from 'react-md/lib/FontIcons';
-import Avatar from 'react-md/lib/Avatars';
 import { Link } from 'react-router';
 import LoadingBar from 'react-redux-loading-bar';
 import Snackbar from 'react-md/lib/Snackbars';
+import UserBadge from './components/UserBadge/';
 import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
 import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
 import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
-
 
 class App extends Component {
 
   componentWillMount() {
     this.props.getExplorerUrl();
   }
-
-  userBadge = () => {
-    const login = this.props.login;
-    return (
-      <div className="md-grid user-balance">
-        <Avatar className="md-cell--3 md-avatar--color" icon={<FontIcon>account_circle</FontIcon>} />
-        <div className="md-cell--8 pad-left">
-          <span className="md-font-bold">{login.username}</span>
-          <br />
-          <span className="md-font-medium">Balance: 0.00</span>
-        </div>
-        <div className="md-cell md-cell--1 md-text-center">
-          <a className="md-avatar--color" href="#" onClick={(e) => this.handleLogoutClick(e)}><FontIcon>exit_to_app</FontIcon></a>
-        </div>
-      </div>
-    );
-  };
-
-  handleLogoutClick = (e) => {
-    e.stopPropagation();
-    this.props.userLogout();
-    this.props.setUserMessage('You logged out');
-  };
 
 
   // get type of app bar based on login state
@@ -56,7 +32,7 @@ class App extends Component {
           tabletDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           desktopDrawerType={ NavigationDrawer.DrawerTypes.PERSISTENT }
           toolbarTitle={ title }
-          toolbarActions={ this.userBadge() }
+          toolbarActions={ <UserBadge username={this.props.login.username} role={this.props.login.role} /> }
         >
           <LoadingBar style={{position: 'fixed', zIndex: 15}} />
           {this.props.children}

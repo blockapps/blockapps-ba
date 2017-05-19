@@ -138,10 +138,8 @@ function login(adminName, username, password) {
   return function(scope) {
     rest.verbose('dapp: login', {username, password});
     return setScope(scope)
-    .then(userManager.getUser(adminName, username))
-    .then(userManager.exists(adminName, username))
-      .then(userManager.login(adminName, username, password))
-      .then(function(scope) {
+    .then(userManager.login(adminName, username, password))
+    .then(function(scope) {
         // auth failed
         if (!scope.result) {
           scope.result = {authenticate: false};
@@ -240,25 +238,27 @@ function getBids(adminName, name) {
 }
 
 // handle project event
-function handleEvent(adminName, name, projectEvent, username, password) {
+function handleEvent(adminName,/*, name, projectEvent, username, password*/ args) {
   return function(scope) {
-    rest.verbose('dapp: project handleEvent', {name, projectEvent, username});
-
-    switch(projectEvent) {
+    rest.verbose('dapp: project handleEvent', { args });
+    
+    switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
-        return receiveProject(adminName, name, password)(scope);
+        return receiveProject(adminName, args.name, args.password)(scope);
+      case ProjectEvent.ACCEPTED:
+        return acceptBid(adminName, args.bidId, args.name)(scope);
       default:
-        return projectManager.handleEvent(adminName, name, projectEvent)(scope);
+        return projectManager.handleEvent(adminName, args.name, args.projectEvent)(scope);
     }
   }
 }
 
 // getBalance
-function getBalance(username) {
+function getBalance(adminName, username) {
   return function(scope) {
     rest.verbose('dapp: getBalance', username);
     return setScope(scope)
-      .then(userManager.getBalance(username));
+      .then(userManager.getBalance(adminName, username));
   }
 }
 
@@ -336,6 +336,7 @@ module.exports = function (libPath) {
     // business functions
     login: login,
     createProject: createProject,
+    getBalance: getBalance,
     getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
