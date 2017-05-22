@@ -80,9 +80,9 @@ API_URL="<api-server-url>" npm run start
 on Windows:
 ```
 cd ui
-set "REACT_APP_API_MOCK=<api-server-url>" & set "PORT=3030" & npm run start-windows
+set "REACT_APP_API_URL=<api-server-url>" & set "PORT=3030" & npm run start-windows
 ```
-where <api-server-url> - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
+where `<api-server-url>` - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
 
 ### Testing
 
