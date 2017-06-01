@@ -5,13 +5,10 @@ Blockapps BA
 ### Supply Chain Demo App 
 This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate a solution for a basic 2-party Supply Chain Workflow.
 
-*Supply Chain Workflow*
 ![Alt text](SupplyChain-Workflow.png?raw=true "Supply Chain Workflow")
 
-*Demo Application Stack*
 ![Alt text](Demo_Application_Stack.png?raw=true "Demo Application Stack")
 
-*Production Architecture*
 ![Alt text](Production_Architecture.png?raw=true "Production Architecture")
 
 ### Dependencies
