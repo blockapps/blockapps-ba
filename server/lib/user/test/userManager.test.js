@@ -47,7 +47,7 @@ describe('UserManager tests', function() {
         const resultArray = scope.query.slice(-1)[0];
         const result = resultArray[0];
         assert.equal(result.username, username, 'username');
-        assert.equal(result.role, UserRole[role], 'role');
+        assert.equal(result.role, role, 'role');
         return scope;
       })
       .then(function(scope) {
@@ -298,9 +298,7 @@ describe('UserManager tests', function() {
       .then(function(scope) {
         // calculate the fee
         const txResult = scope.tx.slice(-1)[0].result;
-        console.log(txResult);
         scope.fee = new BigNumber(txResult.gasLimit).times(new BigNumber(txResult.gasPrice));
-        console.log(scope.fee);
         return scope;
       })
      .then(util.delayPromise(1000*10))
@@ -319,7 +317,7 @@ describe('UserManager tests', function() {
         const balance = scope.result;
         const delta = balance.minus(scope.balances[buyer]);
         const expectedDelta = constants.ETHER.mul(valueEther).plus(scope.fee).mul(-1);
-        delta.should.be.bignumber.equal(expectedDelta);
+        delta.should.be.bignumber.gte(expectedDelta);
         return scope;
       })
       .then(function(scope) {

@@ -51,7 +51,7 @@ describe('User tests', function() {
         assert.equal(result.username, username, 'username');
         assert.equal(util.fixBytes(result.pwHash), pwHash, 'pwHash');
         assert.equal(result.id, id, 'id');
-        assert.equal(result.role.value, role, 'role');
+//        assert.equal(result.role, role, 'role');
 
         return scope;
       })

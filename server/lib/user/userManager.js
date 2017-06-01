@@ -111,7 +111,8 @@ function createUser(adminName, username, password, role) {
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
+        const result = scope.contracts[contractName].calls[method];
+        const errorCode = parseInt(result[0]);
         if (errorCode != ErrorCodes.SUCCESS) {
           throw new Error(errorCode);
         }
@@ -135,7 +136,7 @@ function exists(adminName, username) {
       .then(function(scope) {
         // returns bool
         const result = scope.contracts[contractName].calls[method];
-        scope.result = (result === 'true'); // return value is a string
+        scope.result = (result[0] === true);
         return scope;
       });
   }
@@ -154,7 +155,8 @@ function getUser(adminName, username) {
       .then(rest.callMethod(adminName, contractName, method, args))
       .then(function(scope) {
         // returns address
-        const address = scope.contracts[contractName].calls[method];
+        const result = scope.contracts[contractName].calls[method];
+        const address = result[0];
         // if not found
         if (address == 0) {
           scope.result = undefined;
