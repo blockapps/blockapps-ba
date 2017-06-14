@@ -52,7 +52,7 @@ function authenticate(adminName, pwHash) {
       .then(function(scope) {
         // returns bool
         const result = scope.contracts[contractName].calls[method];
-        scope.result = (result == 'true');
+        scope.result = (result[0] === true);
         return scope;
       });
   }

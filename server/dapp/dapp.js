@@ -87,7 +87,7 @@ function getAdminInterface(address) {
       address = scope.contracts[AI.contractName].address;
       if (address === undefined) throw('');
     }
-    return rest.getState(contractName, address)(scope)
+    return rest.getStateAddress(contractName, address)(scope)
       .then(function (scope) {
         for (var name in scope.states[contractName]) {
           var address = scope.states[contractName][name];
@@ -259,7 +259,7 @@ function handleEvent(adminName,/*, name, projectEvent, username, password*/ args
             const bids = scope.result;
             // find the accepted bid
             const accepted = bids.filter(function(bid) {
-              return bid.state == BidState[BidState.ACCEPTED];
+              return parseInt(bid.state) == BidState.ACCEPTED;
             });
             if (accepted.length != 1) {
               throw(new Error(ErrorCodes.NOT_FOUND));

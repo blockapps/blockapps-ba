@@ -95,10 +95,9 @@ function createBid(buyer, name, supplier, amount) {
       .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns (ErrorCodes, uint)
-        const tuppleString = scope.contracts[contractName].calls[method];
-        const tuppleArray = tuppleString.split(',');
-        const errorCode = tuppleArray[0];
-        const bidId = tuppleArray[1];
+        const result = scope.contracts[contractName].calls[method];
+        const errorCode = parseInt(result[0]);
+        const bidId = result[1];
 
         if (errorCode != ErrorCodes.SUCCESS) {
           throw new Error(errorCode);
@@ -231,8 +230,8 @@ function exists(buyer, name) {
       .then(rest.callMethod(buyer, contractName, method, args))
       .then(function(scope) {
         // returns bool
-        const exists = scope.contracts[contractName].calls[method];
-        scope.result = (exists === 'true'); // return value is a string
+        const result = scope.contracts[contractName].calls[method];
+        scope.result = (result[0] === true);
         return scope;
       });
   }
@@ -312,7 +311,7 @@ function getProjectsByState(state) {
       .then(function(scope) {
         const projects = scope.result;
         const filtered = projects.filter(function(project) {
-          return project.state === ProjectState[state];
+          return parseInt(project.state) == state;
         });
         scope.result = filtered;
         return scope;
@@ -367,13 +366,12 @@ function handleEvent(buyer, name, projectEvent) {
       })
       .then(function(scope) {
         // returns (ErrorCodes, ProjectState)
-        const tupleString = scope.contracts[contractName].calls[method];
-        const tupleArray = tupleString.split(',');
-        const errorCode = tupleArray[0];
+        const result = scope.contracts[contractName].calls[method];
+        const errorCode = parseInt(result[0]);
         if (errorCode != ErrorCodes.SUCCESS) {
           throw new Error(errorCode);
         }
-        scope.result = {errorCode: tupleArray[0], state: tupleArray[1]};
+        scope.result = {errorCode: parseInt(result[0]), state: parseInt(result[1])};
         return scope;
       });
   }

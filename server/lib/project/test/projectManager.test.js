@@ -301,7 +301,7 @@ describe('ProjectManager tests', function() {
         const resultsArray = scope.query.slice(-1)[0];
         assert.equal(resultsArray.length, 1, 'one and only one');
         const project = resultsArray[0];
-        assert.equal(project.state, ProjectState[ProjectState.PRODUCTION], 'ACCEPTED project should be in PRODUCTION');
+        assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
         return scope;
       })
       .then(function(scope) {
