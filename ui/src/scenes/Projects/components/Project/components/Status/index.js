@@ -20,12 +20,12 @@ class Status extends Component {
             createdAt=""
             icon={<i className="material-icons" style={{fontSize: '16px'}}>{STATES[state].icon}</i>}
             contentStyle={{ border:0, boxShadow: 'none' }}
-            iconColor={ parseInt(state) === parseInt(this.props.state) ? '#3F51B5' : '#ccc' }
+            iconColor={ parseInt(state, 10) === parseInt(this.props.state, 10) ? '#3F51B5' : '#ccc' }
             container="p"
           >
             <div
-              className={ parseInt(state) === parseInt(this.props.state) ? 'md-title' : 'md-subheading-2' }
-              style={{marginTop: '-5px', color: parseInt(state) === parseInt(this.props.state) ? '#3F51B5' : '#ccc'}}
+              className={ parseInt(state, 10) === parseInt(this.props.state, 10) ? 'md-title' : 'md-subheading-2' }
+              style={{marginTop: '-5px', color: parseInt(state, 10) === parseInt(this.props.state, 10) ? '#3F51B5' : '#ccc'}}
             >
               {STATES[state].state}
             </div>

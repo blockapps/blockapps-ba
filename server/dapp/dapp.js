@@ -149,7 +149,6 @@ function login(adminName, username, password) {
         return userManager.getUser(adminName, username)(scope)
           .then(function(scope) {
             const user = scope.result;
-            console.log("USER >>>>>>>>>>>>", user);
             scope.result = {authenticate: true, user: user};
             return scope;
           })
@@ -260,9 +259,6 @@ function handleEvent(adminName,/*, name, projectEvent, username, password*/ args
             const bids = scope.result;
             // find the accepted bid
             const accepted = bids.filter(function(bid) {
-              console.log("BID STATE PARSED", parseInt(bid.state));
-              console.log("BIDSTATE ENUM", BidState)
-              console.log("BIDSTATE>ACCEPTED", BidState.ACCEPTED);
               return parseInt(bid.state) == BidState.ACCEPTED;
             });
             if (accepted.length != 1) {

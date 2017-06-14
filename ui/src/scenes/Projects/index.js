@@ -17,7 +17,7 @@ class Projects extends Component {
 
   // TODO: move to common place
   get isBuyer() {
-    return parseInt(this.props.login['role']) === ROLES.BUYER
+    return parseInt(this.props.login['role'], 10) === ROLES.BUYER
   }
 
   render() {
@@ -31,7 +31,7 @@ class Projects extends Component {
           add_circle_outline
         </Button>
       :
-      '';
+      null;
 
     const projectView = this.isBuyer
       ?

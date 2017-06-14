@@ -30,7 +30,6 @@ class ProjectList extends Component {
   render() {
 
     const projects = this.props.projects;
-    console.log(projects);
     const projectRows = projects.length !== 0 ? projects.map(
       (project, index) =>
         <TableRow
@@ -82,7 +81,7 @@ class ProjectList extends Component {
             {/*}*/}
           {/*</TableColumn>*/}
           <TableColumn>
-            {parseInt(project.state) ? STATES[parseInt(project.state)].state : ''}
+            {parseInt(project.state, 10) ? STATES[parseInt(project.state, 10)].state : ''}
           </TableColumn>
         </TableRow>
     ):

@@ -18,7 +18,7 @@ class BidTable extends Component {
 
   // TODO: move to common place
   get isBuyer() {
-    return parseInt(this.props.login['role']) === ROLES.BUYER
+    return parseInt(this.props.login['role'], 10) === ROLES.BUYER
   }
 
   handleBidAcceptClick = function(e, bid) {
@@ -31,13 +31,12 @@ class BidTable extends Component {
     bids.sort(function(a, b){
       return a.amount-b.amount;
     });
-    console.log("BIDS >>>>>" , bids);
     const bidRows = bids.length !== 0 ? bids.map(
       (bid,i) =>
         <TableRow key={"bid"+i}>
           <TableColumn>
             {
-              parseInt(this.props['projectState']) === STATES.OPEN && this.isBuyer
+              parseInt(this.props['projectState'], 10) === STATES.OPEN && this.isBuyer
                 ?
                   <Button
                     flat
@@ -47,7 +46,7 @@ class BidTable extends Component {
                     }
                   >gavel</Button>
                 :
-                  (BID_STATES[parseInt(bid.state)] === 'ACCEPTED')
+                  (BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED')
                   ?
                     <Chip
                       label="ACCEPTED"

@@ -25,11 +25,11 @@ class Project extends Component {
   }
 
   get isBuyer() {
-    return parseInt(this.props.login['role']) === ROLES.BUYER;
+    return parseInt(this.props.login['role'], 10) === ROLES.BUYER;
   }
 
   get isSupplier() {
-    return parseInt(this.props.login['role']) === ROLES.SUPPLIER;
+    return parseInt(this.props.login['role'], 10) === ROLES.SUPPLIER;
   }
 
   handleProjectEventClick = function(e, projectName, projectEvent) {
@@ -44,12 +44,12 @@ class Project extends Component {
     const project = this.props.project;
     const actions = [];
     const children = [];
-    if(project && project.name && parseInt(project.state)) {
+    if(project && project.name && parseInt(project.state, 10)) {
       //children
       children.push(
         <Chip
           key="state"
-          label={STATES[parseInt(project.state)].state}
+          label={STATES[parseInt(project.state, 10)].state}
           className="state-chip"
         />
       );
@@ -57,7 +57,7 @@ class Project extends Component {
       //actions
       if (this.isBuyer) {
 
-        if (parseInt(project.state) === STATES.INTRANSIT) {
+        if (parseInt(project.state, 10) === STATES.INTRANSIT) {
             actions.push(
               <Button
                 icon
@@ -73,10 +73,10 @@ class Project extends Component {
       }
 
       if(this.isSupplier) {
-        if (parseInt(project.state) === STATES.PRODUCTION) {
+        if (parseInt(project.state, 10) === STATES.PRODUCTION) {
           const myBidAccepted = this.props.bids.some(
             bid =>
-              BID_STATES[parseInt(bid.state)] === 'ACCEPTED' && bid.supplier === this.props.login.username
+              BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED' && bid.supplier === this.props.login.username
           );
           if (myBidAccepted) {
             actions.push(
@@ -92,7 +92,7 @@ class Project extends Component {
           }
         }
 
-        if(parseInt(project.state) === STATES.OPEN) {
+        if(parseInt(project.state, 10) === STATES.OPEN) {
           actions.push(
             <Button
               icon
