@@ -87,7 +87,7 @@ function getAdminInterface(address) {
       address = scope.contracts[AI.contractName].address;
       if (address === undefined) throw('');
     }
-    return rest.getState(contractName, address)(scope)
+    return rest.getStateAddress(contractName, address)(scope)
       .then(function (scope) {
         for (var name in scope.states[contractName]) {
           var address = scope.states[contractName][name];
