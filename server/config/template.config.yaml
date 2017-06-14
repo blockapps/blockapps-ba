@@ -13,5 +13,5 @@ nodes:
   - id: 0
     explorerUrl: '<STRATO_URL_placeholder>:9000'
     stratoUrl: '<STRATO_URL_placeholder>/strato-api'
-    blocUrl: '<STRATO_URL_placeholder>/bloc'
+    blocUrl: '<STRATO_URL_placeholder>/bloc/v2.1'
     searchUrl: '<STRATO_URL_placeholder>/cirrus'

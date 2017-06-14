@@ -13,5 +13,5 @@ nodes:
   - id: 0
     explorerUrl: 'http://hackathon-1.centralus.cloudapp.azure.com:9000'
     stratoUrl: 'http://hackathon-1.centralus.cloudapp.azure.com/strato-api'
-    blocUrl: 'http://hackathon-1.centralus.cloudapp.azure.com/bloc'
+    blocUrl: 'http://hackathon-1.centralus.cloudapp.azure.com/bloc/v2.1'
     searchUrl: 'http://hackathon-1.centralus.cloudapp.azure.com/cirrus'
