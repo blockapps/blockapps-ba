@@ -1,26 +1,41 @@
 
 export const ROLES = {
-  BUYER:'BUYER',
-  SUPPLIER: 'SUPPLIER'
+  BUYER: 2,
+  SUPPLIER: 3,
+  3: 'SUPPLIER',
+  2: 'BUYER',
 }
 
 export const STATES = {
-  OPEN: {
+  1: {
     state: 'OPEN',
     icon: 'visibility'
   },
-  PRODUCTION: {
+  2: {
     state: 'PRODUCTION',
     icon: 'build'
   },
-  INTRANSIT: {
+  3: {
     state: 'INTRANSIT',
     icon: 'flight_takeoff'
   },
-  RECEIVED: {
+  4: {
     state: 'RECEIVED',
     icon: 'mood'
-  }
+  },
+  OPEN: 1,
+  PRODUCTION: 2,
+  INTRANSIT: 3,
+  RECEIVED: 4,
+}
+
+export const BID_STATES = {
+  1: 'OPEN',
+  2: 'ACCEPTED',
+  3: 'REJECTED',
+  OPEN: 1,
+  ACCEPTED: 2,
+  REJECTED: 3,
 }
 
 export const PROJECT_EVENTS = ['NULL', 'Accepted', 'Shipped', 'Received']

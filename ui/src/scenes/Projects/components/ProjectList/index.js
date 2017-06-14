@@ -11,7 +11,7 @@ import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import mixpanel from 'mixpanel-browser';
-
+import {STATES} from '../../../../constants';
 import { fetchProjectList } from './project-list.actions';
 
 class ProjectList extends Component {
@@ -30,7 +30,7 @@ class ProjectList extends Component {
   render() {
 
     const projects = this.props.projects;
-
+    console.log(projects);
     const projectRows = projects.length !== 0 ? projects.map(
       (project, index) =>
         <TableRow
@@ -82,7 +82,7 @@ class ProjectList extends Component {
             {/*}*/}
           {/*</TableColumn>*/}
           <TableColumn>
-            {project.state ? project.state : ''}
+            {parseInt(project.state) ? STATES[parseInt(project.state)].state : ''}
           </TableColumn>
         </TableRow>
     ):

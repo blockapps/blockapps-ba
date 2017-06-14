@@ -5,6 +5,7 @@ import Button from 'react-md/lib/Buttons/Button';
 import Toolbar from 'react-md/lib/Toolbars';
 import ProjectList from './components/ProjectList';
 import mixpanel from 'mixpanel-browser';
+import {ROLES} from '../../constants.js';
 
 class Projects extends Component {
 
@@ -16,7 +17,7 @@ class Projects extends Component {
 
   // TODO: move to common place
   get isBuyer() {
-    return this.props.login['role'] === 'BUYER'
+    return parseInt(this.props.login['role']) === ROLES.BUYER
   }
 
   render() {

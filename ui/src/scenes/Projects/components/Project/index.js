@@ -14,7 +14,7 @@ import Status from './components/Status';
 import Detail from './components/Detail';
 import Bids from './components/Bids';
 import mixpanel from 'mixpanel-browser';
-
+import {ROLES, BID_STATES, STATES} from '../../../../constants';
 import './Project.css';
 
 class Project extends Component {
@@ -25,11 +25,11 @@ class Project extends Component {
   }
 
   get isBuyer() {
-    return this.props.login['role'] === 'BUYER'
+    return parseInt(this.props.login['role']) === ROLES.BUYER;
   }
 
   get isSupplier() {
-    return this.props.login['role'] === 'SUPPLIER'
+    return parseInt(this.props.login['role']) === ROLES.SUPPLIER;
   }
 
   handleProjectEventClick = function(e, projectName, projectEvent) {
@@ -44,13 +44,12 @@ class Project extends Component {
     const project = this.props.project;
     const actions = [];
     const children = [];
-
-    if(project && project.name && project.state) {
+    if(project && project.name && parseInt(project.state)) {
       //children
       children.push(
         <Chip
           key="state"
-          label={project.state}
+          label={STATES[parseInt(project.state)].state}
           className="state-chip"
         />
       );
@@ -58,7 +57,7 @@ class Project extends Component {
       //actions
       if (this.isBuyer) {
 
-        if (project.state === 'INTRANSIT') {
+        if (parseInt(project.state) === STATES.INTRANSIT) {
             actions.push(
               <Button
                 icon
@@ -74,10 +73,10 @@ class Project extends Component {
       }
 
       if(this.isSupplier) {
-        if (project.state === 'PRODUCTION') {
+        if (parseInt(project.state) === STATES.PRODUCTION) {
           const myBidAccepted = this.props.bids.some(
             bid =>
-              bid.state === 'ACCEPTED' && bid.supplier === this.props.login.username
+              BID_STATES[parseInt(bid.state)] === 'ACCEPTED' && bid.supplier === this.props.login.username
           );
           if (myBidAccepted) {
             actions.push(
@@ -93,7 +92,7 @@ class Project extends Component {
           }
         }
 
-        if(project.state === 'OPEN') {
+        if(parseInt(project.state) === STATES.OPEN) {
           actions.push(
             <Button
               icon
@@ -156,7 +155,7 @@ function mapStateToProps(state) {
   return {
     project: state.project.project,
     login: state.login,
-    bids: state.bids.bids
+    bids: state.bids.bids,
   };
 }
 
