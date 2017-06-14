@@ -2,6 +2,15 @@ Blockapps BA
 ------------
 [![BlockApps logo](http://blockapps.net/img/logo_cropped.png)](http://blockapps.net)
 
+### Supply Chain Demo App
+This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate a solution for a basic 2-party Supply Chain Workflow.
+
+![Alt text](SupplyChain-Workflow.png?raw=true "Supply Chain Workflow")
+
+![Alt text](Demo_Application_Stack.png?raw=true "Demo Application Stack")
+
+![Alt text](Production_Architecture.png?raw=true "Production Architecture")
+
 ### Pre Requisites
 
 This application requires a [BlockApps Strato](http://blockapps.net/blockapps-strato-blockchain-application-development/) node. Follow the instruction in the [Strato getting started guide](https://github.com/blockapps/strato-getting-started) to install a local instance.
@@ -23,7 +32,6 @@ Install the UI dependencies
 cd ui
 npm i
 ```
-
 
 ### Deployment
 
