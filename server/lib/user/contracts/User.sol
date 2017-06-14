@@ -7,7 +7,7 @@ import "./UserRole.sol";
  */
 contract User is ErrorCodes, Version, UserRole {
   // NOTE: members must be public to be indexed for search
-  address public account;
+  address public account = 0x1234;
   string public username;
   bytes32 public pwHash;
   uint public id;

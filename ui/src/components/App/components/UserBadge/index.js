@@ -26,7 +26,7 @@ class UserBadge extends Component {
   render() {
     const userIcon = <Avatar
       className="md-cell md-cell--3 md-avatar--color md-cell--middle"
-      icon={this.props.role === ROLES.BUYER ? <FontIcon>account_balance_wallet</FontIcon> : <FontIcon>build</FontIcon>}
+      icon={parseInt(this.props.role, 10) === ROLES.BUYER ? <FontIcon>account_balance_wallet</FontIcon> : <FontIcon>build</FontIcon>}
     />;
     return (
       <div className="md-grid user-balance">

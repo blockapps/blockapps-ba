@@ -12,5 +12,5 @@ nodes:
   - id: 0
     explorerUrl: 'http://192.168.0.106:9000'
     stratoUrl: 'http://192.168.0.106/strato-api'
-    blocUrl: 'http://192.168.0.106/bloc'
+    blocUrl: 'http://192.168.0.106/bloc/v2.1'
     searchUrl: 'http://192.168.0.106/cirrus'

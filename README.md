@@ -1,5 +1,3 @@
-# blockapps-ba
-
 Blockapps BA
 ------------
 [![BlockApps logo](http://blockapps.net/img/logo_cropped.png)](http://blockapps.net)
@@ -21,13 +19,13 @@ npm i
 
 ### Deployment
 
-##### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+#### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 Run the following from the **project root**:
 ```
 npm run deploy
 ```
 
-##### If you are deploying using STRATO on the remote server:
+#### If you are deploying using STRATO on the remote server:
 Make sure there is a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. The contents of the file should be as follows:
 
 ```
@@ -46,7 +44,7 @@ nodes:
   - id: 0
     explorerUrl: 'http://<your-ip-or-dns>:9000'
     stratoUrl: 'http://<your-ip-or-dns>/strato-api'
-    blocUrl: 'http://<your-ip-or-dns>/bloc/'
+    blocUrl: 'http://<your-ip-or-dns>/bloc/v2.1'
     searchUrl: 'http://<your-ip-or-dns>/cirrus'
 ```
 
@@ -62,29 +60,29 @@ set "SERVER=<server-name>" & npm run deploy-windows
 
 ### Launch the API
 
-from the **project root**:
+from the **project root** (Linux, Mac and Windows):
 
 ```
 npm run start
 ```
 
 ### Launch the UI
-##### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+#### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 ```
 cd ui
 npm run start
 ```
-##### If you are deploying using STRATO on the remote server:
+#### If you are deploying using STRATO on the remote server:
 ```
 cd ui
 API_URL="<api-server-url>" npm run start
 ```
-On Windows:
+on Windows:
 ```
 cd ui
-set "REACT_APP_API_MOCK=<api-server-url>" & set "PORT=3030" & npm run start-windows
+set "REACT_APP_API_URL=<api-server-url>" & set "PORT=3030" & npm run start-windows
 ```
-where <api-server-url> - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
+where `<api-server-url>` - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
 
 ### Testing
 

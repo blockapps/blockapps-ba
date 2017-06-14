@@ -11,13 +11,14 @@ import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import { FormattedNumber } from 'react-intl';
+import {ROLES, STATES, BID_STATES} from '../../../../../../../../constants';
 //import './BidTable.css';
 
 class BidTable extends Component {
 
   // TODO: move to common place
   get isBuyer() {
-    return this.props.login['role'] === 'BUYER'
+    return parseInt(this.props.login['role'], 10) === ROLES.BUYER
   }
 
   handleBidAcceptClick = function(e, bid) {
@@ -30,13 +31,12 @@ class BidTable extends Component {
     bids.sort(function(a, b){
       return a.amount-b.amount;
     });
-
     const bidRows = bids.length !== 0 ? bids.map(
       (bid,i) =>
         <TableRow key={"bid"+i}>
           <TableColumn>
             {
-              this.props['projectState'] === 'OPEN' && this.isBuyer
+              parseInt(this.props['projectState'], 10) === STATES.OPEN && this.isBuyer
                 ?
                   <Button
                     flat
@@ -46,7 +46,7 @@ class BidTable extends Component {
                     }
                   >gavel</Button>
                 :
-                  (bid.state === 'ACCEPTED')
+                  (BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED')
                   ?
                     <Chip
                       label="ACCEPTED"
