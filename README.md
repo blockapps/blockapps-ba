@@ -13,6 +13,8 @@ This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate
 
 ### Pre Requisites
 
+Node v7.2 or more recent.
+
 This application requires a [BlockApps Strato](http://blockapps.net/blockapps-strato-blockchain-application-development/) node. Follow the instruction in the [Strato getting started guide](https://github.com/blockapps/strato-getting-started) to install a local instance.
 
 Once you have a functional strato node, you can clone this project and deploy it to the strato instance using the instructions below.
