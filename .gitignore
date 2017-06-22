@@ -37,7 +37,7 @@ jspm_packages
 .node_repl_history
 
 # Config
-#config.yaml
+config.yaml
 
 # Deploy files
-#server/config/*.deploy.yaml
+server/config/*.deploy.yaml
