@@ -38,3 +38,6 @@ jspm_packages
 
 # Config
 config.yaml
+
+# Deploy files
+server/config/*.deploy.yaml

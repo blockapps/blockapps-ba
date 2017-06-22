@@ -3,9 +3,12 @@ const chaiHttp = require('chai-http');
 const server = require('../../server');
 const ba = require('blockapps-rest');
 const common = ba.common;
-const should = ba.common.should;
-const assert = ba.common.assert;
-const expect = ba.common.expect;
+const should = common.should;
+const assert = common.assert;
+const expect = common.expect;
+const config = common.config;
+const rest = ba.rest;
+const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 chai.use(chaiHttp);
 
@@ -29,7 +32,7 @@ describe("Login Test", function(){
 
         assert.isOk(authenticate, 'Should be authenticated');
         assert.equal(user.username, username, 'Username should be ' + username);
-        assert.equal(user.role, "SUPPLIER", 'Role should be Supplier');
+        assert.equal(parseInt(user.role), UserRole.SUPPLIER, 'Role should be Supplier');
         done();
       });
   });
