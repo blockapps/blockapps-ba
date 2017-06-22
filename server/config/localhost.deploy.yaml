@@ -1,9 +1,9 @@
 url: 'http://localhost/bloc/v2.1'
-adminName: Admin_56292_1368469542
+adminName: Admin_61739_13881086008
 adminPassword: '1234'
-adminAddress: bc20cec3f3ff0cedaf0d4f10e9a8c9b0b0c53228
+adminAddress: b351e17dc561d6648b46cba82fd1032258456397
 AdminInterface:
-  address: 70664272d3bf89cfd96e13d775961e9c2a7d575d
+  address: d96a2cdaa883baf2406e61c1d0e30d98a156ce0e
 users:
   - username: Supplier1
     password: '1234'
