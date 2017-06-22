@@ -100,6 +100,9 @@ set "REACT_APP_API_URL=<api-server-url>" & set "PORT=3030" & npm run start-windo
 ```
 where `<api-server-url>` - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
 
+### Logins for the app
+The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplier1`, `Supplier2`. All these users have the same password: `1234`.
+
 ### Testing
 
 ```
