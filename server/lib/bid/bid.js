@@ -8,38 +8,28 @@ const contractFilename = `${config.libPath}/bid/contracts/Bid.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
-function compileSearch() {
-  return function(scope) {
+function* compileSearch() {
     const searchable = [contractName];
-    return rest.setScope(scope)
-      .then(rest.compileSearch(searchable, contractName, contractFilename));
-  }
+    return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function getState() {
-  return function (scope) {
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        scope.result = scope.states[contractName];
-        return scope;
-      });
-  }
+function* getState(contract) {
+  return yield rest.getState(contract);
 }
 
-function uploadContract(adminName, adminPassword, args) {
-  return function(scope) {
-    return rest.setScope(scope)
-      .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(adminName, adminPassword, contractName, args))
-      // .then(rest.waitNextBlock());
-  }
+function* uploadContract(user, args) {
+  return yield rest.uploadContract(user, contractName, contractFilename, args);
+}
+
+function* isCompiled() {
+  return yield rest.isCompiled(contractName);
 }
 
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
+  isCompiled: isCompiled,
   // constants
   contractName: contractName,
 };
