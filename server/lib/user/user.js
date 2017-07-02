@@ -9,53 +9,34 @@ const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function compileSearch() {
-  return function(scope) {
+function* compileSearch() {
     const searchable = [contractName];
-    return rest.setScope(scope)
-      .then(rest.compileSearch(searchable, contractName, contractFilename));
-  }
+    return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function getState() {
-  return function (scope) {
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        scope.result = scope.states[contractName];
-        return scope;
-      });
-  }
+function* getState(contract) {
+  return yield rest.getState(contract);
 }
 
-function uploadContract(adminName, adminPassword, args) {
-  return function(scope) {
-    return rest.setScope(scope)
-      .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(adminName, adminPassword, contractName, args))
-      // .then(rest.waitNextBlock());
-  }
+function* uploadContract(user, args) {
+  return yield rest.uploadContract(user, contractName, contractFilename, args);
+}
+
+function* isCompiled() {
+  return yield rest.isCompiled(contractName);
 }
 
 
-function authenticate(adminName, pwHash) {
-  return function(scope) {
-    rest.verbose('authenticate', pwHash);
-    // function authenticate(bytes32 _pwHash) return (bool) {
-    const method = 'authenticate';
-    const args = {
-      _pwHash: pwHash,
-    };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result[0] === true);
-        return scope;
-      });
-  }
+function* authenticate(admin, contract, pwHash) {
+  rest.verbose('authenticate', pwHash);
+  // function authenticate(bytes32 _pwHash) return (bool) {
+  const method = 'authenticate';
+  const args = {
+    _pwHash: pwHash,
+  };
+  const result = yield rest.callMethod(admin, contract, method, args);
+  const isAuthenticated = (result[0] === true);
+  return isAuthenticated;
 }
 
 
@@ -63,6 +44,7 @@ module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
+  isCompiled: isCompiled,
   // constants
   contractName: contractName,
   ErrorCodes: ErrorCodes,

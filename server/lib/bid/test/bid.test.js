@@ -19,6 +19,11 @@ describe('Bid tests', function() {
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
+    // compile if needed
+    const isCompiled = yield bid.isCompiled();
+    if (!isCompiled) {
+      const result = yield bid.compileSearch();
+    }
   })
 
   it('Create Contract', function* () {
@@ -42,7 +47,7 @@ describe('Bid tests', function() {
     assert.equal(mybid.amount, amount, 'amount');
   });
 
-  it('Search Contract - deploy if needed', function* () {
+  it('Search Contract', function* () {
     const id = new Date().getTime();
     const name = util.uid('Project');
     const supplier = 'Supplier1';
@@ -56,11 +61,6 @@ describe('Bid tests', function() {
     };
 
     const contract = yield bid.uploadContract(admin, args);
-
-    const isCompiled = yield bid.isCompiled();
-    if (!isCompiled) {
-      const result = yield bid.compileSearch();
-    }
 
     const queryResults = yield rest.waitQuery(`${bid.contractName}?id=eq.${id}`, 1);
     const mybid = queryResults[0];
