@@ -73,10 +73,10 @@ function* setAdminInterface(adminName, adminPassword) {
   return admin;
 }
 
-function* getAdminInterface(contract) {
-  rest.verbose('getAdminInterface', {contract});
+function* getAdminInterface() {
+  rest.verbose('getAdminInterface', AI.contract);
 
-  const state = yield rest.getState(contract);
+  const state = yield rest.getState(AI.contract);
   for (var name in state) {
     var address = state[name];
     if (address == 0) throw new Error(`getAdminInterface: interface not set: ${name}`);
