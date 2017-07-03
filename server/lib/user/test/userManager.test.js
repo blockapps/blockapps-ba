@@ -28,6 +28,7 @@ describe('UserManager tests', function() {
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
     contract = yield userManager.uploadContract(admin);
+    contract.src = 'removed';
     // compile if needed
     const isCompiled = yield userManager.isCompiled();
     if (!isCompiled) {
@@ -124,7 +125,7 @@ describe('UserManager tests', function() {
     }
   });
 
-  it.only('User Login', function* () {
+  it('User Login', function* () {
     const args = createUserArgs();
 
     // auth non-existing - should fail
@@ -142,44 +143,59 @@ describe('UserManager tests', function() {
       assert.isOk(result, 'auth should be ok');
     }
   });
-  //
-  // it('Get account', function(done) {
-  //   const buyer = 'Buyer1';
-  //   const supplier = 'Supplier1';
-  //   const password = util.uid('Pass');
-  //
-  //   rest.setScope(scope)
-  //     // create buyer/seller
-  //     .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-  //     .then(function(scope) {
-  //       const user = scope.result;
-  //       return userManager.getAccount(user.account)(scope);
-  //     })
-  //     .then(function(scope) {
-  //       const account = scope.result;
-  //       const balance = new BigNumber(account.balance);
-  //       const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-  //       balance.should.be.bignumber.equal(faucetBalance);
-  //       done();
-  //     }).catch(done);
-  // });
-  //
-  // it('Get balance', function(done) {
-  //   const buyer = util.uid('Buyer');
-  //   const password = util.uid('Pass');
-  //
-  //   rest.setScope(scope)
-  //     // create buyer/seller
-  //     .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-  //     .then(userManager.getBalance(adminName, buyer))
-  //     .then(function(scope) {
-  //       const balance = scope.result;
-  //       const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-  //       balance.should.be.bignumber.equal(faucetBalance);
-  //       done();
-  //     }).catch(done);
-  // });
-  //
+
+  it('Get account', function* () {
+    const args = createUserArgs();
+    // create user
+    const user = yield userManager.createUser(admin, contract, args);
+    // check account
+    const account = (yield userManager.getAccount(user.account))[0];
+    const balance = new BigNumber(account.balance);
+    const faucetBalance = new BigNumber(1000).times(constants.ETHER);
+    balance.should.be.bignumber.equal(faucetBalance);
+  });
+
+  it('Get balance', function* () {
+    const args = createUserArgs();
+    // create user
+    const user = yield userManager.createUser(admin, contract, args);
+    const balance = yield userManager.getBalance(admin, contract, user.username);
+    const faucetBalance = new BigNumber(1000).times(constants.ETHER);
+    balance.should.be.bignumber.equal(faucetBalance);
+  });
+
+  it('Send funds', function* () {
+    // create buyer/seller
+    const buyerArgs = createUserArgs('Buyer', UserRole.BUYER);
+    yield userManager.createUser(admin, contract, buyerArgs);
+    const buyer = yield userManager.getUser(admin, contract, buyerArgs.username);
+    buyer.startingBalance = yield userManager.getBalance(admin, contract, buyer.username);
+
+    const supplierArgs = createUserArgs('Supplier', UserRole.SUPPLIER);
+    yield userManager.createUser(admin, contract, supplierArgs);
+    const supplier = yield userManager.getUser(admin, contract, supplierArgs.username);
+    supplier.startingBalance = yield userManager.getBalance(admin, contract, supplier.username);
+
+    // TRANSACTION
+    // function* send(fromUser, toUser, valueEther, nonce, node)
+    const fromUser = {name:buyer.username, password:buyerArgs.password, address: buyer.account};
+    const toUser = {name:supplier.username, address: supplier.account};
+
+    const valueEther = 12;
+    const receipt = yield rest.send(fromUser, toUser, valueEther);
+    const txResult = yield rest.transactionResult(receipt.hash);
+    assert.equal(txResult[0].status, 'success');
+
+    // check balances
+    buyer.endBalance = yield userManager.getBalance(admin, contract, buyer.username);
+    supplier.endBalance = yield userManager.getBalance(admin, contract, supplier.username);
+
+    const delta = new BigNumber(valueEther).mul(constants.ETHER);
+    assert.isOk(buyer.startingBalance.minus(delta).greaterThan(buyer.endBalance), "buyer's balance should be slightly less than expected due to gas costs");
+    assert.isOk(supplier.startingBalance.plus(delta).equals(supplier.endBalance), "supplier's balance should be as expected after sending ether");
+
+  });
+
   // it('Send funds', function(done) {
   //   const buyer = util.uid('Buyer');
   //   const supplier = util.uid('Supplier');
@@ -261,12 +277,14 @@ describe('UserManager tests', function() {
 });
 
 // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
-function createUserArgs() {
+function createUserArgs(_name, _role) {
   const uid = util.uid();
+  const role = _role || UserRole.SUPPLIER;
+  const name = _name || 'User';
   const args = {
-    username: 'User' + uid,
+    username: name + uid,
     password: 'Pass' + uid,
-    role: UserRole.SUPPLIER,
+    role: role,
   }
   return args;
 }

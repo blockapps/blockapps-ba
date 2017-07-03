@@ -29,48 +29,18 @@ function* isCompiled() {
   return yield rest.isCompiled(contractName);
 }
 
-
-function getAccount(account, node) {
-  return function (scope) {
-    rest.verbose('getAccount', account);
-    return rest.setScope(scope)
-      .then(function(scope){
-        return rest.getAccount(account, node)(scope);
-      })
-      .then(function (scope) {
-        scope.result = scope.accounts[account][0];
-        return scope;
-      });
-  }
+function* getAccount(address, node) {
+  rest.verbose('getAccount', address);
+  const accounts = yield rest.getAccount(address, node);
+  return accounts;
 }
 
-function getBalance(adminName, username, node) {
-  return function (scope) {
-    rest.verbose('getBalance', username);
-    return rest.setScope(scope)
-      .then(getUser(adminName, username))
-      .then(function(scope) {
-        const user = scope.result;
-        const accountAddress = user.account;
-        return getBalanceAddress(accountAddress)(scope);
-      });
-  }
-}
-
-function getBalanceAddress(accountAddress) {
-  return function (scope) {
-    rest.verbose('getBalance', accountAddress);
-    return rest.setScope(scope)
-      .then(function(scope){
-        return getAccount(accountAddress)(scope);
-      })
-      .then(function(scope){
-        const account = scope.result;
-        const balance = new BigNumber(account.balance);
-        scope.result = balance;
-        return scope;
-      })
-  }
+function* getBalance(admin, contract, username, node) {
+  rest.verbose('getBalance', username);
+  const baUser = yield getUser(admin, contract, username);
+  const accounts = yield getAccount(baUser.account);
+  const balance = new BigNumber(accounts[0].balance);
+  return balance;
 }
 
 // throws: ErrorCodes
@@ -124,6 +94,7 @@ function* getUser(admin, contract, username) {
   }
   // found - query for the full user record
   const baUser = yield user.getUserByAddress(userAddress);
+  baUser.name = baUser.username;
   return baUser;
 }
 
@@ -155,7 +126,6 @@ module.exports = {
   uploadContract: uploadContract,
   getAccount: getAccount,
   getBalance: getBalance,
-  getBalanceAddress: getBalanceAddress,
   createUser: createUser,
   exists: exists,
   getUser: getUser,
