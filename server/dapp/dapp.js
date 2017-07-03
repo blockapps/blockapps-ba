@@ -52,40 +52,37 @@ function setAdmin(adminName, adminPassword, aiAddress, adminAddress) {
 
 // ========== Admin Interface ==========
 const AI = {
-  libPath: undefined,
-  subContractsNames: {
-    UserManager: 'UserManager',
-    ProjectManager: 'ProjectManager',
+  contract: {
+    name: 'AdminInterface',
+    filename: '/admin/AdminInterface.sol',
+    libPath: undefined,
   },
-  subContractAddresses: {},
-  contractName: 'AdminInterface',
-  contractFilename: '/admin/AdminInterface.sol',
+  subContracts: {
+    UserManager: {name: 'UserManager', address: undefined},
+    ProjectManager: {name: 'ProjectManager', address: undefined},
+  },
 };
-
-var admin;
-var contract;
 
 function* setAdminInterface(adminName, adminPassword) {
   rest.verbose('setAdminInterface', arguments);
-  const contractName = AI.contractName;
-  const contractFilename = AI.libPath + AI.contractFilename;
-  admin = yield rest.createUser(adminName, adminPassword);
+  const contractName = AI.contract.name;
+  const contractFilename = AI.contract.libPath + AI.contract.filename;
+  const admin = yield rest.createUser(adminName, adminPassword);
   contract = yield rest.uploadContract(admin, contractName, contractFilename);
-  contract.src = 'removed';
-  return {admin, contract};
+  AI.contract.address = contract.address;
+  return admin;
 }
 
 function* getAdminInterface(contract) {
   rest.verbose('getAdminInterface', {contract});
 
-  const contractName = AI.contractName;
   const state = yield rest.getState(contract);
   for (var name in state) {
     var address = state[name];
     if (address == 0) throw new Error(`getAdminInterface: interface not set: ${name}`);
     // capitalize first letter to match the contract name on the chain
     var capName = name[0].toUpperCase() + name.substring(1);
-    AI.subContractAddresses[capName] = address;
+    AI.subContracts[capName].address = address;
   }
   return AI;
 }
@@ -336,7 +333,7 @@ function receiveProject(adminName, name, password) {
 
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
-  AI.libPath = libPath;
+  AI.contract.libPath = libPath;
 
   return {
     AI: AI,

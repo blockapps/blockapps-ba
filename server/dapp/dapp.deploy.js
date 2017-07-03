@@ -16,7 +16,7 @@ const Promise = common.Promise;
 
 const dapp = require('./dapp')(config.libPath);
 const AI = dapp.AI;
-assert.isDefined(AI.subContractsNames['UserManager']);
+assert.isDefined(AI.subContracts['UserManager']);
 
 assert.isDefined(config.dataFilename, 'Data argument missing. Set in config, or use --data <path>');
 const presetData = fsutil.yamlSafeLoadSync(config.dataFilename);
@@ -37,19 +37,19 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     // compile search
 //    yield dapp.compileSearch();   911
     // set admin interface
-    const tuple = yield dapp.setAdminInterface(adminName, adminPassword);
+    const admin = yield dapp.setAdminInterface(adminName, adminPassword);
     // sanity check - get the interface back
-    yield dapp.getAdminInterface(tuple.contract);
+    yield dapp.getAdminInterface(AI.contract);
     // create preset users
-    const contract = {name:AI.subContractsNames.UserManager, address:AI.subContractAddresses[AI.subContractsNames.UserManager]};
-    yield createPresetUsers(tuple.admin, contract, presetData.users);
+//    const contract = {name:AI.subContractsNames.UserManager, address:AI.subContractAddresses[AI.subContractsNames.UserManager]};
+    yield createPresetUsers(admin, AI.subContracts['UserManager'], presetData.users);
     const object = {
       url: config.getBlocUrl(),
       adminName: adminName,
       adminPassword: adminPassword,
-      adminAddress: tuple.admin.address,
+      adminAddress: admin.address,
       AdminInterface: {
-        address: tuple.contract.address,
+        address: AI.contract.address,
       },
       users: presetData.users,
     };
