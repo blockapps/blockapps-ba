@@ -57,59 +57,42 @@ const AI = {
     UserManager: 'UserManager',
     ProjectManager: 'ProjectManager',
   },
+  subContractAddresses: {},
   contractName: 'AdminInterface',
   contractFilename: '/admin/AdminInterface.sol',
 };
 
-function setAdminInterface(adminName, adminPassword) {
+var admin;
+var contract;
+
+function* setAdminInterface(adminName, adminPassword) {
   rest.verbose('setAdminInterface', arguments);
   const contractName = AI.contractName;
   const contractFilename = AI.libPath + AI.contractFilename;
-  return function (scope) {
-    return nop(scope)
-      .then(rest.createUser(adminName, adminPassword))
-      .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(adminName, adminPassword, contractName))
-      .then(function (scope) {
-        const address = scope.contracts[contractName].address;
-        if (!util.isAddress(address)) throw new Error('setAdminInterface: upload failed: address:', address);
-        return scope;
-      });
-  }
+  admin = yield rest.createUser(adminName, adminPassword);
+  contract = yield rest.uploadContract(admin, contractName, contractFilename);
+  contract.src = 'removed';
+  return {admin, contract};
 }
 
-function getAdminInterface(address) {
-  rest.verbose('getAdminInterface', {address});
-  return function (scope) {
-    const contractName = AI.contractName;
-    // if address not passed in, it is in the scope
-    if (address === undefined) {
-      address = scope.contracts[AI.contractName].address;
-      if (address === undefined) throw('');
-    }
-    return rest.getStateAddress(contractName, address)(scope)
-      .then(function (scope) {
-        for (var name in scope.states[contractName]) {
-          var address = scope.states[contractName][name];
-          if (address == 0) throw new Error(`getAdminInterface: interface not set: ${name}`);
-          // capitalize first letter to match the contract name on the chain
-          var capName = name[0].toUpperCase() + name.substring(1);
-          scope.contracts[capName] = {
-            address: address
-          };
-        }
-        ;
-        return scope;
-      });
+function* getAdminInterface(contract) {
+  rest.verbose('getAdminInterface', {contract});
+
+  const contractName = AI.contractName;
+  const state = yield rest.getState(contract);
+  for (var name in state) {
+    var address = state[name];
+    if (address == 0) throw new Error(`getAdminInterface: interface not set: ${name}`);
+    // capitalize first letter to match the contract name on the chain
+    var capName = name[0].toUpperCase() + name.substring(1);
+    AI.subContractAddresses[capName] = address;
   }
+  return AI;
 }
 
-function compileSearch() {
-  return function (scope) {
-    return nop(scope)
-      .then(projectManager.compileSearch())
-      .then(userManager.compileSearch());
-  }
+function* compileSearch() {
+//  projectManager.compileSearch();   911
+  yield userManager.compileSearch();
 }
 
 // ========== util ==========
