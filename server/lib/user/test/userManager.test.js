@@ -36,169 +36,112 @@ describe('UserManager tests', function() {
   });
 
   it('Create User', function* () {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
-
-    const baUser = yield userManager.createUser(admin, contract, username, password, role);
-    assert.equal(baUser.username, username, 'username');
-    assert.equal(baUser.role, role, 'role');
+    const args = createUserArgs();
+    const baUser = yield userManager.createUser(admin, contract, args);
+    assert.equal(baUser.username, args.username, 'username');
+    assert.equal(baUser.role, args.role, 'role');
   });
 
-  // it('Test exists()', function(done) {
-  //   const username = util.uid('User');
-  //   const password = util.uid('Pass');
-  //   const role = UserRole.SUPPLIER;
-  //
-  //   rest.setScope(scope)
-  //     // should not exists
-  //     .then(userManager.exists(adminName, username))
-  //     .then(function(scope) {
-  //       const result = scope.result;
-  //       assert.isDefined(result, 'should be defined');
-  //       assert.isNotOk(result, 'should not exist');
-  //       return scope;
-  //     })
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, password, role))
-  //     // should exist
-  //     .then(userManager.exists(adminName, username))
-  //     .then(function(scope) {
-  //       const result = scope.result;
-  //       assert.equal(result, true, 'should exist')
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
-  //
-  // it('Create Duplicate User', function(done) {
-  //   const username = util.uid('User');
-  //   const password = util.uid('Pass');
-  //   const role = UserRole.SUPPLIER;
-  //
-  //   scope.error = undefined;
-  //
-  //   rest.setScope(scope)
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, password, role))
-  //     .then(function(scope) {
-  //       // create a duplicate - should FAIL
-  //       return rest.setScope(scope)
-  //         .then(userManager.createUser(adminName, username, password, role))
-  //         .then(function(scope) {
-  //           // did not FAIL - that is an error
-  //           scope.error = 'Duplicate username was not detected: ' + username;
-  //           return scope
-  //         })
-  //         .catch(function(error) {
-  //           const errorCode = error.message;
-  //           // error should be EXISTS
-  //           if (errorCode == ErrorCodes.EXISTS) {
-  //             return scope;
-  //           }
-  //           // different error thrown - not good
-  //           scope.error = 'userManager.createUser: threw: ' + errorCode;
-  //           return scope
-  //         });
-  //     })
-  //     .then(function(scope) {
-  //       // check error for the previous step
-  //       if (scope.error !== undefined)
-  //         throw(new Error(scope.error));
-  //       // all good
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
-  //
-  // it('Get User', function(done) {
-  //   const username = util.uid('User');
-  //   const password = util.uid('Pass');
-  //   const role = UserRole.SUPPLIER;
-  //
-  //   rest.setScope(scope)
-  //     // get user - should not exist
-  //     .then(userManager.getUser(adminName, username))
-  //     .then(function(scope) {
-  //       const result = scope.result;
-  //       assert.isUndefined(result, 'should not be found');
-  //       return scope;
-  //     })
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, password, role))
-  //     // get user - should exist
-  //     .then(userManager.getUser(adminName, username))
-  //     .then(function(scope) {
-  //       const result = scope.result;
-  //       assert.equal(result.username, username, 'username should be found');
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
-  //
-  // it('Get Users', function(done) {
-  //   const username = util.uid('User');
-  //   const password = util.uid('Pass');
-  //   const role = UserRole.SUPPLIER;
-  //
-  //   rest.setScope(scope)
-  //     // get users - should not exist
-  //     .then(userManager.getUsers(adminName))
-  //     .then(function(scope) {
-  //       const users = scope.result;
-  //       const found = users.filter(function(user) {
-  //         return user.username === username;
-  //       });
-  //       assert.equal(found.length, 0, 'user list should NOT contain ' + username);
-  //       return scope;
-  //     })
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, password, role))
-  //     // get user - should exist
-  //     .then(userManager.getUsers(adminName))
-  //     .then(function(scope) {
-  //       const users = scope.result;
-  //       const found = users.filter(function(user) {
-  //         return user.username === username;
-  //       });
-  //       assert.equal(found.length, 1, 'user list should contain ' + username);
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
-  //
-  // it('User Login', function(done) {
-  //   const username = util.uid('User');
-  //   const password = util.uid('Pass');
-  //   const role = UserRole.SUPPLIER;
-  //
-  //   rest.setScope(scope)
-  //     // auth non-existing - should fail
-  //     .then(userManager.login(adminName, username, password))
-  //     .then(function(scope) {
-  //       assert.isDefined(scope.result, 'auth result should be defined');
-  //       assert.isNotOk(scope.result, 'auth should fail');
-  //       return scope;
-  //     })
-  //     // create user
-  //     .then(userManager.createUser(adminName, username, password, role))
-  //     // auth
-  //     .then(userManager.login(adminName, username, password))
-  //     .then(function(scope) {
-  //       assert.isOk(scope.result, 'auth should be ok');
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
+  it('Test exists()', function* () {
+    const args = createUserArgs();
+
+    var exists;
+    // should not exist
+    exists = yield userManager.exists(admin, contract, args.username);
+    assert.isDefined(exists, 'should be defined');
+    assert.isNotOk(exists, 'should not exist');
+    // create user
+    const user = yield userManager.createUser(admin, contract, args);
+    // should exist
+    exists = yield userManager.exists(admin, contract, args.username);
+    assert.equal(exists, true, 'should exist')
+  });
+
+  it('Create Duplicate User', function* () {
+    const args = createUserArgs();
+
+    // create user
+    const user = yield userManager.createUser(admin, contract, args);
+    try {
+      // create duplicate - should fail
+      const duplicateUser = yield userManager.createUser(admin, contract, args);
+      // did not FAIL - that is an error
+      assert.isUndefined(duplicateUser, `Duplicate username was not detected: ${args.username}`);
+    } catch(error) {
+      // error should be EXISTS
+      const errorCode = error.message;
+      // if not - throw
+      if (errorCode != ErrorCodes.EXISTS) {
+        throw error;
+      }
+    }
+  });
+
+  it('Get User', function *() {
+    const args = createUserArgs();
+
+    // get non-existing user
+    try {
+      const baUser = yield userManager.getUser(admin, contract, args.username);
+      // did not FAIL - that is an error
+      assert.isUndefined(baUser, `User should not be found ${args.username}`);
+    } catch(error) {
+      // error should be NOT_FOUND
+      const errorCode = error.message;
+      // if not - throw
+      if (errorCode != ErrorCodes.NOT_FOUND) {
+        throw error;
+      }
+    }
+
+    // create user
+    yield userManager.createUser(admin, contract, args);
+    // get user - should exist
+    const baUser = yield userManager.getUser(admin, contract, args.username);
+    assert.equal(baUser.username, args.username, 'username should be found');
+  });
+
+  it('Get Users', function* () {
+    const args = createUserArgs();
+
+    // get users - should not exist
+    {
+      const users = yield userManager.getUsers(admin, contract);
+      const found = users.filter(function(user) {
+        return user.username === args.username;
+      });
+      assert.equal(found.length, 0, 'user list should NOT contain ' + args.username);
+    }
+    // create user
+    const user = yield userManager.createUser(admin, contract, args);
+    // get user - should exist
+    {
+      const users = yield userManager.getUsers(admin, contract);
+      const found = users.filter(function(user) {
+        return user.username === args.username;
+      });
+      assert.equal(found.length, 1, 'user list should contain ' + args.username);
+    }
+  });
+
+  it.only('User Login', function* () {
+    const args = createUserArgs();
+
+    // auth non-existing - should fail
+    {
+      const result = yield userManager.login(admin, contract, args);
+      assert.isDefined(result, 'auth result should be defined');
+      assert.isNotOk(result, 'auth should fail');
+    }
+
+    // create user
+    const user = yield userManager.createUser(admin, contract, args);
+    // auth
+    {
+      const result = yield userManager.login(admin, contract, args);
+      assert.isOk(result, 'auth should be ok');
+    }
+  });
   //
   // it('Get account', function(done) {
   //   const buyer = 'Buyer1';
@@ -316,3 +259,14 @@ describe('UserManager tests', function() {
   // });
 
 });
+
+// function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+function createUserArgs() {
+  const uid = util.uid();
+  const args = {
+    username: 'User' + uid,
+    password: 'Pass' + uid,
+    role: UserRole.SUPPLIER,
+  }
+  return args;
+}

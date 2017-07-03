@@ -75,21 +75,16 @@ function getBalanceAddress(accountAddress) {
 
 // throws: ErrorCodes
 // returns: user record from search
-function* createUser(admin, contract, username, password, role) {
-  const pwHash = util.toBytes32(password); // FIXME this is not a hash
+function* createUser(admin, contract, args) {
+  rest.verbose('createUser', args);
 
-  rest.verbose('createUser', {admin, username, password, role});
   // create bloc user
-  const blocUser = yield rest.createUser(username, password);
+  const blocUser = yield rest.createUser(args.username, args.password);
+  args.account = blocUser.address;
+  args.pwHash = util.toBytes32(args.password); // FIXME this is not a hash
 
   // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
   const method = 'createUser';
-  const args = {
-    account: blocUser.address,
-    username: username,
-    pwHash: pwHash,
-    role: role,
-  };
 
   // create the user, with the eth account
   const result = yield rest.callMethod(admin, contract, method, args);
@@ -98,28 +93,20 @@ function* createUser(admin, contract, username, password, role) {
     throw new Error(errorCode);
   }
   // block until the user shows up in search
-  const baUser = yield getUser(admin, contract, username);
+  const baUser = yield getUser(admin, contract, args.username);
   return baUser;
 }
 
-function exists(adminName, username) {
-  return function(scope) {
+function* exists(admin, contract, username) {
     rest.verbose('exists', username);
     // function exists(string username) returns (bool) {
     const method = 'exists';
     const args = {
       username: username,
     };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result[0] === true);
-        return scope;
-      });
-  }
+    const result = yield rest.callMethod(admin, contract, method, args);
+    const exist = (result[0] === true);
+    return exist;
 }
 
 function* getUser(admin, contract, username) {
@@ -140,47 +127,25 @@ function* getUser(admin, contract, username) {
   return baUser;
 }
 
-function getUsers(adminName) {
-  return function(scope) {
-    rest.verbose('getUsers');
-
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        const state = scope.states[contractName];
-        const users = state.users;
-        const trimmed = util.trimLeadingZeros(users); // FIXME leading zeros bug
-        const csv = util.toCsv(trimmed); // generate csv string
-        return rest.query(`${userContractName}?address=in.${csv}`)(scope);
-      })
-      .then(function (scope) {
-        scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
-  }
+function* getUsers(admin, contract) {
+  rest.verbose('getUsers');
+  const state = yield getState(contract);
+  const users = state.users;
+  const trimmed = util.trimLeadingZeros(users); // FIXME leading zeros bug
+  const csv = util.toCsv(trimmed); // generate csv string
+  const results = yield rest.query(`${userContractName}?address=in.${csv}`);
+  return results;
 }
 
-function login(adminName, username, password) {
-  return function(scope) {
-    rest.verbose('login', {username, password});
+function* login(admin, contract, args) {
+  rest.verbose('login', args);
 
-    // function login(string username, password) returns (bool) {
-    const method = 'login';
-    const args = {
-      username: username,
-      pwHash: util.toBytes32(password),
-    };
-
-    return rest.setScope(scope)
-      // login
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result == 'true');
-        return scope;
-      });
-  }
+  // function login(string username, bytes32 pwHash) returns (bool) {
+  const method = 'login';
+  args.pwHash = util.toBytes32(args.password);
+  const result = (yield rest.callMethod(admin, contract, method, args))[0];
+  const isOK = (result == true);
+  return isOK;
 }
 
 module.exports = {
