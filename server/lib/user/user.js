@@ -26,6 +26,11 @@ function* isCompiled() {
   return yield rest.isCompiled(contractName);
 }
 
+function* getUserByAddress(address) {
+  const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
+  const baUser = (yield rest.waitQuery(`${contractName}?address=eq.${trimmed}`, 1))[0];
+  return baUser;
+}
 
 function* authenticate(admin, contract, pwHash) {
   rest.verbose('authenticate', pwHash);
@@ -43,8 +48,10 @@ function* authenticate(admin, contract, pwHash) {
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
+  getUserByAddress: getUserByAddress,
   uploadContract: uploadContract,
   isCompiled: isCompiled,
+
   // constants
   contractName: contractName,
   ErrorCodes: ErrorCodes,

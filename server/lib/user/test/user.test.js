@@ -1,5 +1,5 @@
-const ba = require('blockapps-rest');
 require('co-mocha');
+const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
 const config = common.config;
