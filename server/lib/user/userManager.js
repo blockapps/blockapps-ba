@@ -64,6 +64,7 @@ function* createUser(admin, contract, args) {
   }
   // block until the user shows up in search
   const baUser = yield getUser(admin, contract, args.username);
+  baUser.blocUser = blocUser;
   return baUser;
 }
 
@@ -94,7 +95,6 @@ function* getUser(admin, contract, username) {
   }
   // found - query for the full user record
   const baUser = yield user.getUserByAddress(userAddress);
-  baUser.name = baUser.username;
   return baUser;
 }
 

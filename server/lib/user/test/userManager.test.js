@@ -167,22 +167,17 @@ describe('UserManager tests', function() {
   it('Send funds', function* () {
     // create buyer/seller
     const buyerArgs = createUserArgs('Buyer', UserRole.BUYER);
-    yield userManager.createUser(admin, contract, buyerArgs);
-    const buyer = yield userManager.getUser(admin, contract, buyerArgs.username);
+    const buyer = yield userManager.createUser(admin, contract, buyerArgs);
     buyer.startingBalance = yield userManager.getBalance(admin, contract, buyer.username);
 
     const supplierArgs = createUserArgs('Supplier', UserRole.SUPPLIER);
-    yield userManager.createUser(admin, contract, supplierArgs);
-    const supplier = yield userManager.getUser(admin, contract, supplierArgs.username);
+    const supplier = yield userManager.createUser(admin, contract, supplierArgs);
     supplier.startingBalance = yield userManager.getBalance(admin, contract, supplier.username);
 
     // TRANSACTION
     // function* send(fromUser, toUser, valueEther, nonce, node)
-    const fromUser = {name:buyer.username, password:buyerArgs.password, address: buyer.account};
-    const toUser = {name:supplier.username, address: supplier.account};
-
     const valueEther = 12;
-    const receipt = yield rest.send(fromUser, toUser, valueEther);
+    const receipt = yield rest.send(buyer.blocUser, supplier.blocUser, valueEther);
     const txResult = yield rest.transactionResult(receipt.hash);
     assert.equal(txResult[0].status, 'success');
 
@@ -193,87 +188,7 @@ describe('UserManager tests', function() {
     const delta = new BigNumber(valueEther).mul(constants.ETHER);
     assert.isOk(buyer.startingBalance.minus(delta).greaterThan(buyer.endBalance), "buyer's balance should be slightly less than expected due to gas costs");
     assert.isOk(supplier.startingBalance.plus(delta).equals(supplier.endBalance), "supplier's balance should be as expected after sending ether");
-
   });
-
-  // it('Send funds', function(done) {
-  //   const buyer = util.uid('Buyer');
-  //   const supplier = util.uid('Supplier');
-  //   const password = util.uid('Pass');
-  //   const valueEther = 12;
-  //
-  //   scope.balances = {};
-  //
-  //   rest.setScope(scope)
-  //     // SETUP: create buyer/seller
-  //     .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-  //     .then(userManager.getBalance(adminName, buyer))
-  //     .then(function(scope) {
-  //       const balance = scope.result;
-  //       scope.balances[buyer] = balance;
-  //       return scope;
-  //     })
-  //     .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
-  //     .then(userManager.getBalance(adminName, supplier))
-  //     .then(function(scope) {
-  //       const balance = scope.result;
-  //       scope.balances[supplier] = balance;
-  //       return scope;
-  //     })
-  //     // TRANSACTION
-  //     // get the buyer's info
-  //     .then(userManager.getUser(adminName, buyer))
-  //     .then(function(scope) {
-  //       const buyer = scope.result;
-  //       scope.buyer = buyer;
-  //       return scope;
-  //     })
-  //     // get the supplier's info
-  //     .then(userManager.getUser(adminName, supplier))
-  //     .then(function(scope) {
-  //       const supplier = scope.result;
-  //       scope.supplier = supplier;
-  //       return scope;
-  //     })
-  //     // send
-  //     .then(function(scope) {
-  //       //{fromUser, password, fromAddress, toAddress, valueEther, node}
-  //       const fromUser = scope.buyer.username;
-  //       const fromAddress = scope.buyer.account;
-  //       const toAddress = scope.supplier.account;
-  //       return rest.sendAddress(fromUser, password, fromAddress, toAddress, valueEther)(scope);
-  //     })
-  //     // VALIDATE
-  //     .then(function(scope) {
-  //       // calculate the fee
-  //       const txResult = scope.tx.slice(-1)[0].result;
-  //       scope.fee = new BigNumber(txResult.gasLimit).times(new BigNumber(txResult.gasPrice));
-  //       return scope;
-  //     })
-  //    .then(util.delayPromise(1000*10))
-  //     // check supplier
-  //     .then(userManager.getBalance(adminName, supplier))
-  //     .then(function(scope) {
-  //       const balance = scope.result;
-  //       const delta = balance.minus(scope.balances[supplier]);
-  //       const expectedDelta = constants.ETHER.mul(valueEther);
-  //       delta.should.be.bignumber.equal(expectedDelta);
-  //       return scope;
-  //     })
-  //     // check buyer
-  //     .then(userManager.getBalance(adminName, buyer))
-  //     .then(function(scope) {
-  //       const balance = scope.result;
-  //       const delta = balance.minus(scope.balances[buyer]);
-  //       const expectedDelta = constants.ETHER.mul(valueEther).plus(scope.fee).mul(-1);
-  //       delta.should.be.bignumber.gte(expectedDelta);
-  //       return scope;
-  //     })
-  //     .then(function(scope) {
-  //       done();
-  //     }).catch(done);
-  // });
-
 });
 
 // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
