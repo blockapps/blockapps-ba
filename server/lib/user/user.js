@@ -26,6 +26,11 @@ function* isCompiled() {
   return yield rest.isCompiled(contractName);
 }
 
+function* getUserById(id) {
+  const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}`, 1))[0];
+  return baUser;
+}
+
 function* getUserByAddress(address) {
   const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
   const baUser = (yield rest.waitQuery(`${contractName}?address=eq.${trimmed}`, 1))[0];
@@ -49,6 +54,7 @@ module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   getUserByAddress: getUserByAddress,
+  getUserById: getUserById,
   uploadContract: uploadContract,
   isCompiled: isCompiled,
 

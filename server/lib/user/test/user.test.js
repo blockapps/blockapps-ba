@@ -72,8 +72,7 @@ describe('User tests', function() {
     // create the user with constructor args
     const contract = yield user.uploadContract(admin, args);
     // search
-    const queryResults = yield rest.waitQuery(`${user.contractName}?id=eq.${id}`, 1);
-    const myuser = queryResults[0];
+    const myuser = yield user.getUserById(id);
 
     assert.equal(myuser.account, account, 'account');
     assert.equal(myuser.username, username, 'username');
