@@ -14,40 +14,30 @@ const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`
 
 // ========== Admin (super user) ==========
 
-function testAdminInterface(scope) {
-  for (var name in AI.subContractsNames) {
-    if (scope.contracts[name] === undefined) throw new Error('setAdmin: AdminInterface: undefined: ' + name);
-    if (scope.contracts[name] === 0) throw new Error('setAdmin: AdminInterface: 0: ' + name);
-    if (scope.contracts[name].address == 0) throw new Error('setAdmin: AdminInterface: address 0: ' + name);
-  }
-}
+// function testAdminInterface(ai) {
+//   for (var name in ai.subContractsNames) {
+//     if (scope.contracts[name] === undefined) throw new Error('setAdmin: AdminInterface: undefined: ' + name);
+//     if (scope.contracts[name] === 0) throw new Error('setAdmin: AdminInterface: 0: ' + name);
+//     if (scope.contracts[name].address == 0) throw new Error('setAdmin: AdminInterface: address 0: ' + name);
+//   }
+// }
 
-function setAdmin(adminName, adminPassword, aiAddress, adminAddress) {
-  return function (scope) {
-    rest.verbose('setAdmin', adminName, adminPassword, aiAddress, adminAddress);
+function* setAdmin(adminName, adminPassword, aiAddress, adminAddress) {
+    rest.verbose('setAdmin', {adminName, adminPassword, aiAddress, adminAddress});
+
     if(aiAddress && adminAddress) {
-      return nop(scope)
-        .then(function(scope){
-          scope.users[adminName] = {
-            address: adminAddress,
-            password: adminPassword
-          }
-          return scope;
-        })
-        .then(getAdminInterface(aiAddress))
-        .then(function (scope) {
-          testAdminInterface(scope);
-          return scope;
-        });
+      AI.contract.address = aiAddress;
+      const ai = yield getAdminInterface();
+//      testAdminInterface(ai);
+      return AI;
     }
-    return nop(scope)
-      .then(rest.createUser(adminName, adminPassword))
-      .then(getAdminInterface(aiAddress))
-      .then(function (scope) {
-        testAdminInterface(scope);
-        return scope;
-      });
-  }
+  //     .then(rest.createUser(adminName, adminPassword))
+  //     .then(getAdminInterface(aiAddress))
+  //     .then(function (scope) {
+  //       testAdminInterface(scope);
+  //       return scope;
+  //     });
+  // }
 }
 
 // ========== Admin Interface ==========
@@ -92,48 +82,21 @@ function* compileSearch() {
   yield userManager.compileSearch();
 }
 
-// ========== util ==========
-
-// setup the common containers in the scope
-function setScope(scope) {
-  if (scope === undefined) scope = {};
-  return new Promise(function (resolve, reject) {
-    rest.setScope(scope).then(function (scope) {
-      // add project specific scope items here
-      scope.name = 'Supply Chain Demo';
-      resolve(scope);
-    });
-  });
-}
-
-function nop(scope) {
-  return new Promise(function (resolve, reject) {
-    resolve(scope);
-  });
-}
-
 // =========================== business functions ========================
 
-function login(adminName, username, password) {
-  return function(scope) {
-    rest.verbose('dapp: login', {username, password});
-    return setScope(scope)
-    .then(userManager.login(adminName, username, password))
-    .then(function(scope) {
-        // auth failed
-        if (!scope.result) {
-          scope.result = {authenticate: false};
-          return scope;
-        }
-        // auth OK
-        return userManager.getUser(adminName, username)(scope)
-          .then(function(scope) {
-            const user = scope.result;
-            scope.result = {authenticate: true, user: user};
-            return scope;
-          })
-      });
+function* login(admin, username, password) {
+  rest.verbose('dapp: login', {admin, username, password});
+  const contract = AI.subContracts['UserManager'];
+  console.log(contract);
+  const args = {username:username, password:password};
+  const result = yield userManager.login(admin, contract, args);
+  // auth failed
+  if (!result) {
+    return {authenticate: false};
   }
+  // auth OK
+  const baUser = yield userManager.getUser(admin, contract, username);
+  return {authenticate: true, user: baUser};
 }
 
 function createProject(adminName, args) {
@@ -341,7 +304,6 @@ module.exports = function (libPath) {
     getAdminInterface: getAdminInterface,
     setAdmin: setAdmin,
     setAdminInterface: setAdminInterface,
-    setScope: setScope,
     // business functions
     login: login,
     createProject: createProject,

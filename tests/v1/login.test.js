@@ -29,6 +29,7 @@ describe("Login Test", function(){
         const data = assert.apiData(err, res);
         const authenticate = data.authenticate;
         const user = data.user;
+        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', user);
 
         assert.isOk(authenticate, 'Should be authenticated');
         assert.equal(user.username, username, 'Username should be ' + username);
