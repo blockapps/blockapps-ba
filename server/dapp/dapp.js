@@ -53,18 +53,18 @@ const AI = {
   },
 };
 
-function* setAdminInterface(adminName, adminPassword) {
+function* setAdminInterface(admin) {
   rest.verbose('setAdminInterface', arguments);
   const contractName = AI.contract.name;
   const contractFilename = AI.contract.libPath + AI.contract.filename;
-  const admin = yield rest.createUser(adminName, adminPassword);
   contract = yield rest.uploadContract(admin, contractName, contractFilename);
   AI.contract.address = contract.address;
-  return admin;
+  return AI;
 }
 
-function* getAdminInterface() {
-  rest.verbose('getAdminInterface', AI.contract);
+function* getAdminInterface(aiAddress) {
+  rest.verbose('getAdminInterface', {aiAddress, AI});
+  AI.contract.address = aiAddress;
 
   const state = yield rest.getState(AI.contract);
   for (var name in state) {

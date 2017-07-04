@@ -16,12 +16,8 @@ const loginController = {
     const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.libPath);
 
     co(function *() {
-      // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', deploy);
-      const AI = yield dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress);
-      // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', admin);
-      const admin = {name:deploy.adminName, password:deploy.adminPassword, address:deploy.adminAddress};
-      const result = yield dapp.login(admin, username, password);
-      console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', result);
+      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
+      const result = yield dapp.login(deploy.admin, username, password);
       util.response.status200(res, {
         authenticate: true,
         user: result.user

@@ -35,16 +35,20 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     // compile search
 //    yield dapp.compileSearch();   911
     // set admin interface
-    const admin = yield dapp.setAdminInterface(adminName, adminPassword);
+    const admin = yield rest.createUser(adminName, adminPassword);
+    const AI = yield dapp.setAdminInterface(admin);
     // sanity check - get the interface back
-    const AI = yield dapp.getAdminInterface();
+    const testAI = yield dapp.getAdminInterface(AI.contract.address);
+    assert.deepEqual(AI, testAI);
     // create preset users
     yield createPresetUsers(admin, AI.subContracts['UserManager'], presetData.users);
     const object = {
       url: config.getBlocUrl(),
-      adminName: adminName,
-      adminPassword: adminPassword,
-      adminAddress: admin.address,
+      admin: {
+        name: adminName,
+        password: adminPassword,
+        address: admin.address,
+      },
       AdminInterface: {
         address: AI.contract.address,
       },
