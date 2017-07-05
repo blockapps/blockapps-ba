@@ -1,3 +1,4 @@
+require('co-mocha');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
@@ -15,14 +16,11 @@ const adminPassword = '1234';
 describe('Project tests', function() {
   this.timeout(config.timeout);
 
-  const scope = {};
+  var admin;
 
-  before(function (done) {
-    rest.setScope(scope)
-      .then(rest.createUser(adminName, adminPassword))
-      .then(function (scope) {
-        done();
-      }).catch(done);
+  before(function* () {
+    admin = yield rest.createUser(adminName, adminPassword);
+    yield project.compileSearch(true);
   });
 
   /**
@@ -59,7 +57,7 @@ describe('Project tests', function() {
     }
     */
 
-  it('Create Contract', function(done) {
+  it('Create Contract', function* () {
     const name = util.uid('Project');
     const buyer = 'Buyer1';
     const description = 'description';
@@ -90,29 +88,22 @@ describe('Project tests', function() {
       // _addressZip: addressZip,
     };
 
-    // create with constructor args
-    rest.setScope(scope)
-      .then(project.uploadContract(adminName, adminPassword, args))
-      .then(project.getState())
-      .then(function(scope) {
-        const project = scope.result;
-        assert.equal(project.name, name, 'name');
-        assert.equal(project.buyer, buyer, 'buyer');
-        assert.equal(project.description, description, 'description');
-        assert.equal(project.spec, spec, 'spec');
-        assert.equal(project.price, price, 'price');
-        assert.equal(project.created, created, 'created');
-        assert.equal(project.targetDelivery, targetDelivery, 'targetDelivery');
-        // assert.equal(project.addressStreet, addressStreet, 'addressStreet');
-        // assert.equal(project.addressCity, addressCity, 'addressCity');
-        // assert.equal(project.addressState, addressState, 'addressState');
-        // assert.equal(project.addressZip, addressZip, 'addressZip');
-        return scope;
-      })
-      .then(rest.waitQuery(`${project.contractName}?name=eq.${name}`, 1))
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    const contract = yield project.uploadContract(admin, args);
+    const myproject = yield project.getState(contract);
+
+    assert.equal(myproject.name, name, 'name');
+    assert.equal(myproject.buyer, buyer, 'buyer');
+    assert.equal(myproject.description, description, 'description');
+    assert.equal(myproject.spec, spec, 'spec');
+    assert.equal(myproject.price, price, 'price');
+    assert.equal(myproject.created, created, 'created');
+    assert.equal(myproject.targetDelivery, targetDelivery, 'targetDelivery');
   });
 
 });
+
+// })
+// .then(rest.waitQuery(`${project.contractName}?name=eq.${name}`, 1))
+// .then(function(scope) {
+//   done();
+// }).catch(done);

@@ -1,5 +1,5 @@
-const ba = require('blockapps-rest');
 require('co-mocha');
+const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
 const config = common.config;
@@ -17,7 +17,7 @@ var admin;
 describe('Bid tests', function() {
   this.timeout(config.timeout);
 
-  before(function*() {
+  before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
     // compile if needed
     const isCompiled = yield bid.isCompiled();
