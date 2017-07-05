@@ -1,4 +1,3 @@
-require('co-mocha');
 const co = require('co');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
@@ -15,14 +14,14 @@ const loginController = {
     const password = req.body.password;
     const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.libPath);
 
-    co(function *() {
+    co(function* () {
       const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
       const result = yield dapp.login(deploy.admin, username, password);
       util.response.status200(res, {
         authenticate: true,
         user: result.user
       });
-    }).catch(function(err) {
+    }).catch(err => {
       console.log('Login Error:', err);
       util.response.status(401, res, 'Login failed');
     });

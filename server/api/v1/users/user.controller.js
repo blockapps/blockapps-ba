@@ -1,3 +1,4 @@
+const co = require('co');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
@@ -14,20 +15,19 @@ const usersController = {
   getBalance: function(req, res) {
     const deploy = req.app.get('deploy');
     const username = decodeURI(req.params['username']);
-    dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-      .then(dapp.getBalance(deploy.adminName, username))
-      .then(scope => {
-        util.response.status200(res, {
-          // this is a bignumber
-          balance: scope.result,
-          balanceString: new BigNumber(scope.result).div(constants.ETHER).toFixed(2)
-        });
-      })
-      .catch(err => {
-        console.log('User Balance Error:', err);
-        util.response.status500(res, 'Could not get user balance');
+
+    co(function* () {
+      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
+      const balance = yield dapp.getBalance(deploy.admin, AI.subContracts['UserManager'], username);
+      util.response.status200(res, {
+        // this is a bignumber
+        balance: balance,
+        balanceString: new BigNumber(balance).div(constants.ETHER).toFixed(2)
       });
+    }).catch(err => {
+      console.log('User Balance Error:', err);
+      util.response.status500(res, 'Could not get user balance');
+    });
   }
 }
 

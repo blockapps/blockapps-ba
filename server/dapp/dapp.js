@@ -14,32 +14,6 @@ const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`
 
 // ========== Admin (super user) ==========
 
-// function testAdminInterface(ai) {
-//   for (var name in ai.subContractsNames) {
-//     if (scope.contracts[name] === undefined) throw new Error('setAdmin: AdminInterface: undefined: ' + name);
-//     if (scope.contracts[name] === 0) throw new Error('setAdmin: AdminInterface: 0: ' + name);
-//     if (scope.contracts[name].address == 0) throw new Error('setAdmin: AdminInterface: address 0: ' + name);
-//   }
-// }
-
-function* setAdmin(adminName, adminPassword, aiAddress, adminAddress) {
-    rest.verbose('setAdmin', {adminName, adminPassword, aiAddress, adminAddress});
-
-    if(aiAddress && adminAddress) {
-      AI.contract.address = aiAddress;
-      const ai = yield getAdminInterface();
-//      testAdminInterface(ai);
-      return AI;
-    }
-  //     .then(rest.createUser(adminName, adminPassword))
-  //     .then(getAdminInterface(aiAddress))
-  //     .then(function (scope) {
-  //       testAdminInterface(scope);
-  //       return scope;
-  //     });
-  // }
-}
-
 // ========== Admin Interface ==========
 const AI = {
   contract: {
@@ -231,12 +205,9 @@ function handleEvent(adminName,/*, name, projectEvent, username, password*/ args
 }
 
 // getBalance
-function getBalance(adminName, username) {
-  return function(scope) {
-    rest.verbose('dapp: getBalance', username);
-    return setScope(scope)
-      .then(userManager.getBalance(adminName, username));
-  }
+function* getBalance(admin, contract, username) {
+  rest.verbose('dapp: getBalance', username);
+  return yield userManager.getBalance(admin, contract, username);
 }
 
 // throws: ErrorCodes
@@ -302,7 +273,6 @@ module.exports = function (libPath) {
     AI: AI,
     compileSearch: compileSearch,
     getAdminInterface: getAdminInterface,
-    setAdmin: setAdmin,
     setAdminInterface: setAdminInterface,
     // business functions
     login: login,
