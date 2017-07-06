@@ -248,36 +248,22 @@ function* getProjects(contract) {
   return results;
 }
 
-function getProjectsByBuyer(buyer) {
-  return function(scope) {
-    rest.verbose('getProjectsByBuyer', buyer);
-    return rest.setScope(scope)
-      .then(getProjects())
-      .then(function(scope) {
-        const projects = scope.result;
-        const filtered = projects.filter(function(project) {
-          return project.buyer === buyer;
-        });
-        scope.result = filtered;
-        return scope;
-      });
-    }
+function* getProjectsByBuyer(contract, buyer) {
+  rest.verbose('getProjectsByBuyer', buyer);
+  const projects = yield getProjects(contract);
+  const filtered = projects.filter(function(project) {
+    return project.buyer === buyer;
+  });
+  return filtered;
 }
 
-function getProjectsByState(state) {
-  return function(scope) {
-    rest.verbose('getProjectsByState', state);
-    return rest.setScope(scope)
-      .then(getProjects())
-      .then(function(scope) {
-        const projects = scope.result;
-        const filtered = projects.filter(function(project) {
-          return parseInt(project.state) == state;
-        });
-        scope.result = filtered;
-        return scope;
-      });
-    }
+function* getProjectsByState(contract, state) {
+  rest.verbose('getProjectsByState', state);
+  const projects = yield getProjects(contract);
+  const filtered = projects.filter(function(project) {
+    return parseInt(project.state) == state;
+  });
+  return filtered;
 }
 
 function getProjectsBySupplier(supplier, state) {
@@ -308,34 +294,23 @@ function getProjectsByName(names) {
   }
 }
 
-function handleEvent(buyer, name, projectEvent) {
-  return function(scope) {
-    rest.verbose('handleEvent', {buyer, name, projectEvent});
+function* handleEvent(buyer, contract, name, projectEvent) {
+  rest.verbose('handleEvent', {buyer, name, projectEvent});
 
-    const method = 'handleEvent';
-
-    return rest.setScope(scope)
-      .then( getProject(buyer, name) )
-      .then(function (scope) {
-        // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
-        const projectAddress = scope.result.address;
-        const args = {
-          projectAddress: projectAddress,
-          projectEvent: projectEvent,
-        };
-        return rest.callMethod(buyer, contractName, method, args)(scope);
-      })
-      .then(function(scope) {
-        // returns (ErrorCodes, ProjectState)
-        const result = scope.contracts[contractName].calls[method];
-        const errorCode = parseInt(result[0]);
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        scope.result = {errorCode: parseInt(result[0]), state: parseInt(result[1])};
-        return scope;
-      });
+  const project = yield getProject(buyer, contract, name);
+  // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
+  const method = 'handleEvent';
+  const args = {
+    projectAddress: project.address,
+    projectEvent: projectEvent,
+  };
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
+  const newState = parseInt(result[1]);
+  return newState;
 }
 
 module.exports = {

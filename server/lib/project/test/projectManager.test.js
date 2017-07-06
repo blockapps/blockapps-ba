@@ -115,6 +115,77 @@ describe('ProjectManager tests', function() {
       assert.equal(found.length, 1, 'project list should contain ' + projectArgs.name);
     }
   });
+
+  it('Get Projects by buyer', function* () {
+    const uid = util.uid();
+
+    const mod = 3;
+    const count = 2 * mod;
+    const projectsArgs = Array.apply(null, {
+      length: count
+    }).map(function(item, index) {
+      const projectArgs = createProjectArgs(uid);
+      projectArgs.name += index;
+      projectArgs.buyer += index%mod;
+      return projectArgs;
+    });
+
+    // all create project
+    for (let projectArgs of projectsArgs) {
+      const project = yield projectManager.createProject(admin, contract, projectArgs);
+    }
+    // get projects by buyer - should find that name in there
+    const buyerName = projectsArgs[0].buyer;
+    const projects = yield projectManager.getProjectsByBuyer(contract, buyerName);
+    assert.equal(projects.length, count/mod, '# of found projects');
+  });
+
+  it('Get Projects by state', function* () {
+    const uid = util.uid();
+
+    const count = 8;
+    const changed = Math.floor(count/2);
+    const projectsArgs = Array.apply(null, {
+      length: count
+    }).map(function(item, index) {
+      const projectArgs = createProjectArgs(uid);
+      projectArgs.name += index;
+      return projectArgs;
+    });
+
+    // all create project
+    for (let projectArgs of projectsArgs) {
+      yield projectManager.createProject(admin, contract, projectArgs);
+    }
+    // change state for the first half
+    const changedProjectsArgs = projectsArgs.slice(0,changed);
+    for (let projectArgs of changedProjectsArgs) {
+      const newState = yield projectManager.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
+      assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
+    }
+
+    // get projects by state - should find that name in there
+    const projects = yield projectManager.getProjectsByState(contract, ProjectState.PRODUCTION);
+    const comparator = function (memberA, memberB) {
+      return memberA.name == memberB.name;
+    };
+    const notContained = util.filter.isContained(changedProjectsArgs, projects, comparator);
+    // if found any items in the source list, that are not included in the query results
+    assert.equal(notContained.length, 0, 'some projects were not found ' + JSON.stringify(notContained, null, 2));
+  });
+
+  it('ACCEPT an OPEN project - change to PRODUCTION', function* () {
+    const projectArgs = createProjectArgs(util.uid());
+    // create project
+    yield projectManager.createProject(admin, contract, projectArgs);
+    // set the state
+    const newState = yield projectManager.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
+    assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
+    // check the new state
+    const results = yield rest.waitQuery(`${project.contractName}?name=eq.${projectArgs.name}`, 1);
+    const myProject = results[0];
+    assert.equal(parseInt(myProject.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
+  });
 });
 
 function createProjectArgs(_uid) {
