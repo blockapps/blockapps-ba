@@ -13,69 +13,58 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const projectContractName = require('./project').contractName;
 
-function compileSearch() {
-  return function(scope) {
-    const user = require('../user/user');
-    const bid = require('../bid/bid');
-    const project = require('./project');
-    const searchable = [contractName];
-    return rest.setScope(scope)
-      .then(bid.compileSearch())
-      .then(user.compileSearch())
-      .then(project.compileSearch())
-      .then(rest.compileSearch(searchable, contractName, contractFilename));
+function* compileSearch(onlyIfNotCompiled) {
+  // if only first time, but alreay compiled - bail
+  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+    return;
   }
+  // compile dependencies
+  const bid = require('../bid/bid');
+  yield bid.compileSearch();
+  const user = require('../user/user');
+  yield user.compileSearch();
+  const project = require('./project');
+  yield project.compileSearch();
+  // compile
+  const searchable = [contractName];
+  return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function getState() {
-  return function (scope) {
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        scope.result = scope.states[contractName];
-        return scope;
-      });
-  }
+function* getState(contract) {
+  return yield rest.getState(contract);
 }
 
-function uploadContract(buyer, adminPassword, args) {
-  return function(scope) {
-    return rest.setScope(scope)
-      .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(buyer, adminPassword, contractName, args))
-      // .then(rest.waitNextBlock());
-  }
+function* uploadContract(user, args) {
+  return yield rest.uploadContract(user, contractName, contractFilename, args);
+}
+
+function* isCompiled() {
+  return yield rest.isCompiled(contractName);
 }
 
 // throws: ErrorCodes
 // returns: record from search
-function createProject(buyer, args) {
-  return function(scope) {
-    rest.verbose('createProject', args);
-    // function createProject(
-    //   string name,
-    //   string buyer,
-    //   string description,
-    //   string spec,
-    //   uint price,
-    //   uint created,
-    //   uint targetDelivery
-    // ) returns (ErrorCodes) {
-    const method = 'createProject';
+function* createProject(buyer, contract, args) {
+  rest.verbose('createProject', {buyer, args});
+  // function createProject(
+  //   string name,
+  //   string buyer,
+  //   string description,
+  //   string spec,
+  //   uint price,
+  //   uint created,
+  //   uint targetDelivery
+  // ) returns (ErrorCodes) {
+  const method = 'createProject';
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      })
-      // get the contract data from search
-      .then(getProject(buyer, args.name));
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
+  // get the contract data from search
+  const project = yield getProject(buyer, contract, args.name);
+  return project;
 }
 
 // throws: ErrorCodes
@@ -217,74 +206,46 @@ function getBidsBySupplier(supplier) {
   }
 }
 
-function exists(buyer, name) {
-  return function(scope) {
-    rest.verbose('exists', name);
-    // function exists(string name) returns (bool) {
-    const method = 'exists';
-    const args = {
-      name: name,
-    };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result[0] === true);
-        return scope;
-      });
-  }
+function* exists(buyer, contract, name) {
+  rest.verbose('exists', name);
+  // function exists(string name) returns (bool) {
+  const method = 'exists';
+  const args = {
+    name: name,
+  };
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const exists = (result[0] === true);
+  return exists;
 }
 
-function getProject(buyer, name) {
-  return function(scope) {
-    rest.verbose('getProject', name);
-    // function getProject(string name) returns (address) {
-    const method = 'getProject';
-    const args = {
-      name: name,
-    };
+function* getProject(buyer, contract, name) {
+  rest.verbose('getProject', name);
+  // function getProject(string name) returns (address) {
+  const method = 'getProject';
+  const args = {
+    name: name,
+  };
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns address
-        const address = scope.contracts[contractName].calls[method];
-        // if not found - throw
-        if (address == 0) {
-          throw new Error(ErrorCodes.NOT_FOUND);
-        }
-        // found - query for the full record
-        const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
-        return rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1)(scope)
-          .then(function(scope) {
-            const resultArray = scope.query.slice(-1)[0];
-            scope.result = resultArray[0];
-            return scope;
-          });
-      });
+  // returns address
+  const address = (yield rest.callMethod(buyer, contract, method, args))[0];
+  // if not found - throw
+  if (address == 0) {
+    throw new Error(ErrorCodes.NOT_FOUND);
   }
+  // found - query for the full record
+  const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
+  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1))[0];
+  return project;
 }
 
-function getProjects() {
-  return function(scope) {
-    rest.verbose('getProjects');
-
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        const state = scope.states[contractName];
-        const projects = state.projects;
-        const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
-        const csv = util.toCsv(trimmed); // generate csv string
-        return rest.query(`${projectContractName}?address=in.${csv}`)(scope);
-      })
-      .then(function (scope) {
-        scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
-  }
+function* getProjects(contract) {
+  rest.verbose('getProjects', contract);
+  const state = yield getState(contract);
+  const projects = state.projects.slice(1); // remove the first '0000' project
+  const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
+  const csv = util.toCsv(trimmed); // generate csv string
+  const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
+  return results;
 }
 
 function getProjectsByBuyer(buyer) {
