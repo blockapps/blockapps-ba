@@ -8,7 +8,7 @@ const should = common.should;
 const assert = common.assert;
 const Promise = common.Promise;
 
-const project = require('../project');
+const projectJs = require('../project');
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -20,7 +20,7 @@ describe('Project tests', function() {
 
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    yield project.compileSearch(true);
+    yield projectJs.compileSearch(true);
   });
 
   /**
@@ -88,18 +88,31 @@ describe('Project tests', function() {
       // _addressZip: addressZip,
     };
 
-    const contract = yield project.uploadContract(admin, args);
-    const myproject = yield project.getState(contract);
+    const contract = yield projectJs.uploadContract(admin, args);
+    // state
+    {
+      const project = yield projectJs.getState(contract);
+      assert.equal(project.name, name, 'name');
+      assert.equal(project.buyer, buyer, 'buyer');
+      assert.equal(project.description, description, 'description');
+      assert.equal(project.spec, spec, 'spec');
+      assert.equal(project.price, price, 'price');
+      assert.equal(project.created, created, 'created');
+      assert.equal(project.targetDelivery, targetDelivery, 'targetDelivery');
+    }
+    // query
+    {
+      const project = yield projectJs.getProjectByName(name);
+      assert.equal(project.name, name, 'name');
+      assert.equal(project.buyer, buyer, 'buyer');
+      assert.equal(project.description, description, 'description');
+      assert.equal(project.spec, spec, 'spec');
+      assert.equal(project.price, price, 'price');
+      assert.equal(project.created, created, 'created');
+      assert.equal(project.targetDelivery, targetDelivery, 'targetDelivery');
+    }
 
-    assert.equal(myproject.name, name, 'name');
-    assert.equal(myproject.buyer, buyer, 'buyer');
-    assert.equal(myproject.description, description, 'description');
-    assert.equal(myproject.spec, spec, 'spec');
-    assert.equal(myproject.price, price, 'price');
-    assert.equal(myproject.created, created, 'created');
-    assert.equal(myproject.targetDelivery, targetDelivery, 'targetDelivery');
   });
-
 });
 
 // })

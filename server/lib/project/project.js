@@ -30,11 +30,21 @@ function* isCompiled() {
   return yield rest.isCompiled(contractName);
 }
 
+function* getProjectByName(name) {
+  return (yield rest.waitQuery(`${contractName}?name=eq.${name}`, 1))[0];
+}
+
+function* getProjectByAddress(address) {
+  return (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
+}
+
+
 module.exports = {
   compileSearch: compileSearch,
   getState: getState,
   uploadContract: uploadContract,
   isCompiled: isCompiled,
+  getProjectByName: getProjectByName,
   // constants
   contractName: contractName,
 };

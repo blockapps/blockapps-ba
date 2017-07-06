@@ -10,9 +10,9 @@ const constants = common.constants;
 const Promise = common.Promise;
 const BigNumber = common.BigNumber;
 
-const project = require('../project');
-const projectManager = require('../projectManager');
-const userManager = require('../../user/userManager');
+const projectJs = require('../project');
+const projectManagerJs = require('../projectManager');
+const userManagerJs = require('../../user/userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
@@ -30,39 +30,39 @@ describe('ProjectManager tests', function() {
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    contract = yield projectManager.uploadContract(admin);
+    contract = yield projectManagerJs.uploadContract(admin);
   });
 
   it('Create Project', function* () {
     const projectArgs = createProjectArgs();
 
     // create project
-    const myProject = yield projectManager.createProject(admin, contract, projectArgs);
-    assert.equal(myProject.name, projectArgs.name, 'name');
-    assert.equal(myProject.buyer, projectArgs.buyer, 'buyer');
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    assert.equal(project.name, projectArgs.name, 'name');
+    assert.equal(project.buyer, projectArgs.buyer, 'buyer');
   });
 
   it('Test exists()', function* () {
     const projectArgs = createProjectArgs();
     // should not exists
-    const doesNotExist = yield projectManager.exists(admin, contract, projectArgs.name);
+    const doesNotExist = yield projectManagerJs.exists(admin, contract, projectArgs.name);
     assert.isDefined(doesNotExist, 'should be defined');
     assert.isNotOk(doesNotExist, 'should not exist');
     // create project
-    const myProject = yield projectManager.createProject(admin, contract, projectArgs);
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
     // // should exist
-    const exists = yield projectManager.exists(admin, contract, projectArgs.name);
+    const exists = yield projectManagerJs.exists(admin, contract, projectArgs.name);
     assert.equal(exists, true, 'should exist');
   });
 
   it('Create Duplicate Project', function* () {
     const projectArgs = createProjectArgs();
     // create project
-    const myProject = yield projectManager.createProject(admin, contract, projectArgs);
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
     // create a duplicate - should FAIL
     var dupProject;
     try {
-      dupProject = yield projectManager.createProject(admin, contract, projectArgs);
+      dupProject = yield projectManagerJs.createProject(admin, contract, projectArgs);
     } catch(error) {
       const errorCode = parseInt(error.message);
       // error should be EXISTS
@@ -75,16 +75,16 @@ describe('ProjectManager tests', function() {
   it('Get Project', function* () {
     const projectArgs = createProjectArgs();
     // create project
-    yield projectManager.createProject(admin, contract, projectArgs);
-    const myProject = yield projectManager.getProject(admin, contract, projectArgs.name);
-    assert.equal(myProject.name, projectArgs.name, 'should have a name');
+    yield projectManagerJs.createProject(admin, contract, projectArgs);
+    const project = yield projectManagerJs.getProject(admin, contract, projectArgs.name);
+    assert.equal(project.name, projectArgs.name, 'should have a name');
   });
 
   it('Get non exisiting project', function* () {
     const projectArgs = createProjectArgs();
     var nonExistingProject;
     try {
-      nonExistingProject = yield projectManager.getProject(admin, contract, projectArgs.name);
+      nonExistingProject = yield projectManagerJs.getProject(admin, contract, projectArgs.name);
     } catch(error) {
       const errorCode = error.message;
       // error should be NOT_FOUND
@@ -98,17 +98,17 @@ describe('ProjectManager tests', function() {
     const projectArgs = createProjectArgs();
     // get projects - should not exist yet
     {
-      const projects = yield projectManager.getProjects(contract);
+      const projects = yield projectManagerJs.getProjects(contract);
       const found = projects.filter(function(project) {
         return project.name === projectArgs.name;
       });
       assert.equal(found.length, 0, 'project list should NOT contain ' + projectArgs.name);
     }
     // create project
-    yield projectManager.createProject(admin, contract, projectArgs);
+    yield projectManagerJs.createProject(admin, contract, projectArgs);
     {
       // get projects - should exist
-      const projects = yield projectManager.getProjects(contract);
+      const projects = yield projectManagerJs.getProjects(contract);
       const found = projects.filter(function(project) {
         return project.name === projectArgs.name;
       });
@@ -132,11 +132,11 @@ describe('ProjectManager tests', function() {
 
     // all create project
     for (let projectArgs of projectsArgs) {
-      const project = yield projectManager.createProject(admin, contract, projectArgs);
+      const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
     }
     // get projects by buyer - should find that name in there
     const buyerName = projectsArgs[0].buyer;
-    const projects = yield projectManager.getProjectsByBuyer(contract, buyerName);
+    const projects = yield projectManagerJs.getProjectsByBuyer(contract, buyerName);
     assert.equal(projects.length, count/mod, '# of found projects');
   });
 
@@ -155,17 +155,17 @@ describe('ProjectManager tests', function() {
 
     // all create project
     for (let projectArgs of projectsArgs) {
-      yield projectManager.createProject(admin, contract, projectArgs);
+      yield projectManagerJs.createProject(admin, contract, projectArgs);
     }
     // change state for the first half
     const changedProjectsArgs = projectsArgs.slice(0,changed);
     for (let projectArgs of changedProjectsArgs) {
-      const newState = yield projectManager.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
+      const newState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
       assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
     }
 
     // get projects by state - should find that name in there
-    const projects = yield projectManager.getProjectsByState(contract, ProjectState.PRODUCTION);
+    const projects = yield projectManagerJs.getProjectsByState(contract, ProjectState.PRODUCTION);
     const comparator = function (memberA, memberB) {
       return memberA.name == memberB.name;
     };
@@ -177,14 +177,13 @@ describe('ProjectManager tests', function() {
   it('ACCEPT an OPEN project - change to PRODUCTION', function* () {
     const projectArgs = createProjectArgs(util.uid());
     // create project
-    yield projectManager.createProject(admin, contract, projectArgs);
+    yield projectManagerJs.createProject(admin, contract, projectArgs);
     // set the state
-    const newState = yield projectManager.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
+    const newState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
     assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
     // check the new state
-    const results = yield rest.waitQuery(`${project.contractName}?name=eq.${projectArgs.name}`, 1);
-    const myProject = results[0];
-    assert.equal(parseInt(myProject.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
+    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${projectArgs.name}`, 1))[0];
+    assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
 
@@ -208,3 +207,15 @@ function createProjectArgs(_uid) {
 
   return projectArgs;
 }
+
+// describe('ProjectManager Life Cycle tests', function() {
+//   this.timeout(config.timeout);
+//
+//   var admin;
+//   var contract;
+//   // get ready:  admin-user and manager-contract
+//   before(function* () {
+//     admin = yield rest.createUser(adminName, adminPassword);
+//     contract = yield projectManagerJs.uploadContract(admin);
+//   });
+// });
