@@ -69,37 +69,25 @@ function* createProject(buyer, contract, args) {
 
 // throws: ErrorCodes
 // returns: record from search
-function createBid(buyer, name, supplier, amount) {
-  return function(scope) {
-    rest.verbose('createBid', {name, supplier, amount});
-    // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
-    const method = 'createBid';
-    const args = {
-      name: name,
-      supplier: supplier,
-      amount: amount,
-    };
+function* createBid(buyer, contract, name, supplier, amount) {
+  rest.verbose('createBid', {name, supplier, amount});
+  // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
+  const method = 'createBid';
+  const args = {
+    name: name,
+    supplier: supplier,
+    amount: amount,
+  };
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes, uint)
-        const result = scope.contracts[contractName].calls[method];
-        const errorCode = parseInt(result[0]);
-        const bidId = result[1];
-
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        // block until the contract shows up in search
-        return rest.waitQuery(`Bid?id=eq.${bidId}`, 1)(scope)
-          .then(function(scope) {
-            const resultArray = scope.query.slice(-1)[0];
-            scope.result = resultArray[0];
-            return scope;
-          })
-      });
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
+  const bidId = result[1];
+  // block until the contract shows up in search
+  const bid = (yield rest.waitQuery(`Bid?id=eq.${bidId}`, 1))[0];
+  return bid;
 }
 
 // throws: ErrorCodes
@@ -173,26 +161,14 @@ function settleProject(buyer, projectName, supplierAddress, bidAddress) {
   }
 }
 
-function getBid(bidId) {
-  return function(scope) {
-    rest.verbose('getBid', bidId);
-    return rest.query(`Bid?id=eq.${bidId}`)(scope)
-      .then(function(scope) {
-        scope.result = scope.query.slice(-1)[0][0];
-        return scope;
-      });
-  }
+function* getBid(bidId) {
+  rest.verbose('getBid', bidId);
+  return (yield rest.waitQuery(`Bid?id=eq.${bidId}`,1))[0];
 }
 
-function getBidsByName(name) {
-  return function(scope) {
-    rest.verbose('getBidsByName', name);
-    return rest.query(`Bid?name=eq.${name}`)(scope)
-    .then(function(scope) {
-      scope.result = scope.query.slice(-1)[0];
-      return scope;
-    });
-  }
+function* getBidsByName(name) {
+  rest.verbose('getBidsByName', name);
+  return yield rest.query(`Bid?name=eq.${name}`);
 }
 
 function getBidsBySupplier(supplier) {

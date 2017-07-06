@@ -208,14 +208,42 @@ function createProjectArgs(_uid) {
   return projectArgs;
 }
 
-// describe('ProjectManager Life Cycle tests', function() {
-//   this.timeout(config.timeout);
-//
-//   var admin;
-//   var contract;
-//   // get ready:  admin-user and manager-contract
-//   before(function* () {
-//     admin = yield rest.createUser(adminName, adminPassword);
-//     contract = yield projectManagerJs.uploadContract(admin);
-//   });
-// });
+describe('ProjectManager Life Cycle tests', function() {
+  this.timeout(config.timeout);
+
+  var admin;
+  var contract;
+  // get ready:  admin-user and manager-contract
+  before(function* () {
+    admin = yield rest.createUser(adminName, adminPassword);
+    contract = yield projectManagerJs.uploadContract(admin);
+  });
+
+  it('Create new Bid', function* () {
+    const supplier = 'Supplier1';
+    const amount = 5678;
+    const projectArgs = createProjectArgs();
+
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    const bid = yield projectManagerJs.createBid(admin, contract, projectArgs.name, supplier, amount);
+    assert.equal(bid.name, projectArgs.name, 'name');
+    assert.equal(bid.supplier, supplier, 'supplier');
+    assert.equal(bid.amount, amount, 'amount');
+
+    // search by bid id
+    const bidId = bid.id;
+    {
+      const bid = yield projectManagerJs.getBid(bidId);
+      assert.equal(bid.name, projectArgs.name, 'name');
+      assert.equal(bid.supplier, supplier, 'supplier');
+      assert.equal(bid.amount, amount, 'amount');
+    }
+    // search by project name
+    const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    assert.equal(bids.length, 1, 'one and only one');
+  });
+
+
+
+});
