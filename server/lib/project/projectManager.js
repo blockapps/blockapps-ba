@@ -91,49 +91,39 @@ function* createBid(buyer, contract, name, supplier, amount) {
 }
 
 // throws: ErrorCodes
-function acceptBid(buyer, bidId, name) {
-  return function(scope) {
-    rest.verbose('acceptBid', {buyer, bidId, name});
-    return rest.setScope(scope)
-      .then(getBidsByName(name))
-      .then(function(scope) {
-        const bids = scope.result;
-
-        return Promise.each(bids, function(bid) { // for each bid
-          // accept the selected bid - reject the others
-          if (bid.id == bidId) {
-            return setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount)(scope); // ACCEPT
-          } else {
-            return setBidState(buyer, bid.address, BidState.REJECTED, 0)(scope); // REJECT
-          }
-        }).then(function() { // all done
-          return scope;
-        });
-      })
-      .then(handleEvent(buyer, name, ProjectEvent.ACCEPT));
+function* acceptBid(buyer, contract, bidId, name) {   // FIXME should go into the contract
+  rest.verbose('acceptBid', {buyer, bidId, name});
+  const bids = yield getBidsByName(name);
+  for (let bid of bids) {
+    // accept the selected bid - reject the others
+    if (bid.id == bidId) {
+      yield setBidState(buyer, bid.address, BidState.ACCEPTED, 0); // ACCEPT
+//      yield setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount); // ACCEPT
+    } else {
+      yield setBidState(buyer, bid.address, BidState.REJECTED, 0); // REJECT
+    }
   }
+  const result = yield handleEvent(buyer, contract, name, ProjectEvent.ACCEPT);
+  return result;
 }
 
-function setBidState(buyer, bidAddress, state, valueEther) {
-  const contractName = 'Bid' ; // FIXME: move to bid.js
-  return function(scope) {
-    rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
-    // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
-    const method = 'setBidState';
-    const args = {
-      newState: state,
-    };
-    return rest.setScope(scope)
-      // function callMethodAddress(userName, contractName, contractAddress, methodName, args, value, node) {
-      .then(rest.callMethodAddress(buyer, contractName, bidAddress, method, args, valueEther))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      });
+function* setBidState(buyer, bidAddress, state, valueEther) {
+  rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
+  const contract = {
+    name: 'Bid',
+    address: bidAddress,
+  }
+
+  // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
+  const method = 'setBidState';
+  const args = {
+    newState: state,
+  };
+
+  const result = yield rest.callMethod(buyer, contract, method, args, valueEther);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
 }
 

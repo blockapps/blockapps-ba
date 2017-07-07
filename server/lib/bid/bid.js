@@ -8,9 +8,14 @@ const contractFilename = `${config.libPath}/bid/contracts/Bid.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
-function* compileSearch() {
-    const searchable = [contractName];
-    return yield rest.compileSearch(searchable, contractName, contractFilename);
+function* compileSearch(onlyIfNotCompiled) {
+  // if only first time, but alreay compiled - bail
+  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+    return;
+  }
+  // compile
+  const searchable = [contractName];
+  return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
 function* getState(contract) {

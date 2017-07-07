@@ -226,8 +226,9 @@ describe('ProjectManager Life Cycle tests', function() {
 
     // create project
     const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
-    const bid = yield projectManagerJs.createBid(admin, contract, projectArgs.name, supplier, amount);
-    assert.equal(bid.name, projectArgs.name, 'name');
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    assert.equal(bid.name, project.name, 'name');
     assert.equal(bid.supplier, supplier, 'supplier');
     assert.equal(bid.amount, amount, 'amount');
 
@@ -235,15 +236,31 @@ describe('ProjectManager Life Cycle tests', function() {
     const bidId = bid.id;
     {
       const bid = yield projectManagerJs.getBid(bidId);
-      assert.equal(bid.name, projectArgs.name, 'name');
+      assert.equal(bid.name, project.name, 'name');
       assert.equal(bid.supplier, supplier, 'supplier');
       assert.equal(bid.amount, amount, 'amount');
     }
     // search by project name
-    const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    const bids = yield projectManagerJs.getBidsByName(project.name);
     assert.equal(bids.length, 1, 'one and only one');
   });
 
+  it.skip('Accept a Bid. https://blockapps.atlassian.net/browse/API-16', function* () {
+    const projectArgs = createProjectArgs(util.uid());
+    const supplier = 'Supplier1';
+    const amount = 67;
 
-
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    // check that state is OPEN
+    assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
+    // accept the bid
+    const results = yield projectManagerJs.acceptBid(admin, contract, bid.id, project.name);
+    // get the bid again
+    const newBid = yield projectManagerJs.getBid(bid.id);
+    // check that state is ACCEPTED
+    assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
+  });
 });
