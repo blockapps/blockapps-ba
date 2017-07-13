@@ -415,7 +415,7 @@ describe('ProjectManager tests', function() {
       }).catch(done);
   });
 
-  it('Accept a Bid - insufficient balance', function(done) {
+  it.only('Accept a Bid - insufficient balance', function(done) {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
     const amount = 1000 + 234; // faucet allowance + more
@@ -454,7 +454,7 @@ describe('ProjectManager tests', function() {
             // We are expecting 'InsufficientFunds' error
             // But we get 404 'Failed to parse response'.
             // Hacking this for now. Till Bloc is fixed.
-            const string = 'Failed to parse response:';
+            const string = 'low account balance';
             const index = error.message.indexOf(string);
             if (index >= 0) {
               return scope;
@@ -464,7 +464,8 @@ describe('ProjectManager tests', function() {
       })
       .then(function(scope) {
         done();
-      }).catch(done);
+      })
+      .catch(done);
   });
 
   it('Accept a Bid and rejects the others', function(done) {
