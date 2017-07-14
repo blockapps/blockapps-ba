@@ -31,6 +31,7 @@ describe('ProjectManager tests', function() {
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
     contract = yield projectManagerJs.uploadContract(admin);
+    yield projectManagerJs.compileSearch(true);
   });
 
   it('Create Project', function* () {
@@ -217,6 +218,7 @@ describe('ProjectManager Life Cycle tests', function() {
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
     contract = yield projectManagerJs.uploadContract(admin);
+    yield projectManagerJs.compileSearch(true);
   });
 
   it('Create new Bid', function* () {
@@ -245,7 +247,7 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(bids.length, 1, 'one and only one');
   });
 
-  it.skip('Accept a Bid. https://blockapps.atlassian.net/browse/API-16', function* () {
+  it('Accept a Bid. https://blockapps.atlassian.net/browse/API-16', function* () {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
     const amount = 67;

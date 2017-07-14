@@ -100,7 +100,7 @@ describe('Bid tests', function() {
     yield rest.callMethod(admin, contract, method, margs, valueEther);
   });
 
-  it.skip('Call method with value 1.0   https://blockapps.atlassian.net/browse/API-16', function* () {
+  it.only('Call method with value 1.0   https://blockapps.atlassian.net/browse/API-16', function* () {
     const id = new Date().getTime();
     const name = util.uid('Project');
     const supplier = 'Supplier1';
@@ -124,7 +124,7 @@ describe('Bid tests', function() {
     // create target user
     const bob = yield rest.createUser(adminName+'bob', adminPassword);
     // send tx - works
-    const sendValueEther = 2;
+    const sendValueEther = 1;
     const receipt = yield rest.send(admin, bob, sendValueEther);
     const txResult = yield rest.transactionResult(receipt.hash);
     assert.equal(txResult[0].status, 'success');
@@ -136,16 +136,18 @@ describe('Bid tests', function() {
       throw new Error(errorCode);
     }
     // call method WITH value
-    const valueEther = 0.99999999999999994;  // WORKS
-    // const valueEther = 1.0; // FAILS
+    const valueEther = 990;
+    const valueWei = (new BigNumber(valueEther)).mul(constants.ETHER);
     admin.startBalance = yield rest.getBalance(admin.address);
     contract.startBalance = yield rest.getBalance(contract.address);
     yield rest.callMethod(admin, contract, method, margs, valueEther);
     admin.endBalance = yield rest.getBalance(admin.address);
-    admin.delta = admin.startBalance.minus(admin.endBalance);
+    admin.delta = admin.endBalance.minus(admin.startBalance).times(-1);
+    admin.delta.should.be.bignumber.gt(valueWei);
+
     contract.endBalance = yield rest.getBalance(contract.address);
-    contract.delta = contract.startBalance.minus(contract.endBalance);
-    console.log(admin.delta.toString(), contract.delta.toString());
+    contract.delta = contract.endBalance.minus(contract.startBalance);
+    contract.delta.should.be.bignumber.equal(valueWei);
   });
 
 });
