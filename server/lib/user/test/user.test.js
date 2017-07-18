@@ -8,7 +8,7 @@ const should = common.should;
 const assert = common.assert;
 const Promise = common.Promise;
 
-const user = require('../user');
+const userJs = require('../user');
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -21,9 +21,9 @@ describe('User tests', function() {
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
     // compile if needed
-    const isCompiled = yield user.isCompiled();
+    const isCompiled = yield userJs.isCompiled();
     if (!isCompiled) {
-      const result = yield user.compileSearch();
+      const result = yield userJs.compileSearch();
     }
   })
 
@@ -31,7 +31,7 @@ describe('User tests', function() {
     const id = 123;
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-    const role = user.UserRole.SUPPLIER;
+    const role = userJs.UserRole.SUPPLIER;
     const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
@@ -44,20 +44,20 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield user.uploadContract(admin, args);
-    const myuser = yield user.getState(contract);
-    assert.equal(myuser.account, account, 'account');
-    assert.equal(myuser.username, username, 'username');
-    assert.equal(util.fixBytes(myuser.pwHash), pwHash, 'pwHash');
-    assert.equal(myuser.id, id, 'id');
-    assert.equal(util.parseEnum(myuser.role), user.UserRole[role], 'role');
+    const contract = yield userJs.uploadContract(admin, args);
+    const user = yield userJs.getState(contract);
+    assert.equal(user.account, account, 'account');
+    assert.equal(user.username, username, 'username');
+    assert.equal(util.fixBytes(user.pwHash), pwHash, 'pwHash');
+    assert.equal(user.id, id, 'id');
+    assert.equal(util.parseEnum(user.role), userJs.UserRole[role], 'role');
   });
 
   it('Search Contract', function* () {
     const id = new Date().getTime();
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-    const role = user.UserRole.SUPPLIER;
+    const role = userJs.UserRole.SUPPLIER;
     const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
@@ -70,22 +70,22 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield user.uploadContract(admin, args);
+    const contract = yield userJs.uploadContract(admin, args);
     // search
-    const myuser = yield user.getUserById(id);
+    const user = yield userJs.getUserById(id);
 
-    assert.equal(myuser.account, account, 'account');
-    assert.equal(myuser.username, username, 'username');
-    assert.equal(myuser.pwHash, pwHash, 'pwHash');
-    assert.equal(myuser.id, id, 'id');
-    assert.equal(myuser.role, role, 'role');
+    assert.equal(user.account, account, 'account');
+    assert.equal(user.username, username, 'username');
+    assert.equal(user.pwHash, pwHash, 'pwHash');
+    assert.equal(user.id, id, 'id');
+    assert.equal(user.role, role, 'role');
   });
 
   it('Auth', function* () {
     const id = new Date().getTime();
     const username = util.uid('User'+id);
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
-    const role = user.UserRole.SUPPLIER;
+    const role = userJs.UserRole.SUPPLIER;
     const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
@@ -99,10 +99,10 @@ describe('User tests', function() {
 
     // create the user with constructor args
     var isAuthenticated;
-    const contract = yield user.uploadContract(admin, args);
-    isAuthenticated = yield user.authenticate(admin, contract, pwHash);
+    const contract = yield userJs.uploadContract(admin, args);
+    isAuthenticated = yield userJs.authenticate(admin, contract, pwHash);
     assert.isOk(isAuthenticated, 'authenticated');
-    isAuthenticated = yield user.authenticate(admin, contract, util.toBytes32('666'));
+    isAuthenticated = yield userJs.authenticate(admin, contract, util.toBytes32('666'));
     assert.isNotOk(isAuthenticated, 'not authenticated');
  });
 
