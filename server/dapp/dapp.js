@@ -61,7 +61,6 @@ function* compileSearch() {
 function* login(admin, username, password) {
   rest.verbose('dapp: login', {admin, username, password});
   const contract = AI.subContracts['UserManager'];
-  console.log(contract);
   const args = {username:username, password:password};
   const result = yield userManager.login(admin, contract, args);
   // auth failed
@@ -73,13 +72,11 @@ function* login(admin, username, password) {
   return {authenticate: true, user: baUser};
 }
 
-function createProject(adminName, args) {
-  return function(scope) {
-    rest.verbose('dapp: createProject', {adminName, args});
-    args.created = +new Date();
-    return setScope(scope)
-      .then(projectManager.createProject(adminName, args));
-  }
+function* createProject(admin, contract, args) {
+  rest.verbose('dapp: createProject', {admin, args});
+  args.created = +new Date();
+  const project = yield projectManager.createProject(admin, contract, args);
+  return project;
 }
 
 // all projects - unfiltered
@@ -143,12 +140,10 @@ function getProjectsBySupplier(supplier, state) {
 }
 
 // project by name
-function getProject(adminName, name) {
-  return function(scope) {
-    rest.verbose('dapp: getProject', name);
-    return setScope(scope)
-      .then(projectManager.getProject(adminName, name));
-  }
+function* getProject(admin, contract, name) {
+  rest.verbose('dapp: getProject', name);
+  const project = yield projectManager.getProject(admin, contract, name);
+  return project;
 }
 
 // bids by name

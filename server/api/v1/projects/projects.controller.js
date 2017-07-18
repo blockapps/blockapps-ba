@@ -1,3 +1,4 @@
+const co = require('co');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
@@ -14,38 +15,32 @@ const projectsController = {
     const deploy = req.app.get('deploy');
     const projectArgs = req.body;
 
-    dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-      .then(dapp.createProject(deploy.adminName, projectArgs))
-      .then(scope => {
-        util.response.status200(res, {
-          project: scope.result
-        });
-      })
-      .catch(err => {
-        console.log('Create Project Error:', err);
-        util.response.status500(res, 'Unable to create project');
+    co(function* () {
+      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
+      const result = yield dapp.createProject(deploy.admin, AI.subContracts['ProjectManager'], projectArgs);
+      util.response.status200(res, {
+        project: result,
       });
+    }).catch(err => {
+      console.log('Create Project Error:', err);
+      util.response.status500(res, 'Unable to create project');
+    });
   },
 
   get: function(req, res) {
     const deploy = req.app.get('deploy');
     const projectName = decodeURI(req.params['name']);
-    dapp.setScope()
-      .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-      .then(dapp.getProject(
-        deploy.adminName,
-        projectName
-      ))
-      .then(scope => {
-        util.response.status200(res, {
-          project: scope.result
-        });
-      })
-      .catch(err => {
-        console.log('Get Projects Error:', err);
-        util.response.status500(res, 'Cannot fetch projects');
+
+    co(function* () {
+      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
+      const result = yield dapp.getProject(deploy.admin, AI.subContracts['ProjectManager'], projectName);
+      util.response.status200(res, {
+        project: result,
       });
+    }).catch(err => {
+      console.log('Get Projects Error:', err);
+      util.response.status500(res, 'Cannot fetch projects');
+    });
   },
 
   list: function(req, res) {

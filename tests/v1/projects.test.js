@@ -22,7 +22,7 @@ describe("Projects Test", function() {
   const amount = 100;
   let bidId;
 
-  it('should create a project', function(done) {
+  it.only('should create a project', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects')
@@ -38,7 +38,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should return a project by its name', function(done) {
+  it.only('should return a project by its name', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .get(`/api/v1/projects/${encodeURI(projectArgs.name)}/`)
