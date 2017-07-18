@@ -9,9 +9,14 @@ const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function* compileSearch() {
-    const searchable = [contractName];
-    return yield rest.compileSearch(searchable, contractName, contractFilename);
+function* compileSearch(onlyIfNotCompiled) {
+  // if only first time, but alreay compiled - bail
+  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+    return;
+  }
+  // compile
+  const searchable = [contractName];
+  return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
 function* getState(contract) {

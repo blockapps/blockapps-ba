@@ -21,10 +21,7 @@ describe('User tests', function() {
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
     // compile if needed
-    const isCompiled = yield userJs.isCompiled();
-    if (!isCompiled) {
-      const result = yield userJs.compileSearch();
-    }
+    yield userJs.compileSearch(true);
   })
 
   it('Create Contract', function* () {

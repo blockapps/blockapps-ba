@@ -114,9 +114,3 @@ describe('Project tests', function() {
 
   });
 });
-
-// })
-// .then(rest.waitQuery(`${project.contractName}?name=eq.${name}`, 1))
-// .then(function(scope) {
-//   done();
-// }).catch(done);

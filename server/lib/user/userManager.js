@@ -12,9 +12,14 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 const userContractName = require('./user').contractName;
 
-function* compileSearch() {
-    const searchable = [contractName];
-    return yield rest.compileSearch(searchable, contractName, contractFilename);
+function* compileSearch(onlyIfNotCompiled) {
+  // if only first time, but alreay compiled - bail
+  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+    return;
+  }
+  // compile
+  const searchable = [contractName];
+  return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
 function* getState(contract) {
