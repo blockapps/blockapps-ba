@@ -161,15 +161,9 @@ function* getBidsByName(name) {
   return yield rest.query(`Bid?name=eq.${name}`);
 }
 
-function getBidsBySupplier(supplier) {
-  return function(scope) {
-    rest.verbose('getBidsByName', supplier);
-    return rest.query(`Bid?supplier=eq.${supplier}`)(scope)
-    .then(function(scope) {
-      scope.result = scope.query.slice(-1)[0];
-      return scope;
-    });
-  }
+function* getBidsBySupplier(supplier) {
+  rest.verbose('getBidsBySupplier', supplier);
+  return yield rest.query(`Bid?supplier=eq.${supplier}`);
 }
 
 function* exists(buyer, contract, name) {
@@ -232,32 +226,21 @@ function* getProjectsByState(contract, state) {
   return filtered;
 }
 
-function getProjectsBySupplier(supplier, state) {
-  return function(scope) {
-    rest.verbose('getProjectsBySupplier', supplier, state);
-    return rest.setScope(scope)
-      .then(getBidsBySupplier(supplier))
-      .then(function(scope) {
-        const bids = scope.result;
-        const names = bids.map(function(bid) {
-          return bid.name;
-        });
-        scope.result = names;
-        return getProjectsByName(names)(scope);
-      });
-    }
+function* getProjectsBySupplier(contract, supplier, state) {
+  rest.verbose('getProjectsBySupplier', supplier, state);
+  const bids = yield getBidsBySupplier(supplier);
+  const names = bids.map(function(bid) {
+    return bid.name;
+  });
+  const projects = yield getProjectsByName(contract, names);
+  return projects;
 }
 
-function getProjectsByName(names) {
-  return function(scope) {
-    rest.verbose('getProjectsByName', names);
-    const csv = util.toCsv(names); // generate csv string
-    return rest.query(`${projectContractName}?name=in.${csv}`)(scope)
-      .then(function (scope) {
-        scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
-  }
+function* getProjectsByName(contract, names) {
+  rest.verbose('getProjectsByName', names);
+  const csv = util.toCsv(names); // generate csv string
+  const results = yield rest.query(`${projectContractName}?name=in.${csv}`);
+  return results;
 }
 
 function* handleEvent(buyer, contract, name, projectEvent) {

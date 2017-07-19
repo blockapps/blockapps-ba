@@ -247,7 +247,7 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(bids.length, 1, 'one and only one');
   });
 
-  it('Accept a Bid. https://blockapps.atlassian.net/browse/API-16', function* () {
+  it.only('Accept a Bid. https://blockapps.atlassian.net/browse/API-16', function* () {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
     const amount = 67;
@@ -264,5 +264,22 @@ describe('ProjectManager Life Cycle tests', function() {
     const newBid = yield projectManagerJs.getBid(bid.id);
     // check that state is ACCEPTED
     assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
+  });
+
+  it('Get bids by supplier', function* () {
+    const projectArgs = createProjectArgs(util.uid());
+    const supplier = 'Supplier1';
+    const amount = 5678;
+
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    // get bids by supplier
+    const bids = yield projectManagerJs.getBidsBySupplier(supplier);
+    const filtered = bids.filter(function(bid) {
+      return bid.supplier === supplier  &&  bid.name == projectArgs.name;
+    });
+    assert.equal(filtered.length, 1, 'one and only one');
   });
 });

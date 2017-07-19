@@ -89,114 +89,90 @@ function getProjects() {
 }
 
 // projects - by buyer
-function getProjectsByBuyer(buyer) {
-  return function(scope) {
-    rest.verbose('dapp: getProjectsByBuyer', buyer);
-    return setScope(scope)
-      .then(projectManager.getProjectsByBuyer(buyer));
-  }
+function* getProjectsByBuyer(admin, contract, buyer) {
+  rest.verbose('dapp: getProjectsByBuyer', buyer);
+  return yield projectManager.getProjectsByBuyer(contract, buyer);
 }
 
 // projects - by state
-function getProjectsByState(state) {
-  return function(scope) {
-    rest.verbose('dapp: getProjectsByState', state);
-    return setScope(scope)
-      .then(projectManager.getProjectsByState(state));
-  }
+function* getProjectsByState(admin, contract, state) {
+  rest.verbose('dapp: getProjectsByState', state);
+  return yield projectManager.getProjectsByState(contract, state);
+}
+
+// projects - by supplier (State optional)
+function* getProjectsBySupplier(admin, contract, supplier, state) {
+  rest.verbose('dapp: getProjectsBySupplier', {supplier, state});
+  return yield projectManager.getProjectsBySupplier(contract, supplier, state);
 }
 
 // create bid
-function createBid(adminName, name, supplier, amount) {
-  return function(scope) {
-    rest.verbose('dapp: createBid', adminName, name, supplier, amount);
-    return setScope(scope)
-      .then(projectManager.createBid(adminName, name, supplier, amount));
-  }
+function* createBid(admin, contract, name, supplier, amount) {
+  rest.verbose('dapp: createBid', {name, supplier, amount});
+  return yield projectManager.createBid(admin, contract, name, supplier, amount);
 }
 
 // accept bid
-function acceptBid(adminName, buyer, bidId, name) {
-  return function(scope) {
-    rest.verbose('dapp: acceptBid', {adminName, buyer, bidId, name});
-    return setScope(scope)
-      .then(userManager.getUser(adminName, buyer))
-      .then(function(scope){
-        const user = scope.result;
-        scope.users[buyer].address = user.account;
-        return scope;
-      })
-      .then(projectManager.acceptBid(buyer, bidId, name));
-  }
-}
-
-// projects by supplier (State optional)
-function getProjectsBySupplier(supplier, state) {
-  return function(scope) {
-    rest.verbose('dapp: getProjectsBySupplier', {supplier, state});
-    return setScope(scope)
-      .then(projectManager.getProjectsBySupplier(supplier, state));
-  }
+function* acceptBid(admin, AI, buyerName, buyerPassword, bidId, projectName) {
+  rest.verbose('dapp: acceptBid', {buyerName, buyerPassword, bidId, projectName});
+  const buyer = yield userManager.getUser(admin, AI.subContracts['UserManager'], buyerName);
+  buyer.password = buyerPassword;
+  buyer.name = buyer.username;
+  const result = yield projectManager.acceptBid(admin, AI.subContracts['ProjectManager'], bidId, projectName);
+  return result;
 }
 
 // project by name
 function* getProject(admin, contract, name) {
   rest.verbose('dapp: getProject', name);
-  const project = yield projectManager.getProject(admin, contract, name);
-  return project;
+  return yield projectManager.getProject(admin, contract, name);
 }
 
 // bids by name
-function getBids(adminName, name) {
-  return function(scope) {
-    rest.verbose('dapp: getBids', name);
-    return setScope(scope)
-      .then(projectManager.getBidsByName(name));
-  }
+function* getBids(admin, contract, name) {
+  rest.verbose('dapp: getBids', name);
+  return yield projectManager.getBidsByName(name);
 }
 
 // handle project event
-function handleEvent(adminName,/*, name, projectEvent, username, password*/ args) {
+function* handleEvent(admin, AI, args) {
   const name = args.name;
-
-  return function(scope) {
-    rest.verbose('dapp: project handleEvent', { args });
-
+  rest.verbose('dapp: project handleEvent', args);
 
     switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
-        return setScope(scope)
-          .then(projectManager.getBidsByName(name))
-          .then(function(scope){
-            const bids = scope.result;
-            // find the accepted bid
-            const accepted = bids.filter(function(bid) {
-              return parseInt(bid.state) == BidState.ACCEPTED;
-            });
-            if (accepted.length != 1) {
-              throw(new Error(ErrorCodes.NOT_FOUND));
-            }
-            // supplier NAME
-            scope.supplierName = accepted[0].supplier;
-            scope.valueEther = accepted[0].amount;
-            scope.bidAddress = accepted[0].address;
-            return scope;
-          })
-          .then(function(scope) {
-            return userManager.getUser(adminName, scope.supplierName)(scope);
-          })
-          .then(function(scope) {
-            const supplier = scope.result;
-            return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
-          });
-
+      throw new Error('receive');
+    //     return setScope(scope)
+    //       .then(projectManager.getBidsByName(name))
+    //       .then(function(scope){
+    //         const bids = scope.result;
+    //         // find the accepted bid
+    //         const accepted = bids.filter(function(bid) {
+    //           return parseInt(bid.state) == BidState.ACCEPTED;
+    //         });
+    //         if (accepted.length != 1) {
+    //           throw(new Error(ErrorCodes.NOT_FOUND));
+    //         }
+    //         // supplier NAME
+    //         scope.supplierName = accepted[0].supplier;
+    //         scope.valueEther = accepted[0].amount;
+    //         scope.bidAddress = accepted[0].address;
+    //         return scope;
+    //       })
+    //       .then(function(scope) {
+    //         return userManager.getUser(adminName, scope.supplierName)(scope);
+    //       })
+    //       .then(function(scope) {
+    //         const supplier = scope.result;
+    //         return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
+    //       });
+    //
       case ProjectEvent.ACCEPT:
-        return acceptBid(adminName, args.username, args.bidId, name)(scope);
+        return yield acceptBid(admin, AI, args.username, args.password, args.bidId, args.projectName);
 
       default:
-        return projectManager.handleEvent(adminName, name, args.projectEvent)(scope);
+        return yield projectManager.handleEvent(admin, AI.subContracts['ProjectManager'], args.projectName, args.projectEvent);
     }
-  }
 }
 
 // getBalance

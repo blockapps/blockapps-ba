@@ -51,7 +51,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should return the list of projects filtered by buyer', function(done) {
+  it.only('should return the list of projects filtered by buyer', function(done) {
     this.timeout(config.timeout);
 
     chai.request(server)
@@ -72,7 +72,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should return the list of projects filtered by state', function(done) {
+  it.only('should return the list of projects filtered by state', function(done) {
     this.timeout(config.timeout);
     const state = ProjectState.OPEN;
     chai.request(server)
@@ -94,7 +94,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should return the list of projects filtered by supplier', function(done) {
+  it.only('should return the list of projects filtered by supplier', function(done) {
     this.timeout(config.timeout);
     const supplier = "Supplier1";
     chai.request(server)
@@ -117,7 +117,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('Should bid on a project', function(done){
+  it.only('Should bid on a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/bids')
@@ -133,7 +133,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('Should get bids for a project', function(done){
+  it.only('Should get bids for a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
       .get('/api/v1/projects/' + projectArgs.name + '/bids')
@@ -150,7 +150,7 @@ describe("Projects Test", function() {
       });
     });
 
-  it('Should accept bid', function(done){
+  it.only('Should accept bid', function(done){
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/events/')
@@ -167,7 +167,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it('should change project state to INTRANSIT', function(done) {
+  it.only('should change project state to INTRANSIT', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/events/')
@@ -176,8 +176,8 @@ describe("Projects Test", function() {
         username: supplier,
       })
       .end((err, res) => {
-        const data = assert.apiData(err, res); // returns { bid: { errorCode: '1', state: '3' } } TODO: why `bid`?
-        assert.equal(data.bid.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
+        const data = assert.apiData(err, res); // FIXME -LS return value
+        assert.equal(data.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
         done();
       });
   });
@@ -190,7 +190,7 @@ describe("Projects Test", function() {
       .post('/api/v1/projects/' + projectArgs.name + '/events')
       .send({projectEvent: ProjectEvent.RECEIVE})
       .end((err, res) => {
-        const data = assert.apiData(err, res); // returns { bid: { errorCode: '1', state: '4' } } TODO: why `bid`?
+        const data = assert.apiData(err, res); // FIXME -LS return value
         assert.equal(data.bid.state, ProjectState.RECEIVED, 'returned state should be RECEIVED');
         done();
       });
