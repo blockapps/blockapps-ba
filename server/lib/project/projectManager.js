@@ -126,27 +126,20 @@ function* setBidState(buyer, bidAddress, state, valueEther) {
   }
 }
 
-function settleProject(buyer, projectName, supplierAddress, bidAddress) {
-  return function(scope) {
-    rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
-    // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
-    const method = 'settleProject';
-    const args = {
-      name: projectName,
-      supplierAddress: supplierAddress,
-      bidAddress: bidAddress,
-    };
+function* settleProject(buyer, contract, projectName, supplierAddress, bidAddress) {
+  rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
+  // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
+  const method = 'settleProject';
+  const args = {
+    name: projectName,
+    supplierAddress: supplierAddress,
+    bidAddress: bidAddress,
+  };
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      });
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
 }
 

@@ -107,56 +107,8 @@ const projectsController = {
       console.log('Get Bids Error:', err);
       util.response.status500(res, 'Error occurred while trying to fetch bids');
     });
-
-    // dapp.setScope()
-    //   .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-    //   .then(dapp.getBids(deploy.adminName, req.params.name))
-    //   .then(scope => {
-    //     util.response.status200(res, {
-    //       bids: scope.result
-    //     })
-    //   })
-    //   .catch(err => {
-    //     console.log('Get Bids Error:', err);
-    //     util.response.status500(res, 'Error occurred while trying to fetch bids');
-    //   })
   },
 
-// <<<<<<< HEAD
-//   acceptBid: function(req, res) {
-//     const deploy = req.app.get('deploy');
-//     const username = req.body.username;
-//     // TODO: password should ideally be supplied by the user
-//     dapp.setScope()
-//       .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address, deploy.adminAddress))
-//       .then(function(scope){
-//         scope.users[username] = {
-//           password: deploy.users.filter(function(user) {
-//             return user.username === username;
-//           })[0].password
-//         };
-//         return scope;
-//       })
-//       .then(
-//         dapp.acceptBid(
-//           deploy.adminName,
-//           username,
-//           req.params.id,
-//           req.params.name
-//         )
-//       )
-//       .then(scope => {
-//         util.response.status200(res, {
-//           bid: scope.result
-//         })
-//       })
-//       .catch(err => {
-//         util.response.status500(res, err);
-//       })
-//   },
-//
-// =======
-// >>>>>>> develop
   handleEvent: function(req, res) {
     const deploy = req.app.get('deploy');
     const username = req.body.username;
@@ -190,58 +142,7 @@ const projectsController = {
       console.log('Handle Event Error:', err);
       util.response.status500(res, 'Error while trying to submit event');
     });
-    //
-    //
-    //
-    // dapp.setScope()
-    //   .then(dapp.setAdmin(deploy.adminName, deploy.adminPassword, deploy.AdminInterface.address))
-    //   .then(function(scope){
-    //     scope.users[username] = {
-    //       password: deploy.users.filter(function(user) {
-    //         return user.username === username;
-    //       })[0].password
-    //     };
-    //     return scope;
-    //   })
-    //
-    //   // .then(
-    //   //   dapp.handleEvent(
-    //   //     deploy.adminName,
-    //   //     req.params.name,
-    //   //     req.body.projectEvent,
-    //   //     req.body.username,
-    //   //     deploy.users.filter(function(user){
-    //   //       return user.username == username;
-    //   //     })[0].password
-    //   //   )
-    //
-    //   .then(function(scope) {
-    //     const args = {
-    //       projectEvent: req.body.projectEvent,
-    //       name: req.params.name,
-    //       username : req.body.username
-    //     }
-    //
-    //     if(req.body.projectEvent == ProjectEvent.ACCEPT) {
-    //       args.bidId = req.body.bidId;
-    //     }
-    //
-    //     return dapp.handleEvent(
-    //       deploy.adminName,
-    //       args
-    //     )(scope);
-    //   })
-    //   .then(scope => {
-    //     util.response.status200(res, {
-    //       bid: scope.result
-    //     })
-    //   })
-    //   .catch(err => {
-    //     console.log('Handle Event Error:', err);
-    //     util.response.status500(res, 'Error while trying to submit event');
-    //   })
   },
-
 };
 
 module.exports = projectsController;

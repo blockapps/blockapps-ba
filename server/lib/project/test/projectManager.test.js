@@ -27,10 +27,12 @@ describe('ProjectManager tests', function() {
 
   var admin;
   var contract;
+  var userManagerContract;
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
     contract = yield projectManagerJs.uploadContract(admin);
+    userManagerContract = yield userManagerJs.uploadContract(admin);
     yield projectManagerJs.compileSearch(true);
   });
 
@@ -214,10 +216,13 @@ describe('ProjectManager Life Cycle tests', function() {
 
   var admin;
   var contract;
+  var userManagerContract;
+
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
     contract = yield projectManagerJs.uploadContract(admin);
+    userManagerContract = yield userManagerJs.uploadContract(admin);
     yield projectManagerJs.compileSearch(true);
   });
 
@@ -348,7 +353,6 @@ describe('ProjectManager Life Cycle tests', function() {
     const amount = 234; //
 
     // create buyer and suppliers
-    const userManagerContract = yield userManagerJs.uploadContract(admin);
     const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
     yield userManagerJs.createUser(admin, userManagerContract, buyerArgs);
     for (let supplier of suppliers) {
@@ -358,14 +362,17 @@ describe('ProjectManager Life Cycle tests', function() {
     // create project
     const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
     // create bids
-    var bids = yield createMultipleBids(admin, contract, projectArgs.name, suppliers, amount);
-    // accept one bid
-    const acceptedBidId = bids[0].id;
+    const createdBids = yield createMultipleBids(admin, contract, projectArgs.name, suppliers, amount);
+    { // test
+      const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+      assert.equal(createdBids.length, bids.length, 'should find all the created bids');
+    }
+    // accept one bid (the first)
+    const acceptedBidId = createdBids[0].id;
     yield projectManagerJs.acceptBid(admin, contract, acceptedBidId, projectArgs.name);
     // get the bids
-    bids = yield projectManagerJs.getBidsByName(projectArgs.name);
-    assert.equal(bids.length, suppliers.length, 'should have created all bids');
-    // check that the accepted bid is ACCEPTED and all others are REJECTED
+    const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    // check that the expected bid is ACCEPTED and all others are REJECTED
     bids.map(bid => {
       if (bid.id === acceptedBidId) {
         assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
@@ -375,8 +382,12 @@ describe('ProjectManager Life Cycle tests', function() {
     });
     // deliver the project
     const projectState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.DELIVER);
-    assert.equal(projectState, ProjectState.INTRANSIT);
+    assert.equal(projectState, ProjectState.INTRANSIT, 'delivered project should be INTRANSIT ');
+    // receive the project
+    yield receiveProject(admin, contract, userManagerContract, projectArgs.name);
   });
+
+
 });
 
 // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
@@ -387,4 +398,26 @@ function createUserArgs(name, password, role) {
     role: role,
   }
   return args;
+}
+
+// throws: ErrorCodes
+function* receiveProject(admin, contract, userManagerContract, projectName) {
+  rest.verbose('receiveProject', projectName);
+  // get project
+  const project = yield projectManagerJs.getProject(admin, contract, projectName);
+  // get the buyer info
+  const buyer = yield userManagerJs.getUser(admin, userManagerContract, project.buyer);
+  // get project bids
+  const bids = yield projectManagerJs.getBidsByName(projectName);
+  // extract the supplier out of the accepted bid
+  const accepted = bids.filter(bid => {
+    return parseInt(bid.state) === BidState.ACCEPTED;
+  });
+  if (accepted.length != 1) {
+    throw(new Error(ErrorCodes.NOT_FOUND));
+  }
+  // get the supplier info
+  const supplier = yield userManagerJs.getUser(admin, userManagerContract, accepted[0].supplier);
+  // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
+  yield projectManagerJs.settleProject(admin, contract, projectName, supplier.account, accepted[0].address);
 }
