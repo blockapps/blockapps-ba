@@ -97,8 +97,7 @@ function* acceptBid(buyer, contract, bidId, name) {   // FIXME should go into th
   for (let bid of bids) {
     // accept the selected bid - reject the others
     if (bid.id == bidId) {
-      yield setBidState(buyer, bid.address, BidState.ACCEPTED, 0); // ACCEPT
-//      yield setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount); // ACCEPT
+      yield setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount); // ACCEPT
     } else {
       yield setBidState(buyer, bid.address, BidState.REJECTED, 0); // REJECT
     }

@@ -247,8 +247,8 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(bids.length, 1, 'one and only one');
   });
 
-  it.only('Accept a Bid. https://blockapps.atlassian.net/browse/API-16', function* () {
-    const projectArgs = createProjectArgs(util.uid());
+  it('Accept a Bid.', function* () {
+    const projectArgs = createProjectArgs();
     const supplier = 'Supplier1';
     const amount = 67;
 
@@ -266,6 +266,63 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
   });
 
+  it.skip('Accept a Bid - insufficient balance -  https://blockapps.atlassian.net/browse/API-16', function* () { // FIXME 404 ?
+    const projectArgs = createProjectArgs();
+    const supplier = 'Supplier1';
+    const amount = 1000 + 67; // faucet allowance + more
+
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    // check that state is OPEN
+    assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
+    // accept the bid
+    try {
+      const results = yield projectManagerJs.acceptBid(admin, contract, bid.id, project.name);
+    } catch(error) {
+      const errorCode = parseInt(error.message);
+      // error should be INSUFFICIENT_BALANCE
+      assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE. Instead got:' + JSON.stringify(error));
+    }
+    // did not FAIL - that is an error
+    assert(false, 'accepting a bid with insufficient balance should fail');
+  });
+
+  it('Accept a Bid and rejects the others', function* () {
+    const projectArgs = createProjectArgs(util.uid());
+    const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
+    const amount = 32;
+
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bids
+    var bids = yield createMultipleBids(admin, contract, projectArgs.name, suppliers, amount);
+    // accept one bid
+    const acceptedBidId = bids[0].id;
+    const result = yield projectManagerJs.acceptBid(admin, contract, acceptedBidId, projectArgs.name);
+    // get the bids
+    bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    assert.equal(bids.length, suppliers.length, 'should have created all bids');
+    // check that the accepted bid is ACCEPTED and all others are REJECTED
+    bids.map(bid => {
+      if (bid.id === acceptedBidId) {
+        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
+      } else {
+        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
+      };
+    });
+  });
+
+  function* createMultipleBids(admin, contract, projectName, suppliers, amount) {
+    const bids = [];
+    for (let supplier of suppliers) {
+      const bid = yield projectManagerJs.createBid(admin, contract, projectName, supplier, amount);
+      bids.push(bid);
+    }
+    return bids;
+  }
+
   it('Get bids by supplier', function* () {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
@@ -282,4 +339,52 @@ describe('ProjectManager Life Cycle tests', function() {
     });
     assert.equal(filtered.length, 1, 'one and only one');
   });
+
+  it.only('Accept a Bid, rejects the others, receive project', function* () {
+    const uid = util.uid();
+    const projectArgs = createProjectArgs(uid);
+    const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
+    const password = '1234';
+    const amount = 234; //
+
+    // create buyer and suppliers
+    const userManagerContract = yield userManagerJs.uploadContract(admin);
+    const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
+    yield userManagerJs.createUser(admin, userManagerContract, buyerArgs);
+    for (let supplier of suppliers) {
+      var supplierArgs = createUserArgs(supplier, password, UserRole.SUPPLIER);
+      yield userManagerJs.createUser(admin, userManagerContract, supplierArgs);
+    }
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bids
+    var bids = yield createMultipleBids(admin, contract, projectArgs.name, suppliers, amount);
+    // accept one bid
+    const acceptedBidId = bids[0].id;
+    yield projectManagerJs.acceptBid(admin, contract, acceptedBidId, projectArgs.name);
+    // get the bids
+    bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    assert.equal(bids.length, suppliers.length, 'should have created all bids');
+    // check that the accepted bid is ACCEPTED and all others are REJECTED
+    bids.map(bid => {
+      if (bid.id === acceptedBidId) {
+        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
+      } else {
+        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
+      };
+    });
+    // deliver the project
+    const projectState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.DELIVER);
+    assert.equal(projectState, ProjectState.INTRANSIT);
+  });
 });
+
+// function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+function createUserArgs(name, password, role) {
+  const args = {
+    username: name,
+    password: password,
+    role: role,
+  }
+  return args;
+}
