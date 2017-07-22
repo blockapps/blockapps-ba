@@ -117,8 +117,7 @@ function* acceptBid(admin, AI, buyerName, buyerPassword, bidId, projectName) {
   rest.verbose('dapp: acceptBid', {buyerName, buyerPassword, bidId, projectName});
   const buyer = yield userManager.getUser(admin, AI.subContracts['UserManager'], buyerName);
   buyer.password = buyerPassword;
-  buyer.name = buyer.username;
-  const result = yield projectManager.acceptBid(admin, AI.subContracts['ProjectManager'], bidId, projectName);
+  const result = yield projectManager.acceptBid(admin, AI.subContracts['ProjectManager'], buyer, bidId, projectName);
   return result;
 }
 

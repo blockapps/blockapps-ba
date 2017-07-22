@@ -22,7 +22,7 @@ describe("Projects Test", function() {
   const amount = 100;
   let bidId;
 
-  it.only('should create a project', function(done) {
+  it('should create a project', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects')
@@ -38,7 +38,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('should return a project by its name', function(done) {
+  it('should return a project by its name', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .get(`/api/v1/projects/${encodeURI(projectArgs.name)}/`)
@@ -51,7 +51,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('should return the list of projects filtered by buyer', function(done) {
+  it('should return the list of projects filtered by buyer', function(done) {
     this.timeout(config.timeout);
 
     chai.request(server)
@@ -72,7 +72,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('should return the list of projects filtered by state', function(done) {
+  it('should return the list of projects filtered by state', function(done) {
     this.timeout(config.timeout);
     const state = ProjectState.OPEN;
     chai.request(server)
@@ -94,7 +94,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('should return the list of projects filtered by supplier', function(done) {
+  it('should return the list of projects filtered by supplier', function(done) {
     this.timeout(config.timeout);
     const supplier = "Supplier1";
     chai.request(server)
@@ -117,7 +117,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('Should bid on a project', function(done){
+  it('Should bid on a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/bids')
@@ -133,7 +133,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('Should get bids for a project', function(done){
+  it('Should get bids for a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
       .get('/api/v1/projects/' + projectArgs.name + '/bids')
@@ -150,7 +150,7 @@ describe("Projects Test", function() {
       });
     });
 
-  it.only('Should accept bid', function(done){
+  it('Should accept bid', function(done){
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/events/')
@@ -167,7 +167,7 @@ describe("Projects Test", function() {
       });
   });
 
-  it.only('should change project state to INTRANSIT', function(done) {
+  it('should change project state to INTRANSIT', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/projects/' + projectArgs.name + '/events/')

@@ -115,22 +115,19 @@ const projectsController = {
 
     co(function* () {
       const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const object = {
-        password: deploy.users.filter(function(user) {
-          return user.username === username;
-        })[0].password
-      };
+      // this transaction requires transfer of funds from the buyer to the bid contract
+      // IRL this will require to prompt the user for a password
+      const password = deploy.users.filter(function(user) {
+        return user.username === username;
+      })[0].password;
 
       const args = {
         projectEvent: req.body.projectEvent,
         projectName: req.params.name,
         username : req.body.username,
-        password: object.password,
+        password: password,
+        bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
       };
-
-      if(req.body.projectEvent == ProjectEvent.ACCEPT) {
-        args.bidId = req.body.bidId;
-      }
 
       const result = yield dapp.handleEvent(deploy.admin, AI, args);
       // got it
@@ -140,7 +137,7 @@ const projectsController = {
       });
     }).catch(err => {
       console.log('Handle Event Error:', err);
-      util.response.status500(res, 'Error while trying to submit event');
+      util.response.status500(res, err);
     });
   },
 };

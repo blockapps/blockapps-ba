@@ -92,8 +92,11 @@ function* createBid(buyer, contract, name, supplier, amount) {
 
 // throws: ErrorCodes
 function* acceptBid(admin, contract, buyer, bidId, name) {   // FIXME should go into the contract
-  rest.verbose('acceptBid ###############################', {admin, buyer, bidId, name});
+  rest.verbose('acceptBid', {admin, buyer, bidId, name});
   const bids = yield getBidsByName(name);
+  if (bids.length < 1) {
+    throw new Error(ErrorCodes.NOT_FOUND);
+  }
   for (let bid of bids) {
     // accept the selected bid - reject the others
     if (bid.id == bidId) {
