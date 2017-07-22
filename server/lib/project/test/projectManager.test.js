@@ -279,7 +279,7 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(parseInt(queryBid.state), BidState.ACCEPTED, 'state ACCEPTED');
   });
 
-  it.only('Accept a Bid - insufficient balance -  https://blockapps.atlassian.net/browse/API-16', function* () { // FIXME 404 ?
+  it('Accept a Bid - insufficient balance', function* () {
     const projectArgs = createProjectArgs();
     const supplier = 'Supplier1';
     const amount = 1000 + 67; // faucet allowance + more
@@ -296,15 +296,18 @@ describe('ProjectManager Life Cycle tests', function() {
       password: admin.password,
       account: admin.address,
     }
+    var errorCode;
     try {
-      const results = yield projectManagerJs.acceptBid(admin, contract, buyer, bid.id, project.name);
+      yield projectManagerJs.acceptBid(admin, contract, buyer, bid.id, project.name);
     } catch(error) {
-      const errorCode = parseInt(error.message);
-      // error should be INSUFFICIENT_BALANCE
-      assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE. Instead got:' + JSON.stringify(error));
+      errorCode = parseInt(error.message);
     }
     // did not FAIL - that is an error
-    assert(false, 'accepting a bid with insufficient balance should fail');
+    assert.isDefined(errorCode, 'accepting a bid with insufficient balance should fail');
+    // error should be INSUFFICIENT_BALANCE
+    assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE.');
+    // check that none was affected
+    const bids = yield projectManagerJs.getBidsByName(project.name);
   });
 
   it('Accept a Bid and rejects the others', function* () {

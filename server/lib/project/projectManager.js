@@ -97,11 +97,24 @@ function* acceptBid(admin, contract, buyer, bidId, name) {   // FIXME should go 
   if (bids.length < 1) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
+  // find the winning bid
+  const winningBid = bids.filter(bid => {
+    return bid.id == bidId;
+  })[0];
+  // accept the bid (will transfer funds from buyer to bid contract)
+  try {
+    yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount);
+  } catch(error) {
+    // check insufficient balance
+    console.log(error.status);
+    if (error.status == 400) {
+      throw new Error(ErrorCodes.INSUFFICIENT_BALANCE);
+    }
+    throw error;
+  }
+  // reject all other bids
   for (let bid of bids) {
-    // accept the selected bid - reject the others
-    if (bid.id == bidId) {
-      yield setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount); // ACCEPT
-    } else {
+    if (bid.id != bidId) {
       yield setBidState(buyer, bid.address, BidState.REJECTED, 0); // REJECT
     }
   }
