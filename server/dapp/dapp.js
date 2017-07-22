@@ -52,7 +52,7 @@ function* getAdminInterface(aiAddress) {
 }
 
 function* compileSearch() {
-//  projectManager.compileSearch();   911
+  yield projectManager.compileSearch();
   yield userManager.compileSearch();
 }
 
@@ -121,6 +121,18 @@ function* acceptBid(admin, AI, buyerName, buyerPassword, bidId, projectName) {
   return result;
 }
 
+// receive project
+function* receiveProject(admin, AI, projectName) {
+  rest.verbose('dapp: receiveProject', projectName);
+  // get the accepted bid
+  const bid = yield projectManager.getAcceptedBid(projectName);
+  // get the supplier for the accepted bid
+  const supplier = yield userManager.getUser(admin, AI.subContracts['UserManager'], bid.supplier);
+  // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
+  const result = yield projectManagerJs.settleProject(admin, AI.subContracts['ProjectManager'], projectName, supplier.account, bid.address);
+  return result;
+}
+
 // project by name
 function* getProject(admin, contract, name) {
   rest.verbose('dapp: getProject', name);
@@ -140,32 +152,8 @@ function* handleEvent(admin, AI, args) {
 
     switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
-      throw new Error('receive');
-    //     return setScope(scope)
-    //       .then(projectManager.getBidsByName(name))
-    //       .then(function(scope){
-    //         const bids = scope.result;
-    //         // find the accepted bid
-    //         const accepted = bids.filter(function(bid) {
-    //           return parseInt(bid.state) == BidState.ACCEPTED;
-    //         });
-    //         if (accepted.length != 1) {
-    //           throw(new Error(ErrorCodes.NOT_FOUND));
-    //         }
-    //         // supplier NAME
-    //         scope.supplierName = accepted[0].supplier;
-    //         scope.valueEther = accepted[0].amount;
-    //         scope.bidAddress = accepted[0].address;
-    //         return scope;
-    //       })
-    //       .then(function(scope) {
-    //         return userManager.getUser(adminName, scope.supplierName)(scope);
-    //       })
-    //       .then(function(scope) {
-    //         const supplier = scope.result;
-    //         return projectManager.settleProject(adminName, name, supplier.account, scope.bidAddress)(scope);
-    //       });
-    //
+        return yield receiveProject(admin, AI, projectName);
+
       case ProjectEvent.ACCEPT:
         return yield acceptBid(admin, AI, args.username, args.password, args.bidId, args.projectName);
 

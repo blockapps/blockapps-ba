@@ -33,7 +33,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   // uploading the admin contract and dependencies
   it('should upload the contracts', function* () {
     // compile search
-//    yield dapp.compileSearch();   911
+    yield dapp.compileSearch();
     // set admin interface
     const admin = yield rest.createUser(adminName, adminPassword);
     const AI = yield dapp.setAdminInterface(admin);

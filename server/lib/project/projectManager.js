@@ -218,6 +218,26 @@ function* getBidsBySupplier(supplier) {
   return yield rest.query(`Bid?supplier=eq.${supplier}`);
 }
 
+// throws: ErrorCodes
+function* getAcceptedBid(projectName) {
+  rest.verbose('getAcceptedBid', projectName);
+  // get project bids
+  const bids = yield getBidsByName(projectName);
+  // extract the supplier out of the accepted bid
+  const accepted = bids.filter(bid => {
+    return parseInt(bid.state) === BidState.ACCEPTED;
+  });
+  // not found
+  if (accepted.length == 0) {
+    throw new Error(ErrorCodes.NOT_FOUND);
+  }
+  // more then one
+  if (accepted.length > 1) {
+    throw new Error(ErrorCodes.ERROR);
+  }
+  return accepted[0];
+}
+
 function* exists(buyer, contract, name) {
   rest.verbose('exists', name);
   // function exists(string name) returns (bool) {
@@ -323,6 +343,7 @@ module.exports = {
   createBid: createBid,
   acceptBid: acceptBid,
   exists: exists,
+  getAcceptedBid: getAcceptedBid,
   getBid: getBid,
   getBidsByName: getBidsByName,
   getBidsBySupplier: getBidsBySupplier,

@@ -274,9 +274,12 @@ describe('ProjectManager Life Cycle tests', function() {
     const newBid = yield projectManagerJs.getBid(bid.id);
     // check that state is ACCEPTED
     assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
+    // check that query gets it
+    const queryBid = yield projectManagerJs.getAcceptedBid(project.name);
+    assert.equal(parseInt(queryBid.state), BidState.ACCEPTED, 'state ACCEPTED');
   });
 
-  it.skip('Accept a Bid - insufficient balance -  https://blockapps.atlassian.net/browse/API-16', function* () { // FIXME 404 ?
+  it.only('Accept a Bid - insufficient balance -  https://blockapps.atlassian.net/browse/API-16', function* () { // FIXME 404 ?
     const projectArgs = createProjectArgs();
     const supplier = 'Supplier1';
     const amount = 1000 + 67; // faucet allowance + more
@@ -452,26 +455,13 @@ function createUserArgs(name, password, role) {
   return args;
 }
 
-
-
 // throws: ErrorCodes
 function* receiveProject(admin, contract, userManagerContract, projectName) {
   rest.verbose('receiveProject', projectName);
-  // get project
-  const project = yield projectManagerJs.getProject(admin, contract, projectName);
-  // get the buyer info
-  const buyer = yield userManagerJs.getUser(admin, userManagerContract, project.buyer);
-  // get project bids
-  const bids = yield projectManagerJs.getBidsByName(projectName);
-  // extract the supplier out of the accepted bid
-  const accepted = bids.filter(bid => {
-    return parseInt(bid.state) === BidState.ACCEPTED;
-  });
-  if (accepted.length != 1) {
-    throw(new Error(ErrorCodes.NOT_FOUND));
-  }
-  // get the supplier info
-  const supplier = yield userManagerJs.getUser(admin, userManagerContract, accepted[0].supplier);
+  // get the accepted bid
+  const bid = yield projectManagerJs.getAcceptedBid(projectName);
+  // get the supplier for the accepted bid
+  const supplier = yield userManagerJs.getUser(admin, userManagerContract, bid.supplier);
   // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-  yield projectManagerJs.settleProject(admin, contract, projectName, supplier.account, accepted[0].address);
+  yield projectManagerJs.settleProject(admin, contract, projectName, supplier.account, bid.address);
 }
