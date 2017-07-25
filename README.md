@@ -111,7 +111,7 @@ On Windows:
 ```
 set "SERVER=<server-name>" & npm run test-windows
 ```
-<!--Usage divider -->
+<!--MKDOCS_DOC_DIVIDER_USAGE-->
 ## Using the Blockapps Supply Chain Demo App
 
 Open the app in the browser.
