@@ -114,10 +114,15 @@ set "SERVER=<server-name>" & npm run test-windows
 <!--Usage divider -->
 ## Using the Blockapps Supply Chain Demo App
 
+Open the app in the browser.
+
+By default, application is running at http://localhost:3030/
+
 ### Logins for the app
 The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplier1`, `Supplier2`. All these users have the same password: `1234`.
 
-![Bidding](http://i.imgur.com/3GdKBMj.gif)
+Bidding flow guide coming soon...
+<!--![Bidding](http://i.imgur.com/3GdKBMj.gif)
 
 
 ![Bidding2](http://i.imgur.com/rQF6oK6.gif)
@@ -126,4 +131,4 @@ The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplie
 ![Bidding3](http://i.imgur.com/RnCXrSO.gif)
 
 
-![Bidding4](http://i.imgur.com/54TVkKh.gif)
+![Bidding4](http://i.imgur.com/54TVkKh.gif)-->
