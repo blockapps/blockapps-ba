@@ -37,13 +37,13 @@ npm i
 
 ### Deployment
 
-#### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 Run the following from the **project root**:
 ```
 npm run deploy
 ```
 
-#### If you are deploying using STRATO on the remote server:
+If you are deploying using STRATO on the remote server:
 Make sure there is a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. The contents of the file should be as follows:
 
 ```
@@ -71,7 +71,7 @@ Replace <server-name> with your actual server name in the above file and then ru
 ```
 SERVER=<server-name> npm run deploy
 ```
-on Windows:
+**On Windows:**
 ```
 set "SERVER=<server-name>" & npm run deploy-windows
 ```
@@ -85,25 +85,22 @@ npm run start
 ```
 
 ### Launch the UI
-#### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 ```
 cd ui
 npm run start
 ```
-#### If you are deploying using STRATO on the remote server:
+If you are deploying using STRATO on the remote server:
 ```
 cd ui
 API_URL="<api-server-url>" npm run start
 ```
-on Windows:
+On Windows:
 ```
 cd ui
 set "REACT_APP_API_URL=<api-server-url>" & set "PORT=3030" & npm run start-windows
 ```
 where `<api-server-url>` - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
-
-### Logins for the app
-The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplier1`, `Supplier2`. All these users have the same password: `1234`.
 
 ### Testing
 
@@ -114,3 +111,25 @@ On Windows:
 ```
 set "SERVER=<server-name>" & npm run test-windows
 ```
+<!--Usage divider -->
+## Using the Blockapps Supply Chain Demo App
+
+Open the app in the browser.
+
+By default, application is running at http://localhost:3030/
+
+### Logins for the app
+The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplier1`, `Supplier2`. All these users have the same password: `1234`.
+
+Bidding flow guide coming soon...
+
+<!--![Bidding](http://i.imgur.com/3GdKBMj.gif)
+
+
+![Bidding2](http://i.imgur.com/rQF6oK6.gif)
+
+
+![Bidding3](http://i.imgur.com/RnCXrSO.gif)
+
+
+![Bidding4](http://i.imgur.com/54TVkKh.gif)-->
