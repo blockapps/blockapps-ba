@@ -37,13 +37,13 @@ npm i
 
 ### Deployment
 
-#### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+**If you are deploying using STRATO on `localhost` (Linux and Mac users only):**
 Run the following from the **project root**:
 ```
 npm run deploy
 ```
 
-#### If you are deploying using STRATO on the remote server:
+**If you are deploying using STRATO on the remote server:**
 Make sure there is a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. The contents of the file should be as follows:
 
 ```
@@ -71,7 +71,7 @@ Replace <server-name> with your actual server name in the above file and then ru
 ```
 SERVER=<server-name> npm run deploy
 ```
-on Windows:
+**On Windows:**
 ```
 set "SERVER=<server-name>" & npm run deploy-windows
 ```
