@@ -37,13 +37,13 @@ npm i
 
 ### Deployment
 
-**If you are deploying using STRATO on `localhost` (Linux and Mac users only):**
+If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 Run the following from the **project root**:
 ```
 npm run deploy
 ```
 
-**If you are deploying using STRATO on the remote server:**
+If you are deploying using STRATO on the remote server:
 Make sure there is a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. The contents of the file should be as follows:
 
 ```
@@ -85,17 +85,17 @@ npm run start
 ```
 
 ### Launch the UI
-#### If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 ```
 cd ui
 npm run start
 ```
-#### If you are deploying using STRATO on the remote server:
+If you are deploying using STRATO on the remote server:
 ```
 cd ui
 API_URL="<api-server-url>" npm run start
 ```
-on Windows:
+On Windows:
 ```
 cd ui
 set "REACT_APP_API_URL=<api-server-url>" & set "PORT=3030" & npm run start-windows
