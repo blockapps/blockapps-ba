@@ -122,6 +122,7 @@ By default, application is running at http://localhost:3030/
 The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplier1`, `Supplier2`. All these users have the same password: `1234`.
 
 Bidding flow guide coming soon...
+
 <!--![Bidding](http://i.imgur.com/3GdKBMj.gif)
 
 
