@@ -114,3 +114,13 @@ On Windows:
 ```
 set "SERVER=<server-name>" & npm run test-windows
 ```
+![Bidding](http://i.imgur.com/3GdKBMj.gif)
+
+
+![Bidding2](http://i.imgur.com/rQF6oK6.gif)
+
+
+![Bidding3](http://i.imgur.com/RnCXrSO.gif)
+
+
+![Bidding4](http://i.imgur.com/54TVkKh.gif)
