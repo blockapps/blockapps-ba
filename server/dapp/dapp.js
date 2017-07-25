@@ -79,15 +79,6 @@ function* createProject(admin, contract, args) {
   return project;
 }
 
-// all projects - unfiltered
-function getProjects() {
-  return function(scope) {
-    rest.verbose('dapp: getProjects');
-    return setScope(scope)
-      .then(projectManager.getProjects());
-  }
-}
-
 // projects - by buyer
 function* getProjectsByBuyer(admin, contract, buyer) {
   rest.verbose('dapp: getProjectsByBuyer', buyer);
@@ -129,7 +120,7 @@ function* receiveProject(admin, AI, projectName) {
   // get the supplier for the accepted bid
   const supplier = yield userManager.getUser(admin, AI.subContracts['UserManager'], bid.supplier);
   // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-  const result = yield projectManagerJs.settleProject(admin, AI.subContracts['ProjectManager'], projectName, supplier.account, bid.address);
+  const result = yield projectManager.settleProject(admin, AI.subContracts['ProjectManager'], projectName, supplier.account, bid.address);
   return result;
 }
 
@@ -152,7 +143,7 @@ function* handleEvent(admin, AI, args) {
 
     switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
-        return yield receiveProject(admin, AI, projectName);
+        return yield receiveProject(admin, AI, args.projectName);
 
       case ProjectEvent.ACCEPT:
         return yield acceptBid(admin, AI, args.username, args.password, args.bidId, args.projectName);
@@ -168,61 +159,6 @@ function* getBalance(admin, contract, username) {
   return yield userManager.getBalance(admin, contract, username);
 }
 
-// throws: ErrorCodes
-function receiveProject(adminName, name, password) {
-  return function(scope) {
-    rest.verbose('receiveProject', name);
-    return rest.setScope(scope)
-      // get project
-      .then(getProject(adminName, name))
-      // extract the buyer
-      .then(function(scope) {
-        const project = scope.result;
-        scope.buyerName = project.buyer;
-        return scope;
-      })
-      // get the buyer info
-      .then(function(scope) {
-        return userManager.getUser(adminName, scope.buyerName)(scope);
-      })
-      .then(function(scope) {
-        scope.buyer = scope.result;
-        return scope;
-      })
-      // get project bids
-      .then(projectManager.getBidsByName(name))
-      // extract the supplier out of the accepted bid
-      .then(function(scope) {
-        const bids = scope.result;
-        // find the accepted bid
-        const accepted = bids.filter(function(bid) {
-          return bid.state == BidState[BidState.ACCEPTED];
-        });
-        if (accepted.length != 1) {
-          throw(new Error(ErrorCodes.NOT_FOUND));
-        }
-        // supplier NAME
-        scope.supplierName = accepted[0].supplier;
-        scope.valueEther = accepted[0].amount;
-        scope.bidAddress = accepted[0].address;
-        return scope;
-      })
-      // get the supplier info
-      .then(function(scope) {
-        return userManager.getUser(adminName, scope.supplierName)(scope)
-      })
-      .then(function(scope) {
-        scope.supplier = scope.result;
-        return scope;
-      })
-      // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-      .then(function(scope) {
-        return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
-      });
-  }
-}
-
-
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.contract.libPath = libPath;
@@ -236,13 +172,11 @@ module.exports = function (libPath) {
     login: login,
     createProject: createProject,
     getBalance: getBalance,
-    getProjects: getProjects,
     getProjectsByBuyer: getProjectsByBuyer,
     getProjectsByState: getProjectsByState,
     getProjectsBySupplier: getProjectsBySupplier,
     createBid: createBid,
     getBids: getBids,
-    acceptBid: acceptBid,
     getProject: getProject,
     handleEvent: handleEvent,
   };
