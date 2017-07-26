@@ -36,6 +36,8 @@ describe('UserManager tests', function() {
     const user = yield userManagerJs.createUser(admin, contract, args);
     assert.equal(user.username, args.username, 'username');
     assert.equal(user.role, args.role, 'role');
+    // test that the account was created
+    const account = yield userManagerJs.getAccount(user.account);
   });
 
   it('Test exists()', function* () {
@@ -190,7 +192,7 @@ describe('UserManager tests', function() {
 function createUserArgs(_name, _role) {
   const uid = util.uid();
   const role = _role || UserRole.SUPPLIER;
-  const name = _name || 'User';
+  const name = _name || 'User ? # ';
   const args = {
     username: name + uid,
     password: 'Pass' + uid,

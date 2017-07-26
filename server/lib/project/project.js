@@ -31,7 +31,7 @@ function* isCompiled() {
 }
 
 function* getProjectByName(name) {
-  return (yield rest.waitQuery(`${contractName}?name=eq.${name}`, 1))[0];
+  return (yield rest.waitQuery(`${contractName}?name=eq.${encodeURIComponent(name)}`, 1))[0];
 }
 
 function* getProjectByAddress(address) {

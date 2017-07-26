@@ -29,7 +29,7 @@ const projectsController = {
 
   get: function(req, res) {
     const deploy = req.app.get('deploy');
-    const projectName = decodeURI(req.params['name']);
+    const projectName = decodeURIComponent(req.params['name']);
 
     co(function* () {
       const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
@@ -124,7 +124,7 @@ const projectsController = {
       const args = {
         projectEvent: req.body.projectEvent,
         projectName: req.params.name,
-        username : req.body.username,
+        username : username,
         password: password,
         bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
       };

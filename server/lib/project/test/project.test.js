@@ -58,10 +58,10 @@ describe('Project tests', function() {
     */
 
   it('Create Contract', function* () {
-    const name = util.uid('Project');
-    const buyer = 'Buyer1';
-    const description = 'description';
-    const spec = 'spec';
+    const name = util.uid('Project ? % # ');
+    const buyer = 'Buyer1 ? % # ';
+    const description = 'description ? % # ';
+    const spec = 'spec ? % # ';
     const price = 1234;
 
     const created = new Date().getTime();

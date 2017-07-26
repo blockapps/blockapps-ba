@@ -193,19 +193,19 @@ describe('ProjectManager tests', function() {
 function createProjectArgs(_uid) {
   const uid = _uid || util.uid();
   const projectArgs = {
-    name: 'Project_' + uid,
-    buyer: 'Buyer_' + uid,
-    description: 'description_' + uid,
-    spec: 'spec_' + uid,
+    name: 'Project_ ?' + uid,
+    buyer: 'Buyer_ ? ' + uid,
+    description: 'description_ ? ' + uid,
+    spec: 'spec_ ? ' + uid,
     price: 234,
 
     created: new Date().getTime(),
     targetDelivery: new Date().getTime() + 3 * 24*60*60*1000, // 3 days
 
-    addressStreet: 'addressStreet_' + uid,
-    addressCity: 'addressCity_' + uid,
-    addressState: 'addressState_' + uid,
-    addressZip: 'addressZip_' + uid,
+    addressStreet: 'addressStreet_ ? ' + uid,
+    addressCity: 'addressCity_ ? ' + uid,
+    addressState: 'addressState_ ? ' + uid,
+    addressZip: 'addressZip_ ? ' + uid,
   };
 
   return projectArgs;

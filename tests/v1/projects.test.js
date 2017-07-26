@@ -34,6 +34,8 @@ describe("Projects Test", function() {
         // todo: the created project returns the created project
         assert.equal(project.name, projectArgs.name, 'new project should contain name');
         assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
+        assert.equal(project.description, projectArgs.description, 'project desc should be same as in request');
+        assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
         done();
       });
   });
@@ -41,12 +43,15 @@ describe("Projects Test", function() {
   it('should return a project by its name', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
-      .get(`/api/v1/projects/${encodeURI(projectArgs.name)}/`)
+      .get(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/`)
       .end((err, res) => {
         const data = assert.apiData(err, res);
         const project = data.project;
         assert.isDefined(project, 'should return project');
         assert.equal(project.name, projectArgs.name, 'project name should be same as in request');
+        assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
+        assert.equal(project.description, projectArgs.description, 'project desc should be same as in request');
+        assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
         done();
       });
   });
@@ -120,7 +125,7 @@ describe("Projects Test", function() {
   it('Should bid on a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectArgs.name + '/bids')
+      .post(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/bids`)
       .send({ supplier, amount })
       .end((err, res) => {
         const data = assert.apiData(err, res);
@@ -128,7 +133,7 @@ describe("Projects Test", function() {
         assert.isDefined(bid, 'should return new bid');
         assert.equal(bid.supplier, supplier, 'new bid should contain supplier');
         assert.equal(bid.amount, amount, 'new bid should contain amount');
-        bidId = bid.id;
+        bidId = bid.id; // save for the next tests
         done();
       });
   });
@@ -136,7 +141,7 @@ describe("Projects Test", function() {
   it('Should get bids for a project', function(done){
     this.timeout(config.timeout);
     chai.request(server)
-      .get('/api/v1/projects/' + projectArgs.name + '/bids')
+      .get(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/bids`)
       .end((err, res) => {
         const data = assert.apiData(err, res);
         const bids = data.bids;
@@ -153,10 +158,11 @@ describe("Projects Test", function() {
   it('Should accept bid', function(done){
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectArgs.name + '/events/')
+      .post(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/events/`)
       .send({
         projectEvent: ProjectEvent.ACCEPT,
         username: projectArgs.buyer,
+        bidId: bidId,
       })
       .end((err, res) => {
         assert.apiSuccess(res);
@@ -170,7 +176,7 @@ describe("Projects Test", function() {
   it('should change project state to INTRANSIT', function(done) {
     this.timeout(config.timeout);
     chai.request(server)
-      .post('/api/v1/projects/' + projectArgs.name + '/events/')
+      .post(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/events/`)
       .send({
         projectEvent: ProjectEvent.DELIVER,
         username: supplier,
@@ -200,10 +206,10 @@ describe("Projects Test", function() {
 
 function createProjectArgs(uid) {
   const projectArgs = {
-    name: 'Project_' + uid,
+    name: 'Project_ ? ' + uid,
     buyer: 'Buyer1',
-    description: 'description_' + uid,
-    spec: 'spec_' + uid,
+    description: 'description_ ? % ' + uid,
+    spec: 'spec_ ? % ' + uid,
     price: 1234,
 
     created: new Date().getTime(),
