@@ -311,8 +311,8 @@ function* getProjectsByState(contract, state) {
   return filtered;
 }
 
-function* getProjectsBySupplier(contract, supplier, state) {
-  rest.verbose('getProjectsBySupplier', supplier, state);
+function* getProjectsBySupplier(contract, supplier) {
+  rest.verbose('getProjectsBySupplier', supplier);
   const bids = yield getBidsBySupplier(supplier);
   const names = bids.map(function(bid) {
     return bid.name;
@@ -323,8 +323,20 @@ function* getProjectsBySupplier(contract, supplier, state) {
 
 function* getProjectsByName(contract, names) {
   rest.verbose('getProjectsByName', names);
-  const csv = util.toCsv(names); // generate csv string
-  const results = yield rest.query(`${projectContractName}?name=in.${csv}`);
+  if (names.length == 0) {
+    return [];
+  }
+  // the url might get too long, so the query is broken to multipart
+  const MAX = 50; // max names to list in one REST call
+  const parts = Math.ceil(names.length/MAX);
+  var results = [];
+  for (var i = 0; i < parts; i++) {
+    const start = i*MAX;
+    const end = (i<parts-1) ? (i+1)*MAX : names.length;
+    const csv = util.toCsv(names.slice(start, end)); // generate csv string
+    const partialResults = yield rest.query(`${projectContractName}?name=in.${csv}`); // get a part
+    results = results.concat(partialResults); // add to the results
+  }
   return results;
 }
 
@@ -365,6 +377,7 @@ module.exports = {
   getProjectsByBuyer: getProjectsByBuyer,
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
+  getProjectsByName: getProjectsByName,
   handleEvent: handleEvent,
   settleProject: settleProject,
 };

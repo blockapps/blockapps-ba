@@ -143,6 +143,34 @@ describe('ProjectManager tests', function() {
     assert.equal(projects.length, count/mod, '# of found projects');
   });
 
+  it('Get Projects by name', function* () {
+    const uid = util.uid();
+
+    const count = 3
+    const projectsArgs = Array.apply(null, {
+      length: count
+    }).map(function(item, index) {
+      const projectArgs = createProjectArgs(uid);
+      projectArgs.name += index;
+      return projectArgs;
+    });
+
+    // all create project
+    for (let projectArgs of projectsArgs) {
+      const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    }
+    // get projects by buyer - should find that name in there
+    const names = projectsArgs.map(projectArgs => {
+      return projectArgs.name;
+    });
+    for (var i = projectsArgs.length; i < 539; i++) {
+      names.push(projectsArgs[0].name + i);
+    }
+
+    const projects = yield projectManagerJs.getProjectsByName(contract, names);
+    assert.equal(projects.length, projectsArgs.length, '# of found projects');
+  });
+
   it('Get Projects by state', function* () {
     const uid = util.uid();
 
