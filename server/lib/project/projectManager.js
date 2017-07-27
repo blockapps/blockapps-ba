@@ -3,6 +3,8 @@ const rest = ba.rest;
 const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
+const BigNumber = ba.common.BigNumber;
+const constants = ba.common.constants;
 
 const contractName = 'ProjectManager';
 const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol`;
@@ -141,7 +143,8 @@ function* setBidState(buyer, bidAddress, state, valueEther) {
     address: buyer.account,
   };
 
-  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueEther);
+  const valueWei = new BigNumber(valueEther).mul(constants.ETHER);
+  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueWei);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);

@@ -71,104 +71,87 @@ describe('Bid tests', function() {
   });
 
 
-  it('Call method with value 1.0', function* () {
+  it('Call method with value', function* () {
     const id = new Date().getTime();
     const name = util.uid('Project');
     const supplier = 'Supplier1';
     const amount = 2345;
 
-    const args = {
+    const contractArgs = {
       _id: id,
       _name: name,
       _supplier: supplier,
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(admin, args);
+    const contract = yield bidJs.uploadContract(admin, contractArgs);
 
     // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
     const method = 'setBidState';
-    const margs = {
+    const methodArgs = {
       newState: 2,
     };
 
     // create target user
     const bob = yield rest.createUser(adminName+'bob', adminPassword);
     // send tx - works
-    const sendValueEther = 1;
-    const receipt = yield rest.send(admin, bob, sendValueEther);
+    const sendValue = 123;
+    const receipt = yield rest.send(admin, bob, sendValue);
     const txResult = yield rest.transactionResult(receipt.hash);
     assert.equal(txResult[0].status, 'success');
 
     // call method WITHOUT value
-    const result = yield rest.callMethod(admin, contract, method, margs);
+    const result = yield rest.callMethod(admin, contract, method, methodArgs);
     const errorCode = parseInt(result[0]);
-    if (errorCode != ErrorCodes.SUCCESS) {
-      throw new Error(errorCode);
-    }
+    assert.equal(errorCode, ErrorCodes.SUCCESS);
+
     // call method WITH value
-    const valueEther = 1.0;
-    const valueWei = (new BigNumber(valueEther)).mul(constants.ETHER);
+    const value = (new BigNumber(23)).mul(constants.ETHER);
     admin.startBalance = yield rest.getBalance(admin.address);
     contract.startBalance = yield rest.getBalance(contract.address);
-    yield rest.callMethod(admin, contract, method, margs, valueEther);
+    yield rest.callMethod(admin, contract, method, methodArgs, value);
     admin.endBalance = yield rest.getBalance(admin.address);
     admin.delta = admin.endBalance.minus(admin.startBalance).times(-1);
-    admin.delta.should.be.bignumber.gt(valueWei);
+    admin.delta.should.be.bignumber.gt(value);
 
     contract.endBalance = yield rest.getBalance(contract.address);
     contract.delta = contract.endBalance.minus(contract.startBalance);
-    contract.delta.should.be.bignumber.equal(valueWei);
+    contract.delta.should.be.bignumber.equal(value);
   });
 
-  it.skip('Call method with value 1.5   https://blockapps.atlassian.net/browse/API-16', function* () {
+  it('Call method with value - Insufficient balance', function* () {
     const id = new Date().getTime();
     const name = util.uid('Project');
     const supplier = 'Supplier1';
     const amount = 2345;
 
-    const args = {
+    const contractArgs = {
       _id: id,
       _name: name,
       _supplier: supplier,
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(admin, args);
+    const contract = yield bidJs.uploadContract(admin, contractArgs);
 
     // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
     const method = 'setBidState';
-    const margs = {
+    const methodArgs = {
       newState: 2,
     };
 
     // create target user
     const bob = yield rest.createUser(adminName+'bob', adminPassword);
-    // send tx - works
-    const sendValueEther = 1;
-    const receipt = yield rest.send(admin, bob, sendValueEther);
-    const txResult = yield rest.transactionResult(receipt.hash);
-    assert.equal(txResult[0].status, 'success');
-
-    // call method WITHOUT value
-    const result = yield rest.callMethod(admin, contract, method, margs);
-    const errorCode = parseInt(result[0]);
-    if (errorCode != ErrorCodes.SUCCESS) {
-      throw new Error(errorCode);
-    }
     // call method WITH value
-    const valueEther = 1.5;
-    const valueWei = (new BigNumber(valueEther)).mul(constants.ETHER);
-    admin.startBalance = yield rest.getBalance(admin.address);
-    contract.startBalance = yield rest.getBalance(contract.address);
-    yield rest.callMethod(admin, contract, method, margs, valueEther);
-    admin.endBalance = yield rest.getBalance(admin.address);
-    admin.delta = admin.endBalance.minus(admin.startBalance).times(-1);
-    admin.delta.should.be.bignumber.gt(valueWei);
-
-    contract.endBalance = yield rest.getBalance(contract.address);
-    contract.delta = contract.endBalance.minus(contract.startBalance);
-    contract.delta.should.be.bignumber.equal(valueWei);
+    const value = (new BigNumber(1234)).mul(constants.ETHER);
+    var result;
+    try {
+      result = yield rest.callMethod(admin, contract, method, methodArgs, value);
+    } catch(error) {
+      assert.equal(error.name, 'HttpError');
+      assert.equal(error.status, '400');
+    }
+    // if didnt throw - error
+    assert.isUndefined(result, 'call should have thrown INSUFFICIENT BALANCE, and not return a result');
   });
-
 });
