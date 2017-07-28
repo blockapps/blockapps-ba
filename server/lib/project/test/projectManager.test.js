@@ -1,3 +1,4 @@
+require('co-mocha');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
@@ -9,9 +10,9 @@ const constants = common.constants;
 const Promise = common.Promise;
 const BigNumber = common.BigNumber;
 
-const project = require('../project');
-const projectManager = require('../projectManager');
-const userManager = require('../../user/userManager');
+const projectJs = require('../project');
+const projectManagerJs = require('../projectManager');
+const userManagerJs = require('../../user/userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
@@ -24,181 +25,106 @@ const adminPassword = '1234';
 describe('ProjectManager tests', function() {
   this.timeout(config.timeout);
 
-  const scope = {};
-
+  var admin;
+  var contract;
+  var userManagerContract;
   // get ready:  admin-user and manager-contract
-  before(function (done) {
-    rest.setScope(scope)
-      // create admin
-      .then(rest.createUser(adminName, adminPassword))
-      // upload ProjectManager
-      .then(projectManager.uploadContract(adminName, adminPassword))
-      // upload UserManager
-      .then(userManager.uploadContract(adminName, adminPassword))
-      .then(function (scope) {
-        done();
-      }).catch(done);
+  before(function* () {
+    admin = yield rest.createUser(adminName, adminPassword);
+    contract = yield projectManagerJs.uploadContract(admin);
+    userManagerContract = yield userManagerJs.uploadContract(admin);
+    yield projectManagerJs.compileSearch(true);
   });
 
-  it('Create Project', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
+  it('Create Project', function* () {
+    const projectArgs = createProjectArgs();
 
-    rest.setScope(scope)
-      // create user
-      .then(projectManager.createProject(adminName, projectArgs))
-      // returns the record from search
-      .then(function(scope) {
-        const project = scope.result;
-        assert.equal(project.name, projectArgs.name, 'name');
-        assert.equal(project.buyer, projectArgs.buyer, 'buyer');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    assert.equal(project.name, projectArgs.name, 'name');
+    assert.equal(project.buyer, projectArgs.buyer, 'buyer');
   });
 
-  it('Test exists()', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-
-    rest.setScope(scope)
-      // should not exists
-      .then(projectManager.exists(adminName, projectArgs.name))
-      .then(function(scope) {
-        const exists = scope.result;
-        assert.isDefined(exists, 'should be defined');
-        assert.isNotOk(exists, 'should not exist');
-        return scope;
-      })
-      // create user
-      .then(projectManager.createProject(adminName, projectArgs))
-      // should exist
-      .then(projectManager.exists(adminName, projectArgs.name))
-      .then(function(scope) {
-        const exists = scope.result;
-        assert.equal(exists, true, 'should exist')
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+  it('Test exists()', function* () {
+    const projectArgs = createProjectArgs();
+    // should not exists
+    const doesNotExist = yield projectManagerJs.exists(admin, contract, projectArgs.name);
+    assert.isDefined(doesNotExist, 'should be defined');
+    assert.isNotOk(doesNotExist, 'should not exist');
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // // should exist
+    const exists = yield projectManagerJs.exists(admin, contract, projectArgs.name);
+    assert.equal(exists, true, 'should exist');
   });
 
-  it('Create Duplicate Project', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-
-    scope.error = undefined;
-
-    rest.setScope(scope)
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      .then(function(scope) {
-        // create a duplicate - should FAIL
-        return rest.setScope(scope)
-          .then(projectManager.createProject(adminName, projectArgs))
-          .then(function(scope) {
-            // did not FAIL - that is an error
-            scope.error = 'Duplicate project-name was not detected: ' + projectArgs.name;
-            return scope
-          })
-          .catch(function(error) {
-            const errorCode = error.message;
-            // error should be EXISTS
-            if (errorCode == ErrorCodes.EXISTS) {
-              return scope;
-            }
-            // different error thrown - not good
-            scope.error = 'projectManager.createProject: threw: ' + errorCode;
-            return scope
-          });
-      })
-      .then(function(scope) {
-        // check error for the previous step
-        if (scope.error !== undefined)
-          throw(new Error(scope.error));
-        // all good
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+  it('Create Duplicate Project', function* () {
+    const projectArgs = createProjectArgs();
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create a duplicate - should FAIL
+    var dupProject;
+    try {
+      dupProject = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    } catch(error) {
+      const errorCode = parseInt(error.message);
+      // error should be EXISTS
+      assert.equal(errorCode, ErrorCodes.EXISTS, 'error should be EXISTS' + JSON.stringify(error));
+      }
+    // did not FAIL - that is an error
+    assert.isUndefined(dupProject, 'creating duplicate project should fail');
   });
 
-  it('Get Project', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-
-    rest.setScope(scope)
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      // get it - should exist
-      .then(projectManager.getProject(adminName, projectArgs.name))
-      .then(function(scope) {
-        const project = scope.result;
-        assert.equal(project.name, projectArgs.name, 'should have a name');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+  it('Get Project', function* () {
+    const projectArgs = createProjectArgs();
+    // create project
+    yield projectManagerJs.createProject(admin, contract, projectArgs);
+    const project = yield projectManagerJs.getProject(admin, contract, projectArgs.name);
+    assert.equal(project.name, projectArgs.name, 'should have a name');
   });
 
-  it('Get non exisiting project', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
+  it('Get non exisiting project', function* () {
+    const projectArgs = createProjectArgs();
+    var nonExistingProject;
+    try {
+      nonExistingProject = yield projectManagerJs.getProject(admin, contract, projectArgs.name);
+    } catch(error) {
+      const errorCode = error.message;
+      // error should be NOT_FOUND
+      assert.equal(errorCode, ErrorCodes.NOT_FOUND, 'error should be NOT_FOUND' + JSON.stringify(error));
+    }
+    // did not FAIL - that is an error
+    assert.isUndefined(nonExistingProject, 'getting non-existing project should fail');
+  });
 
-    rest.setScope(scope)
-      // get project - should not exist
-      .then(projectManager.getProject(adminName, projectArgs.name))
-      .then(function(scope) {
-        // did not throw - not good
-        done(new Error('Project should nto be found ' + projectArgs.name));
-      }).catch(function(error) {
-        const errorCode = error.message;
-        // error should be NOT_FOUND
-        if (errorCode == ErrorCodes.NOT_FOUND) {
-          done();
-          return ;
-        }
-        // other error - not good
-        done(error);
+  it('Get Projects', function* () {
+    const projectArgs = createProjectArgs();
+    // get projects - should not exist yet
+    {
+      const projects = yield projectManagerJs.getProjects(contract);
+      const found = projects.filter(function(project) {
+        return project.name === projectArgs.name;
       });
-  });
-
-  it('Get Projects', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-
-    rest.setScope(scope)
-      // get projects - should not exist
-      .then(projectManager.getProjects())
-      .then(function(scope) {
-        const projects = scope.result;
-        const found = projects.filter(function(project) {
-          return project.name === projectArgs.name;
-        });
-        assert.equal(found.length, 0, 'project list should NOT contain ' + projectArgs.name);
-        return scope;
-      })
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
+      assert.equal(found.length, 0, 'project list should NOT contain ' + projectArgs.name);
+    }
+    // create project
+    yield projectManagerJs.createProject(admin, contract, projectArgs);
+    {
       // get projects - should exist
-      .then(projectManager.getProjects(adminName))
-      .then(function(scope) {
-        const projects = scope.result;
-        const found = projects.filter(function(project) {
-          return project.name === projectArgs.name;
-        });
-        assert.equal(found.length, 1, 'project list should contain ' + projectArgs.name);
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+      const projects = yield projectManagerJs.getProjects(contract);
+      const found = projects.filter(function(project) {
+        return project.name === projectArgs.name;
+      });
+      assert.equal(found.length, 1, 'project list should contain ' + projectArgs.name);
+    }
   });
 
-  it('Get Projects by buyer', function(done) {
+  it('Get Projects by buyer', function* () {
     const uid = util.uid();
 
-    const count = 15;
     const mod = 3;
-    const projects = Array.apply(null, {
+    const count = 2 * mod;
+    const projectsArgs = Array.apply(null, {
       length: count
     }).map(function(item, index) {
       const projectArgs = createProjectArgs(uid);
@@ -207,33 +133,21 @@ describe('ProjectManager tests', function() {
       return projectArgs;
     });
 
-    rest.setScope(scope)
-      // add all projects
-      .then(function(scope) {
-        return Promise.each(projects, function(projectArgs) { // for each project
-          return projectManager.createProject(adminName, projectArgs)(scope) // create project
-        }).then(function() { // all done
-          return scope;
-        });
-      })
-      // get projects by buyer - should find that name in there
-      .then(projectManager.getProjectsByBuyer(projects[0].buyer))
-      .then(function(scope) {
-        const projects = scope.result;
-        assert.equal(projects.length, count/mod, '# of found projects');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // all create project
+    for (let projectArgs of projectsArgs) {
+      const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    }
+    // get projects by buyer - should find that name in there
+    const buyerName = projectsArgs[0].buyer;
+    const projects = yield projectManagerJs.getProjectsByBuyer(contract, buyerName);
+    assert.equal(projects.length, count/mod, '# of found projects');
   });
 
-  it('Get Projects by state', function(done) {
+  it('Get Projects by name', function* () {
     const uid = util.uid();
 
-    const count = 8;
-    const changed = Math.floor(count/2);
-    const sourceProjects = Array.apply(null, {
+    const count = 3
+    const projectsArgs = Array.apply(null, {
       length: count
     }).map(function(item, index) {
       const projectArgs = createProjectArgs(uid);
@@ -241,496 +155,344 @@ describe('ProjectManager tests', function() {
       return projectArgs;
     });
 
-    rest.setScope(scope)
-      // add all projects
-      .then(function(scope) {
-        return Promise.each(sourceProjects, function(projectArgs) { // for each project
-          return projectManager.createProject(adminName, projectArgs)(scope) // create project
-        }).then(function() { // all done
-          return scope;
-        });
-      })
-      // change state for the first half
-      .then(function(scope) {
-        return Promise.each(sourceProjects.slice(0,changed), function(project) { // for each project
-          return projectManager.handleEvent(adminName, project.name, ProjectEvent.ACCEPT)(scope);
-        }).then(function() { // all done
-          return scope;
-        });
-      })
+    // all create project
+    for (let projectArgs of projectsArgs) {
+      const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    }
+    // get projects by buyer - should find that name in there
+    const names = projectsArgs.map(projectArgs => {
+      return projectArgs.name;
+    });
+    for (var i = projectsArgs.length; i < 539; i++) {
+      names.push(projectsArgs[0].name + i);
+    }
 
-      // get projects by state - should find that name in there
-      .then(projectManager.getProjectsByState(ProjectState.PRODUCTION))
-      .then(function(scope) {
-        const projects = scope.result;
-        const comparator = function (memberA, memberB) {
-          return memberA.name == memberB.name;
-        };
-        const notContained = util.filter.isContained(sourceProjects.slice(0,changed), projects, comparator, true);
-        // if found any items in the source list, that are not included in the query results
-        assert.equal(notContained.length, 0, 'some projects were not found ' + JSON.stringify(notContained, null, 2));
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    const projects = yield projectManagerJs.getProjectsByName(contract, names);
+    assert.equal(projects.length, projectsArgs.length, '# of found projects');
   });
 
-  it('ACCEPT an OPEN project - change to PRODUCTION', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
+  it('Get Projects by state', function* () {
+    const uid = util.uid();
 
-    rest.setScope(scope)
-      // create a project
-      .then(projectManager.createProject(adminName, projectArgs))
-      .then(function(scope) {
-        const project = scope.result;
-        assert.equal(project.name, projectArgs.name, 'name');
-        return scope;
-      })
-      // set the state
-      .then(projectManager.handleEvent(adminName, projectArgs.name, ProjectEvent.ACCEPT))
-      .then(function(scope) {
-        const result = scope.result;
-        assert.equal(result.errorCode, ErrorCodes.SUCCESS, 'handleEvent should return ErrorCodes.SUCCESS');
-        assert.equal(result.state, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
-        return scope;
-      })
-      // check the new state
-      .then(rest.waitQuery(`${project.contractName}?name=eq.${projectArgs.name}`, 1))
-      .then(function(scope) {
-        const resultsArray = scope.query.slice(-1)[0];
-        assert.equal(resultsArray.length, 1, 'one and only one');
-        const project = resultsArray[0];
-        assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
-  });
+    const count = 8;
+    const changed = Math.floor(count/2);
+    const projectsArgs = Array.apply(null, {
+      length: count
+    }).map(function(item, index) {
+      const projectArgs = createProjectArgs(uid);
+      projectArgs.name += index;
+      return projectArgs;
+    });
 
-  function createProjectArgs(uid) {
-    const projectArgs = {
-      name: 'Project_' + uid,
-      buyer: 'Buyer_' + uid,
-      description: 'description_' + uid,
-      spec: 'spec_' + uid,
-      price: 234,
+    // all create project
+    for (let projectArgs of projectsArgs) {
+      yield projectManagerJs.createProject(admin, contract, projectArgs);
+    }
+    // change state for the first half
+    const changedProjectsArgs = projectsArgs.slice(0,changed);
+    for (let projectArgs of changedProjectsArgs) {
+      const newState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
+      assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
+    }
 
-      created: new Date().getTime(),
-      targetDelivery: new Date().getTime() + 3 * 24*60*60*1000, // 3 days
-
-      addressStreet: 'addressStreet_' + uid,
-      addressCity: 'addressCity_' + uid,
-      addressState: 'addressState_' + uid,
-      addressZip: 'addressZip_' + uid,
+    // get projects by state - should find that name in there
+    const projects = yield projectManagerJs.getProjectsByState(contract, ProjectState.PRODUCTION);
+    const comparator = function (memberA, memberB) {
+      return memberA.name == memberB.name;
     };
+    const notContained = util.filter.isContained(changedProjectsArgs, projects, comparator);
+    // if found any items in the source list, that are not included in the query results
+    assert.equal(notContained.length, 0, 'some projects were not found ' + JSON.stringify(notContained, null, 2));
+  });
 
-    return projectArgs;
-  }
+  it('ACCEPT an OPEN project - change to PRODUCTION', function* () {
+    const projectArgs = createProjectArgs(util.uid());
+    // create project
+    yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // set the state
+    const newState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.ACCEPT);
+    assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
+    // check the new state
+    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${projectArgs.name}`, 1))[0];
+    assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
+  });
+});
 
-  it('Create new Bid', function(done) {
+function createProjectArgs(_uid) {
+  const uid = _uid || util.uid();
+  const projectArgs = {
+    name: 'Project_ ?' + uid,
+    buyer: 'Buyer_ ? ' + uid,
+    description: 'description_ ? ' + uid,
+    spec: 'spec_ ? ' + uid,
+    price: 234,
+
+    created: new Date().getTime(),
+    targetDelivery: new Date().getTime() + 3 * 24*60*60*1000, // 3 days
+
+    addressStreet: 'addressStreet_ ? ' + uid,
+    addressCity: 'addressCity_ ? ' + uid,
+    addressState: 'addressState_ ? ' + uid,
+    addressZip: 'addressZip_ ? ' + uid,
+  };
+
+  return projectArgs;
+}
+
+describe('ProjectManager Life Cycle tests', function() {
+  this.timeout(config.timeout);
+
+  var admin;
+  var contract;
+  var userManagerContract;
+
+  // get ready:  admin-user and manager-contract
+  before(function* () {
+    admin = yield rest.createUser(adminName, adminPassword);
+    contract = yield projectManagerJs.uploadContract(admin);
+    userManagerContract = yield userManagerJs.uploadContract(admin);
+    yield projectManagerJs.compileSearch(true);
+  });
+
+  it('Create new Bid', function* () {
     const supplier = 'Supplier1';
     const amount = 5678;
-    const uid = util.uid();
-    const projectArgs = createProjectArgs(uid);
+    const projectArgs = createProjectArgs();
 
-    rest.setScope(scope)
-      // create user
-      .then(projectManager.createProject(adminName, projectArgs))
-      .then(projectManager.createBid(adminName, projectArgs.name, supplier, amount))
-      // returns the record from search
-      .then(function(scope) {
-        const bid = scope.result;
-        assert.equal(bid.name, projectArgs.name, 'name');
-        assert.equal(bid.supplier, supplier, 'supplier');
-        assert.equal(bid.amount, amount, 'amount');
-        return scope;
-      })
-      // search by bid id
-      .then(function(scope) {
-        const bid = scope.result;
-        return projectManager.getBid(bid.id)(scope)
-          .then(function(scope) {
-            const bid = scope.result;
-            assert.equal(bid.name, projectArgs.name, 'name');
-            assert.equal(bid.supplier, supplier, 'supplier');
-            assert.equal(bid.amount, amount, 'amount');
-            return scope;
-          });
-      })
-      // search by project name
-      .then(projectManager.getBidsByName(projectArgs.name))
-      .then(function(scope) {
-        const bids = scope.result;
-        assert.equal(bids.length, 1, 'one and only one');
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    assert.equal(bid.name, project.name, 'name');
+    assert.equal(bid.supplier, supplier, 'supplier');
+    assert.equal(bid.amount, amount, 'amount');
+
+    // search by bid id
+    const bidId = bid.id;
+    {
+      const bid = yield projectManagerJs.getBid(bidId);
+      assert.equal(bid.name, project.name, 'name');
+      assert.equal(bid.supplier, supplier, 'supplier');
+      assert.equal(bid.amount, amount, 'amount');
+    }
+    // search by project name
+    const bids = yield projectManagerJs.getBidsByName(project.name);
+    assert.equal(bids.length, 1, 'one and only one');
   });
 
-  it('Accept a Bid', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
+  it('Accept a Bid.', function* () {
+    const projectArgs = createProjectArgs();
     const supplier = 'Supplier1';
     const amount = 67;
 
-    rest.setScope(scope)
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      // create a bid
-      .then(projectManager.createBid(adminName, projectArgs.name, supplier, amount))
-      // save the bid ID
-      .then(function(scope) {
-        const bid = scope.result;
-        scope.bidId = bid.id;
-        return scope;
-      })
-      // get the bid
-      .then(function(scope) {
-        return projectManager.getBid(scope.bidId)(scope)
-      })
-      // check that state is OPEN
-      .then(function(scope) {
-        const bid = scope.result;
-        assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
-        return scope;
-      })
-      // accept the bid
-      .then(function(scope) {
-        return projectManager.acceptBid(adminName, scope.bidId, projectArgs.name)(scope);
-      })
-      // get the bid again
-      .then(function(scope) {
-        return projectManager.getBid(scope.bidId)(scope);
-      })
-      // check that state is ACCEPTED
-      .then(function(scope) {
-        const bid = scope.result;
-        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'state ACCEPTED');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    // check that state is OPEN
+    assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
+    // accept the bid
+    const buyer = { // pretend the admin is the buyer
+      username: admin.name,
+      password: admin.password,
+      account: admin.address,
+    }
+    const results = yield projectManagerJs.acceptBid(admin, contract, buyer, bid.id, project.name);
+    // get the bid again
+    const newBid = yield projectManagerJs.getBid(bid.id);
+    // check that state is ACCEPTED
+    assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
+    // check that query gets it
+    const queryBid = yield projectManagerJs.getAcceptedBid(project.name);
+    assert.equal(parseInt(queryBid.state), BidState.ACCEPTED, 'state ACCEPTED');
   });
 
-  it('Accept a Bid - insufficient balance', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
+  it('Accept a Bid - insufficient balance', function* () {
+    const projectArgs = createProjectArgs();
     const supplier = 'Supplier1';
-    const amount = 1000 + 234; // faucet allowance + more
+    const amount = 1000 + 67; // faucet allowance + more
 
-    rest.setScope(scope)
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      // create a bid
-      .then(projectManager.createBid(adminName, projectArgs.name, supplier, amount))
-      // save the bid ID
-      .then(function(scope) {
-        const bid = scope.result;
-        scope.bidId = bid.id;
-        return scope;
-      })
-      // get the bid
-      .then(function(scope) {
-        return projectManager.getBid(scope.bidId)(scope)
-      })
-      // check that state is OPEN
-      .then(function(scope) {
-        const bid = scope.result;
-        assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
-        return scope;
-      })
-      // accept the bid
-      .then(function(scope) {
-        return projectManager.acceptBid(adminName, scope.bidId, projectArgs.name)(scope)
-          .then(function(scope) {
-            // should not reach here
-            done(new Error('Should have failed INSUFFICIENT FUNDS'));
-            return;
-          })
-          .catch(function(error) {
-            const string = 'low account balance';
-            const index = error.message.indexOf(string);
-            if (index >= 0) {
-              return scope;
-            }
-            done(error);
-          });
-      })
-      .then(function(scope) {
-        done();
-      })
-      .catch(done);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    // check that state is OPEN
+    assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
+    // accept the bid
+    const buyer = { // pretend the admin is the buyer
+      username: admin.name,
+      password: admin.password,
+      account: admin.address,
+    }
+    var errorCode;
+    try {
+      yield projectManagerJs.acceptBid(admin, contract, buyer, bid.id, project.name);
+    } catch(error) {
+      errorCode = parseInt(error.message);
+    }
+    // did not FAIL - that is an error
+    assert.isDefined(errorCode, 'accepting a bid with insufficient balance should fail');
+    // error should be INSUFFICIENT_BALANCE
+    assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE.');
+    // check that none was affected
+    const bids = yield projectManagerJs.getBidsByName(project.name);
   });
 
-  it('Accept a Bid and rejects the others', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-    const suppliers = ['Supplier1', 'Supplier2', 'Supplier3'];
+  it('Accept a Bid and rejects the others', function* () {
+    const uid = util.uid();
+    const projectArgs = createProjectArgs(uid);
+    const password = '1234';
     const amount = 32;
 
-    rest.setScope(scope)
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      // create bids
-      .then(createMultipleBids(adminName, projectArgs.name, suppliers, amount))
-      .then(projectManager.getBidsByName(projectArgs.name))
-      // accept one bid
-      .then(function(scope) {
-        const bids = scope.result;
-        scope.acceptedBid = bids[0].id;
-        return projectManager.acceptBid(adminName, bids[0].id, projectArgs.name)(scope);
-      })
-      // get the bids
-      .then(function(scope) {
-        return projectManager.getBidsByName(projectArgs.name)(scope);
-      })
-      // check that the accepted bid is ACCEPTED and all others are REJECTED
-      .then(function(scope) {
-        const bids = scope.result;
-        console.log(bids);
-        bids.map(function(bid) {
-          if (bid.id === scope.acceptedBid) {
-            assert.equal(parseInt(bid.state), BidState.ACCEPTED);
-          } else {
-            assert.equal(parseInt(bid.state), BidState.REJECTED);
-          }
-        });
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create suppliers
+    const suppliers = yield createSuppliers(3, password, uid);
+    // create bids
+    var bids = yield createMultipleBids(admin, contract, projectArgs.name, suppliers, amount);
+    // accept one bid
+    const buyer = { // pretend the admin is the buyer
+      username: admin.name,
+      password: admin.password,
+      account: admin.address,
+    }
+    const acceptedBidId = bids[0].id;
+    const result = yield projectManagerJs.acceptBid(admin, contract, buyer, acceptedBidId, projectArgs.name);
+    // get the bids
+    bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    assert.equal(bids.length, suppliers.length, 'should have created all bids');
+    // check that the accepted bid is ACCEPTED and all others are REJECTED
+    bids.map(bid => {
+      if (bid.id === acceptedBidId) {
+        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
+      } else {
+        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
+      };
+    });
   });
 
-  function createMultipleBids(adminName, name, suppliers, amount) {
-    return function(scope) {
-      return Promise.each(suppliers, function(supplier) { // for each project
-        return projectManager.createBid(adminName, name, supplier, amount)(scope); // create project
-      }).then(function() { // all done
-        return scope;
-      });
+  function* createMultipleBids(admin, contract, projectName, suppliers, amount) {
+    const bids = [];
+    for (let supplier of suppliers) {
+      const bid = yield projectManagerJs.createBid(admin, contract, projectName, supplier.username, amount);
+      bids.push(bid);
     }
+    return bids;
   }
 
-  it('Get bids by supplier', function(done) {
+  it('Get bids by supplier', function* () {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
     const amount = 5678;
 
-    rest.setScope(scope)
-      // create user
-      .then(projectManager.createProject(adminName, projectArgs))
-      .then(projectManager.createBid(adminName, projectArgs.name, supplier, amount))
-      // get bids by supplier
-      .then(projectManager.getBidsBySupplier(supplier))
-      .then(function(scope) {
-        const bids = scope.result;
-        const filtered = bids.filter(function(bid) {
-          return bid.supplier === supplier  &&  bid.name == projectArgs.name;
-        });
-        assert.equal(filtered.length, 1, 'one and only one');
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bid
+    const bid = yield projectManagerJs.createBid(admin, contract, project.name, supplier, amount);
+    // get bids by supplier
+    const bids = yield projectManagerJs.getBidsBySupplier(supplier);
+    const filtered = bids.filter(function(bid) {
+      return bid.supplier === supplier  &&  bid.name == projectArgs.name;
+    });
+    assert.equal(filtered.length, 1, 'one and only one');
   });
 
-  it('Accept a Bid, rejects the others, receive project', function(done) {
+  it('Accept a Bid (send funds into accepted bid), rejects the others, receive project, settle (send bid funds to supplier)', function* () {
     const uid = util.uid();
     const projectArgs = createProjectArgs(uid);
-    const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
-    const password = '1234';
-    const role = UserRole.SUPPLIER;
-    const amount = 234; //
-
-    rest.setScope(scope)
-      // create the users
-      .then(userManager.createUser(adminName, projectArgs.buyer, password, role))
-      .then(userManager.createUser(adminName, suppliers[0], password, role))
-      .then(userManager.createUser(adminName, suppliers[1], password, role))
-      .then(userManager.createUser(adminName, suppliers[2], password, role))
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      // create bids
-      .then(createMultipleBids(adminName, projectArgs.name, suppliers, amount))
-      .then(projectManager.getBidsByName(projectArgs.name))
-      // accept one bid
-      .then(function(scope) {
-        const bids = scope.result;
-        scope.acceptedBid = bids[0].id; // accept bid 0
-        return projectManager.acceptBid(adminName, scope.acceptedBid, projectArgs.name)(scope);
-      })
-      // get all the bids for this project
-      .then(function(scope) {
-        return projectManager.getBidsByName(projectArgs.name)(scope);
-      })
-      // check that the accepted bid is ACCEPTED and all others are REJECTED
-      .then(function(scope) {
-        const bids = scope.result;
-        bids.map(function(bid) {
-          if (bid.id === scope.acceptedBid) {
-            assert.equal(parseInt(bid.state), BidState.ACCEPTED);
-          } else {
-            assert.equal(parseInt(bid.state), BidState.REJECTED);
-          }
-        });
-        return scope;
-      })
-      // deliver the project
-      .then(projectManager.handleEvent(adminName, projectArgs.name, ProjectEvent.DELIVER))
-      // receive the project
-      .then(receiveProject(adminName, projectArgs.name, password))
-      .then(function(scope) {
-        done();
-      }).catch(done);
-  });
-
-  it('Accept a Bid, rejects the others, send funds into accepted bid', function(done) {
-    const uid = util.uid();
-    const projectArgs = createProjectArgs(uid);
-    const suppliers = ['Supplier1_' + uid, 'Supplier2_' + uid, 'Supplier3_' + uid];
     const password = '1234';
     const amount = 23;
+    const amountWei = new BigNumber(amount).times(constants.ETHER);
+    const FAUCET_AWARD = new BigNumber(1000).times(constants.ETHER) ;
+    const GAS_LIMIT = new BigNumber(100000000); // default in bockapps-rest
 
-    rest.setScope(scope)
-      // create the users
-      .then(userManager.createUser(adminName, projectArgs.buyer, password, UserRole.BUYER))
-      .then(userManager.createUser(adminName, suppliers[0], password, UserRole.SUPPLIER))
-      .then(userManager.createUser(adminName, suppliers[1], password, UserRole.SUPPLIER))
-      .then(userManager.createUser(adminName, suppliers[2], password, UserRole.SUPPLIER))
-      // create project
-      .then(projectManager.createProject(adminName, projectArgs))
-      // create bids
-      .then(createMultipleBids(adminName, projectArgs.name, suppliers, amount))
-      .then(projectManager.getBidsByName(projectArgs.name))
-      // accept one bid
-      .then(function(scope) {
-        const bids = scope.result;
-        scope.acceptedBid = bids[0]; // accept bid 0
-        return projectManager.acceptBid(projectArgs.buyer, scope.acceptedBid.id, projectArgs.name)(scope);
-      })
-      .then(userManager.getBalance(adminName, projectArgs.buyer))
-      .then(function(scope) {
-        const balanceWei = scope.result; // in WEI
-        const balance = new BigNumber(balanceWei).div(constants.ETHER);
-        const initialBalance = new BigNumber(1000) ; // faucet award
-        const bidAmount = new BigNumber(scope.acceptedBid.amount);
+    // create buyer and suppliers
+    const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
+    const buyer = yield userManagerJs.createUser(admin, userManagerContract, buyerArgs);
+    buyer.password = password; // IRL this will be a prompt to the buyer
+    // create suppliers
+    const suppliers = yield createSuppliers(3, password, uid);
 
-        const gasPrice = new BigNumber('50000000000');
-        const gasLimit = new BigNumber('21000');
-        const fee = new BigNumber(gasLimit).times(new BigNumber(gasPrice)).div(constants.ETHER);
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // create bids
+    const createdBids = yield createMultipleBids(admin, contract, projectArgs.name, suppliers, amount);
+    { // test
+      const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+      assert.equal(createdBids.length, bids.length, 'should find all the created bids');
+    }
+    // get the buyers balance before accepting a bid
+    buyer.initialBalance = yield userManagerJs.getBalance(admin, userManagerContract, buyer.username);
+    buyer.initialBalance.should.be.bignumber.eq(FAUCET_AWARD);
+    // accept one bid (the first)
+    const acceptedBid = createdBids[0];
+    yield projectManagerJs.acceptBid(admin, contract, buyer, acceptedBid.id, projectArgs.name);
+    // get the buyers balance after accepting a bid
+    buyer.balance = yield userManagerJs.getBalance(admin, userManagerContract, buyer.username);
+    const delta = buyer.initialBalance.minus(buyer.balance);
+    delta.should.be.bignumber.gte(amountWei); // amount + fee
+    delta.should.be.bignumber.lte(amountWei.plus(GAS_LIMIT)); // amount + max fee (gas-limit)
+    // get the bids
+    const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    // check that the expected bid is ACCEPTED and all others are REJECTED
+    bids.map(bid => {
+      if (bid.id === acceptedBid.id) {
+        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
+      } else {
+        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
+      };
+    });
+    // deliver the project
+    const projectState = yield projectManagerJs.handleEvent(admin, contract, projectArgs.name, ProjectEvent.DELIVER);
+    assert.equal(projectState, ProjectState.INTRANSIT, 'delivered project should be INTRANSIT ');
+    // receive the project
+    yield receiveProject(admin, contract, userManagerContract, projectArgs.name);
 
-        const expectedBalance = new BigNumber(initialBalance).minus(bidAmount);
-
-        balance.should.be.bignumber.lt(expectedBalance);
-        return scope;
-      })
-      // get all the bids for this project
-      .then(projectManager.getBidsByName(projectArgs.name))
-      .then(function(scope) {
-        const bids = scope.result;
-        console.log(bids);
-        const acceptedBid = bids.filter(function (bid) {
-          return parseInt(bid.state) === BidState.ACCEPTED;
-        })[0];
-        console.log(acceptedBid);
-        return userManager.getBalanceAddress(acceptedBid.address)(scope);
-      })
-      .then(function(scope) {
-        const balanceWei = scope.result; // in WEI
-        const balance = new BigNumber(balanceWei).div(constants.ETHER);
-        const bidAmount = new BigNumber(scope.acceptedBid.amount);
-        balance.should.be.bignumber.equal(bidAmount);
-        return scope;
-      })
-      // deliver the project
-      .then(projectManager.handleEvent(adminName, projectArgs.name, ProjectEvent.DELIVER))
-      // *** receive the project ***
-      .then(receiveProject(adminName, projectArgs.name, password))
-      // done
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // get the suppliers balances
+    for (let supplier of suppliers) {
+      supplier.balance = yield userManagerJs.getBalance(admin, userManagerContract, supplier.username);
+      if (supplier.username == acceptedBid.supplier) {
+        // the winning supplier should have the bid amount minus the tx fee
+        const delta = supplier.balance.minus(FAUCET_AWARD);
+        const fee = new BigNumber(10000000);
+        delta.should.be.bignumber.eq(amountWei.minus(fee));
+      } else {
+        // everyone else should have the otiginal value
+        supplier.balance.should.be.bignumber.eq(FAUCET_AWARD);
+      }
+    }
   });
 
-  it('Get projects by supplier', function(done) {
-    const projectArgs = createProjectArgs(util.uid());
-    const supplier = 'Supplier1';
-    const amount = 5678;
-
-    rest.setScope(scope)
-      // create user
-      .then(projectManager.createProject(adminName, projectArgs))
-      .then(projectManager.createBid(adminName, projectArgs.name, supplier, amount))
-      // get bids by supplier
-      .then(projectManager.getProjectsBySupplier(supplier))
-      .then(function(scope) {
-        const projects = scope.result;
-        const filtered = projects.filter(function(project) {
-          return project.name === projectArgs.name;
-        });
-        assert.equal(filtered.length, 1, '# of found projects');
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
-  });
+  function* createSuppliers(count, password, uid) {
+    const suppliers = [];
+    for (var i = 0 ; i < count; i++) {
+      var name = `Supplier${i}_${uid}`;
+      var supplierArgs = createUserArgs(name, password, UserRole.SUPPLIER);
+      var supplier = yield userManagerJs.createUser(admin, userManagerContract, supplierArgs);
+      suppliers.push(supplier);
+    }
+    return suppliers;
+  }
 
 });
 
-
+// function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+function createUserArgs(name, password, role) {
+  const args = {
+    username: name,
+    password: password,
+    role: role,
+  }
+  return args;
+}
 
 // throws: ErrorCodes
-function receiveProject(adminName, name, password) {
-  return function(scope) {
-    rest.verbose('receiveProject', name);
-    return rest.setScope(scope)
-      // get project
-      .then(projectManager.getProject(adminName, name))
-      // extract the buyer
-      .then(function(scope) {
-        const project = scope.result;
-        scope.buyerName = project.buyer;
-        return scope;
-      })
-      // get the buyer info
-      .then(function(scope) {
-        return userManager.getUser(adminName, scope.buyerName)(scope);
-      })
-      .then(function(scope) {
-        scope.buyer = scope.result;
-        return scope;
-      })
-      // get project bids
-      .then(projectManager.getBidsByName(name))
-      // extract the supplier out of the accepted bid
-      .then(function(scope) {
-        const bids = scope.result;
-        // find the accepted bid
-        const accepted = bids.filter(function(bid) {
-          return parseInt(bid.state) == BidState.ACCEPTED;
-        });
-        if (accepted.length != 1) {
-          throw(new Error(ErrorCodes.NOT_FOUND));
-        }
-        // supplier NAME
-        scope.supplierName = accepted[0].supplier;
-        scope.valueEther = accepted[0].amount;
-        scope.bidAddress = accepted[0].address;
-        return scope;
-      })
-      // get the supplier info
-      .then(function(scope) {
-        return userManager.getUser(adminName, scope.supplierName)(scope);
-      })
-      .then(function(scope) {
-        scope.supplier = scope.result;
-        return scope;
-      })
-      // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-      .then(function(scope) {
-        return projectManager.settleProject(adminName, name, scope.supplier.account, scope.bidAddress)(scope);
-      });
-  }
+function* receiveProject(admin, contract, userManagerContract, projectName) {
+  rest.verbose('receiveProject', projectName);
+  // get the accepted bid
+  const bid = yield projectManagerJs.getAcceptedBid(projectName);
+  // get the supplier for the accepted bid
+  const supplier = yield userManagerJs.getUser(admin, userManagerContract, bid.supplier);
+  // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
+  yield projectManagerJs.settleProject(admin, contract, projectName, supplier.account, bid.address);
 }

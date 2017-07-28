@@ -1,3 +1,4 @@
+require('co-mocha');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
@@ -9,8 +10,7 @@ const constants = common.constants;
 const BigNumber = common.BigNumber;
 const Promise = common.Promise;
 
-const user = require('../user');
-const userManager = require('../userManager');
+const userManagerJs = require('../userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
@@ -20,309 +20,183 @@ const adminPassword = '1234';
 describe('UserManager tests', function() {
   this.timeout(config.timeout);
 
-  const scope = {};
+  var admin;
+  var contract;
 
   // get ready:  admin-user and manager-contract
-  before(function (done) {
-    rest.setScope(scope)
-      // create admin
-      .then(rest.createUser(adminName, adminPassword))
-      // upload UserManager
-      .then(userManager.uploadContract(adminName, adminPassword))
-      .then(function (scope) {
-        done();
-      }).catch(done);
+  before(function* () {
+    admin = yield rest.createUser(adminName, adminPassword);
+    contract = yield userManagerJs.uploadContract(admin);
+    contract.src = 'removed';
+    yield userManagerJs.compileSearch(true);
   });
 
-  it('Create User', function(done) {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
-
-    rest.setScope(scope)
-      // create user
-      .then(userManager.createUser(adminName, username, password, role))
-      // returns the user from search
-      .then(function(scope) {
-        const resultArray = scope.query.slice(-1)[0];
-        const result = resultArray[0];
-        assert.equal(result.username, username, 'username');
-        assert.equal(result.role, role, 'role');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+  it('Create User', function* () {
+    const args = createUserArgs();
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    assert.equal(user.username, args.username, 'username');
+    assert.equal(user.role, args.role, 'role');
+    // test that the account was created
+    const account = yield userManagerJs.getAccount(user.account);
   });
 
-  it('Test exists()', function(done) {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
+  it('Test exists()', function* () {
+    const args = createUserArgs();
 
-    rest.setScope(scope)
-      // should not exists
-      .then(userManager.exists(adminName, username))
-      .then(function(scope) {
-        const result = scope.result;
-        assert.isDefined(result, 'should be defined');
-        assert.isNotOk(result, 'should not exist');
-        return scope;
-      })
-      // create user
-      .then(userManager.createUser(adminName, username, password, role))
-      // should exist
-      .then(userManager.exists(adminName, username))
-      .then(function(scope) {
-        const result = scope.result;
-        assert.equal(result, true, 'should exist')
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    var exists;
+    // should not exist
+    exists = yield userManagerJs.exists(admin, contract, args.username);
+    assert.isDefined(exists, 'should be defined');
+    assert.isNotOk(exists, 'should not exist');
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    // should exist
+    exists = yield userManagerJs.exists(admin, contract, args.username);
+    assert.equal(exists, true, 'should exist')
   });
 
-  it('Create Duplicate User', function(done) {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
+  it('Create Duplicate User', function* () {
+    const args = createUserArgs();
 
-    scope.error = undefined;
-
-    rest.setScope(scope)
-      // create user
-      .then(userManager.createUser(adminName, username, password, role))
-      .then(function(scope) {
-        // create a duplicate - should FAIL
-        return rest.setScope(scope)
-          .then(userManager.createUser(adminName, username, password, role))
-          .then(function(scope) {
-            // did not FAIL - that is an error
-            scope.error = 'Duplicate username was not detected: ' + username;
-            return scope
-          })
-          .catch(function(error) {
-            const errorCode = error.message;
-            // error should be EXISTS
-            if (errorCode == ErrorCodes.EXISTS) {
-              return scope;
-            }
-            // different error thrown - not good
-            scope.error = 'userManager.createUser: threw: ' + errorCode;
-            return scope
-          });
-      })
-      .then(function(scope) {
-        // check error for the previous step
-        if (scope.error !== undefined)
-          throw(new Error(scope.error));
-        // all good
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    try {
+      // create duplicate - should fail
+      const duplicateUser = yield userManagerJs.createUser(admin, contract, args);
+      // did not FAIL - that is an error
+      assert.isUndefined(duplicateUser, `Duplicate username was not detected: ${args.username}`);
+    } catch(error) {
+      // error should be EXISTS
+      const errorCode = error.message;
+      // if not - throw
+      if (errorCode != ErrorCodes.EXISTS) {
+        throw error;
+      }
+    }
   });
 
-  it('Get User', function(done) {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
+  it('Get User', function *() {
+    const args = createUserArgs();
 
-    rest.setScope(scope)
-      // get user - should not exist
-      .then(userManager.getUser(adminName, username))
-      .then(function(scope) {
-        const result = scope.result;
-        assert.isUndefined(result, 'should not be found');
-        return scope;
-      })
-      // create user
-      .then(userManager.createUser(adminName, username, password, role))
-      // get user - should exist
-      .then(userManager.getUser(adminName, username))
-      .then(function(scope) {
-        const result = scope.result;
-        assert.equal(result.username, username, 'username should be found');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // get non-existing user
+    try {
+      const user = yield userManagerJs.getUser(admin, contract, args.username);
+      // did not FAIL - that is an error
+      assert.isUndefined(user, `User should not be found ${args.username}`);
+    } catch(error) {
+      // error should be NOT_FOUND
+      const errorCode = error.message;
+      // if not - throw
+      if (errorCode != ErrorCodes.NOT_FOUND) {
+        throw error;
+      }
+    }
+
+    // create user
+    yield userManagerJs.createUser(admin, contract, args);
+    // get user - should exist
+    const user = yield userManagerJs.getUser(admin, contract, args.username);
+    assert.equal(user.username, args.username, 'username should be found');
   });
 
-  it('Get Users', function(done) {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
+  it('Get Users', function* () {
+    const args = createUserArgs();
 
-    rest.setScope(scope)
-      // get users - should not exist
-      .then(userManager.getUsers(adminName))
-      .then(function(scope) {
-        const users = scope.result;
-        const found = users.filter(function(user) {
-          return user.username === username;
-        });
-        assert.equal(found.length, 0, 'user list should NOT contain ' + username);
-        return scope;
-      })
-      // create user
-      .then(userManager.createUser(adminName, username, password, role))
-      // get user - should exist
-      .then(userManager.getUsers(adminName))
-      .then(function(scope) {
-        const users = scope.result;
-        const found = users.filter(function(user) {
-          return user.username === username;
-        });
-        assert.equal(found.length, 1, 'user list should contain ' + username);
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // get users - should not exist
+    {
+      const users = yield userManagerJs.getUsers(admin, contract);
+      const found = users.filter(function(user) {
+        return user.username === args.username;
+      });
+      assert.equal(found.length, 0, 'user list should NOT contain ' + args.username);
+    }
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    // get user - should exist
+    {
+      const users = yield userManagerJs.getUsers(admin, contract);
+      const found = users.filter(function(user) {
+        return user.username === args.username;
+      });
+      assert.equal(found.length, 1, 'user list should contain ' + args.username);
+    }
   });
 
-  it('User Login', function(done) {
-    const username = util.uid('User');
-    const password = util.uid('Pass');
-    const role = UserRole.SUPPLIER;
+  it('User Login', function* () {
+    const args = createUserArgs();
 
-    rest.setScope(scope)
-      // auth non-existing - should fail
-      .then(userManager.login(adminName, username, password))
-      .then(function(scope) {
-        assert.isDefined(scope.result, 'auth result should be defined');
-        assert.isNotOk(scope.result, 'auth should fail');
-        return scope;
-      })
-      // create user
-      .then(userManager.createUser(adminName, username, password, role))
-      // auth
-      .then(userManager.login(adminName, username, password))
-      .then(function(scope) {
-        assert.isOk(scope.result, 'auth should be ok');
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    // auth non-existing - should fail
+    {
+      const result = yield userManagerJs.login(admin, contract, args);
+      assert.isDefined(result, 'auth result should be defined');
+      assert.isNotOk(result, 'auth should fail');
+    }
+
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    // auth
+    {
+      const result = yield userManagerJs.login(admin, contract, args);
+      assert.isOk(result, 'auth should be ok');
+    }
   });
 
-  it('Get account', function(done) {
-    const buyer = 'Buyer1';
-    const supplier = 'Supplier1';
-    const password = util.uid('Pass');
-
-    rest.setScope(scope)
-      // create buyer/seller
-      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(function(scope) {
-        const user = scope.result;
-        return userManager.getAccount(user.account)(scope);
-      })
-      .then(function(scope) {
-        const account = scope.result;
-        const balance = new BigNumber(account.balance);
-        const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-        balance.should.be.bignumber.equal(faucetBalance);
-        done();
-      }).catch(done);
+  it('Get account', function* () {
+    const args = createUserArgs();
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    // check account
+    const account = (yield userManagerJs.getAccount(user.account))[0];
+    const balance = new BigNumber(account.balance);
+    const faucetBalance = new BigNumber(1000).times(constants.ETHER);
+    balance.should.be.bignumber.equal(faucetBalance);
   });
 
-  it('Get balance', function(done) {
-    const buyer = util.uid('Buyer');
-    const password = util.uid('Pass');
-
-    rest.setScope(scope)
-      // create buyer/seller
-      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getBalance(adminName, buyer))
-      .then(function(scope) {
-        const balance = scope.result;
-        const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-        balance.should.be.bignumber.equal(faucetBalance);
-        done();
-      }).catch(done);
+  it('Get balance', function* () {
+    const args = createUserArgs();
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    const balance = yield userManagerJs.getBalance(admin, contract, user.username);
+    const faucetBalance = new BigNumber(1000).times(constants.ETHER);
+    balance.should.be.bignumber.equal(faucetBalance);
   });
 
-  it('Send funds', function(done) {
-    const buyer = util.uid('Buyer');
-    const supplier = util.uid('Supplier');
-    const password = util.uid('Pass');
+  it('Send funds', function* () {
+    // create buyer/seller
+    const buyerArgs = createUserArgs('Buyer', UserRole.BUYER);
+    const buyer = yield userManagerJs.createUser(admin, contract, buyerArgs);
+    buyer.startingBalance = yield userManagerJs.getBalance(admin, contract, buyer.username);
+
+    const supplierArgs = createUserArgs('Supplier', UserRole.SUPPLIER);
+    const supplier = yield userManagerJs.createUser(admin, contract, supplierArgs);
+    supplier.startingBalance = yield userManagerJs.getBalance(admin, contract, supplier.username);
+
+    // TRANSACTION
+    // function* send(fromUser, toUser, valueEther, nonce, node)
     const valueEther = 12;
+    const receipt = yield rest.send(buyer.blocUser, supplier.blocUser, valueEther);
+    const txResult = yield rest.transactionResult(receipt.hash);
+    assert.equal(txResult[0].status, 'success');
 
-    scope.balances = {};
+    // check balances
+    buyer.endBalance = yield userManagerJs.getBalance(admin, contract, buyer.username);
+    supplier.endBalance = yield userManagerJs.getBalance(admin, contract, supplier.username);
 
-    rest.setScope(scope)
-      // SETUP: create buyer/seller
-      .then(userManager.createUser(adminName, buyer, password, UserRole.BUYER))
-      .then(userManager.getBalance(adminName, buyer))
-      .then(function(scope) {
-        const balance = scope.result;
-        scope.balances[buyer] = balance;
-        return scope;
-      })
-      .then(userManager.createUser(adminName, supplier, password, UserRole.SUPPLIER))
-      .then(userManager.getBalance(adminName, supplier))
-      .then(function(scope) {
-        const balance = scope.result;
-        scope.balances[supplier] = balance;
-        return scope;
-      })
-      // TRANSACTION
-      // get the buyer's info
-      .then(userManager.getUser(adminName, buyer))
-      .then(function(scope) {
-        const buyer = scope.result;
-        scope.buyer = buyer;
-        return scope;
-      })
-      // get the supplier's info
-      .then(userManager.getUser(adminName, supplier))
-      .then(function(scope) {
-        const supplier = scope.result;
-        scope.supplier = supplier;
-        return scope;
-      })
-      // send
-      .then(function(scope) {
-        //{fromUser, password, fromAddress, toAddress, valueEther, node}
-        const fromUser = scope.buyer.username;
-        const fromAddress = scope.buyer.account;
-        const toAddress = scope.supplier.account;
-        return rest.sendAddress(fromUser, password, fromAddress, toAddress, valueEther)(scope);
-      })
-      // VALIDATE
-      .then(function(scope) {
-        // calculate the fee
-        const txResult = scope.tx.slice(-1)[0].result;
-        scope.fee = new BigNumber(txResult.gasLimit).times(new BigNumber(txResult.gasPrice));
-        return scope;
-      })
-     .then(util.delayPromise(1000*10))
-      // check supplier
-      .then(userManager.getBalance(adminName, supplier))
-      .then(function(scope) {
-        const balance = scope.result;
-        const delta = balance.minus(scope.balances[supplier]);
-        const expectedDelta = constants.ETHER.mul(valueEther);
-        delta.should.be.bignumber.equal(expectedDelta);
-        return scope;
-      })
-      // check buyer
-      .then(userManager.getBalance(adminName, buyer))
-      .then(function(scope) {
-        const balance = scope.result;
-        const delta = balance.minus(scope.balances[buyer]);
-        const expectedDelta = constants.ETHER.mul(valueEther).plus(scope.fee).mul(-1);
-        delta.should.be.bignumber.gte(expectedDelta);
-        return scope;
-      })
-      .then(function(scope) {
-        done();
-      }).catch(done);
+    const delta = new BigNumber(valueEther).mul(constants.ETHER);
+    assert.isOk(buyer.startingBalance.minus(delta).greaterThan(buyer.endBalance), "buyer's balance should be slightly less than expected due to gas costs");
+    assert.isOk(supplier.startingBalance.plus(delta).equals(supplier.endBalance), "supplier's balance should be as expected after sending ether");
   });
-
 });
+
+// function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+function createUserArgs(_name, _role) {
+  const uid = util.uid();
+  const role = _role || UserRole.SUPPLIER;
+  const name = _name || 'User ? # ';
+  const args = {
+    username: name + uid,
+    password: 'Pass' + uid,
+    role: role,
+  }
+  return args;
+}
