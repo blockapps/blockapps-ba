@@ -6,225 +6,131 @@ const config = ba.common.config;
 
 const contractName = 'UserManager';
 const contractFilename = `${config.libPath}/user/contracts/UserManager.sol`;
+const user = require('./user');
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 const userContractName = require('./user').contractName;
 
-function compileSearch() {
-  return function(scope) {
-    const user = require('./user');
-    const searchable = [contractName];
-    return rest.setScope(scope)
-      .then(user.compileSearch())
-      .then(rest.compileSearch(searchable, contractName, contractFilename));
+function* compileSearch(onlyIfNotCompiled) {
+  // if only first time, but alreay compiled - bail
+  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+    return;
   }
+  // compile
+  const searchable = [contractName];
+  return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function getState() {
-  return function (scope) {
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        scope.result = scope.states[contractName];
-        return scope;
-      });
-  }
+function* getState(contract) {
+  return yield rest.getState(contract);
 }
 
-function uploadContract(adminName, adminPassword, args) {
-  return function(scope) {
-    return rest.setScope(scope)
-      .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(adminName, adminPassword, contractName, args))
-      // .then(rest.waitNextBlock());
-  }
+function* uploadContract(user, args) {
+  return yield rest.uploadContract(user, contractName, contractFilename, args);
 }
 
-function getAccount(account, node) {
-  return function (scope) {
-    rest.verbose('getAccount', account);
-    return rest.setScope(scope)
-      .then(function(scope){
-        return rest.getAccount(account, node)(scope);
-      })
-      .then(function (scope) {
-        scope.result = scope.accounts[account][0];
-        return scope;
-      });
-  }
+function* isCompiled() {
+  return yield rest.isCompiled(contractName);
 }
 
-function getBalance(adminName, username, node) {
-  return function (scope) {
-    rest.verbose('getBalance', username);
-    return rest.setScope(scope)
-      .then(getUser(adminName, username))
-      .then(function(scope) {
-        const user = scope.result;
-        const accountAddress = user.account;
-        return getBalanceAddress(accountAddress)(scope);
-      });
-  }
+function* getAccount(address, node) {
+  rest.verbose('getAccount', address);
+  const accounts = yield rest.getAccount(address, node);
+  return accounts;
 }
 
-function getBalanceAddress(accountAddress) {
-  return function (scope) {
-    rest.verbose('getBalance', accountAddress);
-    return rest.setScope(scope)
-      .then(function(scope){
-        return getAccount(accountAddress)(scope);
-      })
-      .then(function(scope){
-        const account = scope.result;
-        const balance = new BigNumber(account.balance);
-        scope.result = balance;
-        return scope;
-      })
-  }
+function* getBalance(admin, contract, username, node) {
+  rest.verbose('getBalance', username);
+  const baUser = yield getUser(admin, contract, username);
+  const accounts = yield getAccount(baUser.account);
+  const balance = new BigNumber(accounts[0].balance);
+  return balance;
 }
 
 // throws: ErrorCodes
 // returns: user record from search
-function createUser(adminName, username, password, role) {
-  const pwHash = util.toBytes32(password); // FIXME this is not a hash
-  return function(scope) {
-    rest.verbose('createUser', {adminName, username, password, role});
-    console.log(scope.users);
-    // function createUser(string username, bytes32 pwHash) returns (ErrorCodes) {
-    const method = 'createUser';
-    const args = {
-      username: username,
-      pwHash: pwHash,
-      role: role,
-    };
+function* createUser(admin, contract, args) {
+  rest.verbose('createUser', args);
 
-    return rest.setScope(scope)
-      // create eth account
-      .then(rest.createUser(username, password))
-      .then(function(scope) {
-        // save the eth account
-        args.account = scope.users[username].address;
-        return scope;
-      })
-      // create the data user, with the eth account
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const result = scope.contracts[contractName].calls[method];
-        const errorCode = parseInt(result[0]);
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      })
-      .then(getUser(adminName, username))
+  // create bloc user
+  const blocUser = yield rest.createUser(args.username, args.password);
+  args.account = blocUser.address;
+  args.pwHash = util.toBytes32(args.password); // FIXME this is not a hash
+
+  // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+  const method = 'createUser';
+
+  // create the user, with the eth account
+  const result = yield rest.callMethod(admin, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
+  // block until the user shows up in search
+  const baUser = yield getUser(admin, contract, args.username);
+  baUser.blocUser = blocUser;
+  return baUser;
 }
 
-function exists(adminName, username) {
-  return function(scope) {
+function* exists(admin, contract, username) {
     rest.verbose('exists', username);
     // function exists(string username) returns (bool) {
     const method = 'exists';
     const args = {
       username: username,
     };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result[0] === true);
-        return scope;
-      });
-  }
+    const result = yield rest.callMethod(admin, contract, method, args);
+    const exist = (result[0] === true);
+    return exist;
 }
 
-function getUser(adminName, username) {
-  return function(scope) {
-    rest.verbose('getUser', username);
-    // function getUser(string username) returns (address) {
-    const method = 'getUser';
-    const args = {
-      username: username,
-    };
+function* getUser(admin, contract, username) {
+  rest.verbose('getUser', username);
+  // function getUser(string username) returns (address) {
+  const method = 'getUser';
+  const args = {
+    username: username,
+  };
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns address
-        const result = scope.contracts[contractName].calls[method];
-        const address = result[0];
-        // if not found
-        if (address == 0) {
-          scope.result = undefined;
-          return scope;
-        }
-        // found - query for the full user record
-        const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
-        return rest.waitQuery(`${userContractName}?address=eq.${trimmed}`, 1)(scope)
-          .then(function(scope) {
-            const resultArray = scope.query.slice(-1)[0];
-            scope.result = resultArray[0];
-            return scope;
-          });
-      });
+  // get the use address
+  const userAddress = (yield rest.callMethod(admin, contract, method, args))[0];
+  if (userAddress == 0) {
+    throw new Error(ErrorCodes.NOT_FOUND);
   }
+  // found - query for the full user record
+  const baUser = yield user.getUserByAddress(userAddress);
+  return baUser;
 }
 
-function getUsers(adminName) {
-  return function(scope) {
-    rest.verbose('getUsers');
-
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        const state = scope.states[contractName];
-        const users = state.users;
-        const trimmed = util.trimLeadingZeros(users); // FIXME leading zeros bug
-        const csv = util.toCsv(trimmed); // generate csv string
-        return rest.query(`${userContractName}?address=in.${csv}`)(scope);
-      })
-      .then(function (scope) {
-        scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
-  }
+function* getUsers(admin, contract) {
+  rest.verbose('getUsers');
+  const state = yield getState(contract);
+  const users = state.users;
+  const trimmed = util.trimLeadingZeros(users); // FIXME leading zeros bug
+  const csv = util.toCsv(trimmed); // generate csv string
+  const results = yield rest.query(`${userContractName}?address=in.${csv}`);
+  return results;
 }
 
-function login(adminName, username, password) {
-  return function(scope) {
-    rest.verbose('login', {username, password});
+function* login(admin, contract, args) {
+  rest.verbose('login', args);
 
-    // function login(string username, password) returns (bool) {
-    const method = 'login';
-    const args = {
-      username: username,
-      pwHash: util.toBytes32(password),
-    };
-
-    return rest.setScope(scope)
-      // login
-      .then(rest.callMethod(adminName, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result == 'true');
-        return scope;
-      });
-  }
+  // function login(string username, bytes32 pwHash) returns (bool) {
+  const method = 'login';
+  args.pwHash = util.toBytes32(args.password);
+  const result = (yield rest.callMethod(admin, contract, method, args))[0];
+  const isOK = (result == true);
+  return isOK;
 }
 
 module.exports = {
   compileSearch: compileSearch,
+  isCompiled: isCompiled,
   getState: getState,
   uploadContract: uploadContract,
   getAccount: getAccount,
   getBalance: getBalance,
-  getBalanceAddress: getBalanceAddress,
-
   createUser: createUser,
   exists: exists,
   getUser: getUser,

@@ -17,12 +17,15 @@
     "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
   },
   "dependencies": {
-    "blockapps-rest": "2.1.0",
+    "blockapps-rest": "3.1.0",
     "body-parser": "^1.15.2",
-    "chai": "^3.2.0",
+    "chai": "^4.0.2",
+    "co": "^4.6.0",
+    "co-mocha": "^1.2.0",
     "cors": "^2.8.1",
     "expect": "latest",
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "mocha": "^3.4.2"
   },
   "repository": {
     "type": "git",

@@ -3,6 +3,8 @@ const rest = ba.rest;
 const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
+const BigNumber = ba.common.BigNumber;
+const constants = ba.common.constants;
 
 const contractName = 'ProjectManager';
 const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol`;
@@ -13,368 +15,351 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const projectContractName = require('./project').contractName;
 
-function compileSearch() {
-  return function(scope) {
-    const user = require('../user/user');
-    const bid = require('../bid/bid');
-    const project = require('./project');
-    const searchable = [contractName];
-    return rest.setScope(scope)
-      .then(bid.compileSearch())
-      .then(user.compileSearch())
-      .then(project.compileSearch())
-      .then(rest.compileSearch(searchable, contractName, contractFilename));
+function* compileSearch(onlyIfNotCompiled) {
+  // if only first time, but alreay compiled - bail
+  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+    return;
   }
+  // compile dependencies
+  const bid = require('../bid/bid');
+  yield bid.compileSearch();
+  const user = require('../user/user');
+  yield user.compileSearch();
+  const project = require('./project');
+  yield project.compileSearch();
+  // compile
+  const searchable = [contractName];
+  return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function getState() {
-  return function (scope) {
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        scope.result = scope.states[contractName];
-        return scope;
-      });
-  }
+function* getState(contract) {
+  return yield rest.getState(contract);
 }
 
-function uploadContract(buyer, adminPassword, args) {
-  return function(scope) {
-    return rest.setScope(scope)
-      .then(rest.getContractString(contractName, contractFilename))
-      .then(rest.uploadContract(buyer, adminPassword, contractName, args))
-      // .then(rest.waitNextBlock());
-  }
+function* uploadContract(user, args) {
+  return yield rest.uploadContract(user, contractName, contractFilename, args);
+}
+
+function* isCompiled() {
+  return yield rest.isCompiled(contractName);
 }
 
 // throws: ErrorCodes
 // returns: record from search
-function createProject(buyer, args) {
-  return function(scope) {
-    rest.verbose('createProject', args);
-    // function createProject(
-    //   string name,
-    //   string buyer,
-    //   string description,
-    //   string spec,
-    //   uint price,
-    //   uint created,
-    //   uint targetDelivery
-    // ) returns (ErrorCodes) {
-    const method = 'createProject';
+function* createProject(buyer, contract, args) {
+  rest.verbose('createProject', {buyer, args});
+  // function createProject(
+  //   string name,
+  //   string buyer,
+  //   string description,
+  //   string spec,
+  //   uint price,
+  //   uint created,
+  //   uint targetDelivery
+  // ) returns (ErrorCodes) {
+  const method = 'createProject';
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      })
-      // get the contract data from search
-      .then(getProject(buyer, args.name));
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
+  // get the contract data from search
+  const project = yield getProject(buyer, contract, args.name);
+  return project;
 }
 
 // throws: ErrorCodes
 // returns: record from search
-function createBid(buyer, name, supplier, amount) {
-  return function(scope) {
-    rest.verbose('createBid', {name, supplier, amount});
-    // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
-    const method = 'createBid';
-    const args = {
-      name: name,
-      supplier: supplier,
-      amount: amount,
-    };
+function* createBid(buyer, contract, name, supplier, amount) {
+  rest.verbose('createBid', {name, supplier, amount});
+  // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
+  const method = 'createBid';
+  const args = {
+    name: name,
+    supplier: supplier,
+    amount: amount,
+  };
 
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes, uint)
-        const result = scope.contracts[contractName].calls[method];
-        const errorCode = parseInt(result[0]);
-        const bidId = result[1];
-
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        // block until the contract shows up in search
-        return rest.waitQuery(`Bid?id=eq.${bidId}`, 1)(scope)
-          .then(function(scope) {
-            const resultArray = scope.query.slice(-1)[0];
-            scope.result = resultArray[0];
-            return scope;
-          })
-      });
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
+  const bidId = result[1];
+  // block until the contract shows up in search
+  const bid = (yield rest.waitQuery(`Bid?id=eq.${bidId}`, 1))[0];
+  return bid;
 }
 
 // throws: ErrorCodes
-function acceptBid(buyer, bidId, name) {
-  return function(scope) {
-    rest.verbose('acceptBid', {buyer, bidId, name});
-    return rest.setScope(scope)
-      .then(getBidsByName(name))
-      .then(function(scope) {
-        const bids = scope.result;
-
-        return Promise.each(bids, function(bid) { // for each bid
-          // accept the selected bid - reject the others
-          if (bid.id == bidId) {
-            return setBidState(buyer, bid.address, BidState.ACCEPTED, bid.amount)(scope); // ACCEPT
-          } else {
-            return setBidState(buyer, bid.address, BidState.REJECTED, 0)(scope); // REJECT
-          }
-        }).then(function() { // all done
-          return scope;
-        });
-      })
-      .then(handleEvent(buyer, name, ProjectEvent.ACCEPT));
+function* acceptBid(admin, contract, buyer, bidId, name) {   // FIXME should go into the contract
+  rest.verbose('acceptBid', {admin, buyer, bidId, name});
+  const bids = yield getBidsByName(name);
+  if (bids.length < 1) {
+    throw new Error(ErrorCodes.NOT_FOUND);
   }
-}
-
-function setBidState(buyer, bidAddress, state, valueEther) {
-  const contractName = 'Bid' ; // FIXME: move to bid.js
-  return function(scope) {
-    rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
-    // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
-    const method = 'setBidState';
-    const args = {
-      newState: state,
-    };
-    return rest.setScope(scope)
-      // function callMethodAddress(userName, contractName, contractAddress, methodName, args, value, node) {
-      .then(rest.callMethodAddress(buyer, contractName, bidAddress, method, args, valueEther))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      });
-  }
-}
-
-function settleProject(buyer, projectName, supplierAddress, bidAddress) {
-  return function(scope) {
-    rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
-    // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
-    const method = 'settleProject';
-    const args = {
-      name: projectName,
-      supplierAddress: supplierAddress,
-      bidAddress: bidAddress,
-    };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns (ErrorCodes)
-        const errorCode = scope.contracts[contractName].calls[method];
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        return scope;
-      });
-  }
-}
-
-function getBid(bidId) {
-  return function(scope) {
-    rest.verbose('getBid', bidId);
-    return rest.query(`Bid?id=eq.${bidId}`)(scope)
-      .then(function(scope) {
-        scope.result = scope.query.slice(-1)[0][0];
-        return scope;
-      });
-  }
-}
-
-function getBidsByName(name) {
-  return function(scope) {
-    rest.verbose('getBidsByName', name);
-    return rest.query(`Bid?name=eq.${name}`)(scope)
-    .then(function(scope) {
-      scope.result = scope.query.slice(-1)[0];
-      return scope;
-    });
-  }
-}
-
-function getBidsBySupplier(supplier) {
-  return function(scope) {
-    rest.verbose('getBidsByName', supplier);
-    return rest.query(`Bid?supplier=eq.${supplier}`)(scope)
-    .then(function(scope) {
-      scope.result = scope.query.slice(-1)[0];
-      return scope;
-    });
-  }
-}
-
-function exists(buyer, name) {
-  return function(scope) {
-    rest.verbose('exists', name);
-    // function exists(string name) returns (bool) {
-    const method = 'exists';
-    const args = {
-      name: name,
-    };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns bool
-        const result = scope.contracts[contractName].calls[method];
-        scope.result = (result[0] === true);
-        return scope;
-      });
-  }
-}
-
-function getProject(buyer, name) {
-  return function(scope) {
-    rest.verbose('getProject', name);
-    // function getProject(string name) returns (address) {
-    const method = 'getProject';
-    const args = {
-      name: name,
-    };
-
-    return rest.setScope(scope)
-      .then(rest.callMethod(buyer, contractName, method, args))
-      .then(function(scope) {
-        // returns address
-        const address = scope.contracts[contractName].calls[method];
-        // if not found - throw
-        if (address == 0) {
-          throw new Error(ErrorCodes.NOT_FOUND);
-        }
-        // found - query for the full record
-        const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
-        return rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1)(scope)
-          .then(function(scope) {
-            const resultArray = scope.query.slice(-1)[0];
-            scope.result = resultArray[0];
-            return scope;
-          });
-      });
-  }
-}
-
-function getProjects() {
-  return function(scope) {
-    rest.verbose('getProjects');
-
-    return rest.setScope(scope)
-      .then(rest.getState(contractName))
-      .then(function (scope) {
-        const state = scope.states[contractName];
-        const projects = state.projects;
-        const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
-        const csv = util.toCsv(trimmed); // generate csv string
-        return rest.query(`${projectContractName}?address=in.${csv}`)(scope);
-      })
-      .then(function (scope) {
-        scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
-  }
-}
-
-function getProjectsByBuyer(buyer) {
-  return function(scope) {
-    rest.verbose('getProjectsByBuyer', buyer);
-    return rest.setScope(scope)
-      .then(getProjects())
-      .then(function(scope) {
-        const projects = scope.result;
-        const filtered = projects.filter(function(project) {
-          return project.buyer === buyer;
-        });
-        scope.result = filtered;
-        return scope;
-      });
+  // find the winning bid
+  const winningBid = bids.filter(bid => {
+    return bid.id == bidId;
+  })[0];
+  // accept the bid (will transfer funds from buyer to bid contract)
+  try {
+    yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount);
+  } catch(error) {
+    // check insufficient balance
+    console.log(error.status);
+    if (error.status == 400) {
+      throw new Error(ErrorCodes.INSUFFICIENT_BALANCE);
     }
-}
-
-function getProjectsByState(state) {
-  return function(scope) {
-    rest.verbose('getProjectsByState', state);
-    return rest.setScope(scope)
-      .then(getProjects())
-      .then(function(scope) {
-        const projects = scope.result;
-        const filtered = projects.filter(function(project) {
-          return parseInt(project.state) == state;
-        });
-        scope.result = filtered;
-        return scope;
-      });
+    throw error;
+  }
+  // reject all other bids
+  for (let bid of bids) {
+    if (bid.id != bidId) {
+      yield setBidState(buyer, bid.address, BidState.REJECTED, 0); // REJECT
     }
+  }
+  const result = yield handleEvent(admin, contract, name, ProjectEvent.ACCEPT);
+  return result;
 }
 
-function getProjectsBySupplier(supplier, state) {
-  return function(scope) {
-    rest.verbose('getProjectsBySupplier', supplier, state);
-    return rest.setScope(scope)
-      .then(getBidsBySupplier(supplier))
-      .then(function(scope) {
-        const bids = scope.result;
-        const names = bids.map(function(bid) {
-          return bid.name;
-        });
-        scope.result = names;
-        return getProjectsByName(names)(scope);
-      });
-    }
-}
+function* setBidState(buyer, bidAddress, state, valueEther) {
+  rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
+  const contract = {
+    name: 'Bid',
+    address: bidAddress,
+  }
 
-function getProjectsByName(names) {
-  return function(scope) {
-    rest.verbose('getProjectsByName', names);
-    const csv = util.toCsv(names); // generate csv string
-    return rest.query(`${projectContractName}?name=in.${csv}`)(scope)
-      .then(function (scope) {
-        scope.result = scope.query.slice(-1)[0];
-        return scope;
-      });
+  // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
+  const method = 'setBidState';
+  const args = {
+    newState: state,
+  };
+  // the api is expecting the buyers bloc-account address (not the app-user address)
+  const buyerAccount = {
+    name: buyer.username,
+    password: buyer.password,
+    address: buyer.account,
+  };
+
+  const valueWei = new BigNumber(valueEther).mul(constants.ETHER);
+  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueWei);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
   }
 }
 
-function handleEvent(buyer, name, projectEvent) {
-  return function(scope) {
-    rest.verbose('handleEvent', {buyer, name, projectEvent});
 
-    const method = 'handleEvent';
 
-    return rest.setScope(scope)
-      .then( getProject(buyer, name) )
-      .then(function (scope) {
-        // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
-        const projectAddress = scope.result.address;
-        const args = {
-          projectAddress: projectAddress,
-          projectEvent: projectEvent,
-        };
-        return rest.callMethod(buyer, contractName, method, args)(scope);
-      })
-      .then(function(scope) {
-        // returns (ErrorCodes, ProjectState)
-        const result = scope.contracts[contractName].calls[method];
-        const errorCode = parseInt(result[0]);
-        if (errorCode != ErrorCodes.SUCCESS) {
-          throw new Error(errorCode);
-        }
-        scope.result = {errorCode: parseInt(result[0]), state: parseInt(result[1])};
-        return scope;
-      });
+
+function* setBidStateList(buyer, bidAddress, state, valueEther) {
+  rest.verbose('setBidStateList', {buyer, bidAddress, state, valueEther});
+
+  // send List
+  const resolve = true;
+  const txs = createTx(buyer, bidAddress, state, valueEther);
+  //function* callList(user, address, txs, txresolve, node) {
+  const receipts = yield rest.callList(buyer, buyer.address, txs, resolve);
+  console.log(receipts);
+  throw new Error(9999);
+
+  /*
+  {
+    "resolve": true,
+    "password": "MyPassword",
+    "txs": [
+      {
+        "contractAddress": "00000000000000000000000000000000deadbeef",
+        "args": {
+          "age": 52,
+          "user": "Bob"
+        },
+        "contractName": "HorroscopeApp",
+        "methodName": "getHoroscope",
+        "value": "10"
+      }
+    ]
   }
+  */
+
+  function createTx(buyer, bidAddress, state, valueEther) {
+    const txs = [
+      {
+        contractAddress: bidAddress,
+        args: {
+          newState: state,
+        },
+        contractName: 'Bid',
+        methodName: 'setBidState',
+        value: valueEther,
+      }
+    ]
+    return txs;
+  }
+}
+
+
+
+function* settleProject(buyer, contract, projectName, supplierAddress, bidAddress) {
+  rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
+  // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
+  const method = 'settleProject';
+  const args = {
+    name: projectName,
+    supplierAddress: supplierAddress,
+    bidAddress: bidAddress,
+  };
+
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
+  }
+}
+
+function* getBid(bidId) {
+  rest.verbose('getBid', bidId);
+  return (yield rest.waitQuery(`Bid?id=eq.${bidId}`,1))[0];
+}
+
+function* getBidsByName(name) {
+  rest.verbose('getBidsByName', name);
+  return yield rest.query(`Bid?name=eq.${name}`);
+}
+
+function* getBidsBySupplier(supplier) {
+  rest.verbose('getBidsBySupplier', supplier);
+  return yield rest.query(`Bid?supplier=eq.${supplier}`);
+}
+
+// throws: ErrorCodes
+function* getAcceptedBid(projectName) {
+  rest.verbose('getAcceptedBid', projectName);
+  // get project bids
+  const bids = yield getBidsByName(projectName);
+  // extract the supplier out of the accepted bid
+  const accepted = bids.filter(bid => {
+    return parseInt(bid.state) === BidState.ACCEPTED;
+  });
+  // not found
+  if (accepted.length == 0) {
+    throw new Error(ErrorCodes.NOT_FOUND);
+  }
+  // more then one
+  if (accepted.length > 1) {
+    throw new Error(ErrorCodes.ERROR);
+  }
+  return accepted[0];
+}
+
+function* exists(buyer, contract, name) {
+  rest.verbose('exists', name);
+  // function exists(string name) returns (bool) {
+  const method = 'exists';
+  const args = {
+    name: name,
+  };
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const exists = (result[0] === true);
+  return exists;
+}
+
+function* getProject(buyer, contract, name) {
+  rest.verbose('getProject', name);
+  // function getProject(string name) returns (address) {
+  const method = 'getProject';
+  const args = {
+    name: name,
+  };
+
+  // returns address
+  const address = (yield rest.callMethod(buyer, contract, method, args))[0];
+  // if not found - throw
+  if (address == 0) {
+    throw new Error(ErrorCodes.NOT_FOUND);
+  }
+  // found - query for the full record
+  const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
+  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1))[0];
+  return project;
+}
+
+function* getProjects(contract) {
+  rest.verbose('getProjects', contract);
+  const state = yield getState(contract);
+  const projects = state.projects.slice(1); // remove the first '0000' project
+  const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
+  const csv = util.toCsv(trimmed); // generate csv string
+  const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
+  return results;
+}
+
+function* getProjectsByBuyer(contract, buyer) {
+  rest.verbose('getProjectsByBuyer', buyer);
+  const projects = yield getProjects(contract);
+  const filtered = projects.filter(function(project) {
+    return project.buyer === buyer;
+  });
+  return filtered;
+}
+
+function* getProjectsByState(contract, state) {
+  rest.verbose('getProjectsByState', state);
+  const projects = yield getProjects(contract);
+  const filtered = projects.filter(function(project) {
+    return parseInt(project.state) == state;
+  });
+  return filtered;
+}
+
+function* getProjectsBySupplier(contract, supplier) {
+  rest.verbose('getProjectsBySupplier', supplier);
+  const bids = yield getBidsBySupplier(supplier);
+  const names = bids.map(function(bid) {
+    return bid.name;
+  });
+  const projects = yield getProjectsByName(contract, names);
+  return projects;
+}
+
+function* getProjectsByName(contract, names) {
+  rest.verbose('getProjectsByName', names);
+  if (names.length == 0) {
+    return [];
+  }
+  // the url might get too long, so the query is broken to multipart
+  const MAX = 50; // max names to list in one REST call
+  const parts = Math.ceil(names.length/MAX);
+  var results = [];
+  for (var i = 0; i < parts; i++) {
+    const start = i*MAX;
+    const end = (i<parts-1) ? (i+1)*MAX : names.length;
+    const csv = util.toCsv(names.slice(start, end)); // generate csv string
+    const partialResults = yield rest.query(`${projectContractName}?name=in.${csv}`); // get a part
+    results = results.concat(partialResults); // add to the results
+  }
+  return results;
+}
+
+function* handleEvent(buyer, contract, name, projectEvent) {
+  rest.verbose('handleEvent', {buyer, name, projectEvent});
+
+  const project = yield getProject(buyer, contract, name);
+  // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
+  const method = 'handleEvent';
+  const args = {
+    projectAddress: project.address,
+    projectEvent: projectEvent,
+  };
+  const result = yield rest.callMethod(buyer, contract, method, args);
+  const errorCode = parseInt(result[0]);
+  if (errorCode != ErrorCodes.SUCCESS) {
+    throw new Error(errorCode);
+  }
+  const newState = parseInt(result[1]);
+  return newState;
 }
 
 module.exports = {
@@ -386,6 +371,7 @@ module.exports = {
   createBid: createBid,
   acceptBid: acceptBid,
   exists: exists,
+  getAcceptedBid: getAcceptedBid,
   getBid: getBid,
   getBidsByName: getBidsByName,
   getBidsBySupplier: getBidsBySupplier,
@@ -394,6 +380,7 @@ module.exports = {
   getProjectsByBuyer: getProjectsByBuyer,
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
+  getProjectsByName: getProjectsByName,
   handleEvent: handleEvent,
   settleProject: settleProject,
 };
