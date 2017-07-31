@@ -126,24 +126,24 @@ The app comes pre loaded with four different users: `Buyer1`, `Buyer2`, `Supplie
 - Buyer Logs in
 ![Bidding1](http://i.imgur.com/kKVZkZO.gif)
 
--Buyer creates a project for suppliers to bid on
+- Buyer creates a project for suppliers to bid on
 ![Bidding2](http://i.imgur.com/xADXnrX.gif)
 
--Supplier logs in
+- Supplier logs in
 ![Bidding3](http://i.imgur.com/jNke2we.gif)
 
--Supplier makes a bid on the earlier project
+- Supplier makes a bid on the earlier project
 ![Bidding4](http://i.imgur.com/4msxzoR.gif)
 
--Buyer accepts early supplier bid
+- Buyer accepts early supplier bid
 ![Bidding5](http://i.imgur.com/WmK3lO4.gif)
 
 Note: After the buyer accepts the bid, 20 dollars from the buyer's account is taken and held by the smart contract but is still not disbursed until the product is accepted
 
--Supplier marks that the product is shipped
+- Supplier marks that the product is shipped
 ![Bidding6](http://i.imgur.com/qYSeMAk.gif)
 
--Buyer confirms that they recieved the product
+- Buyer confirms that they recieved the product
 ![Bidding7](http://i.imgur.com/xD5g7dE.gif)
 
 
