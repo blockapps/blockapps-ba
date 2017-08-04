@@ -58,6 +58,20 @@ describe('ProjectManager tests', function() {
     assert.equal(exists, true, 'should exist');
   });
 
+  it('Test exists() with special characters', function* () {
+    const projectArgs = createProjectArgs();
+    projectArgs.name += ' ? # % ! *';
+    // should not exists
+    const doesNotExist = yield projectManagerJs.exists(admin, contract, projectArgs.name);
+    assert.isDefined(doesNotExist, 'should be defined');
+    assert.isNotOk(doesNotExist, 'should not exist');
+    // create project
+    const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+    // // should exist
+    const exists = yield projectManagerJs.exists(admin, contract, projectArgs.name);
+    assert.equal(exists, true, 'should exist');
+  });
+
   it('Create Duplicate Project', function* () {
     const projectArgs = createProjectArgs();
     // create project
@@ -118,6 +132,28 @@ describe('ProjectManager tests', function() {
       assert.equal(found.length, 1, 'project list should contain ' + projectArgs.name);
     }
   });
+
+  it('get project leading zeros', function *() {
+    this.timeout(60*60*1000);
+
+    const count = 16*4; // leading 0 once every 16
+    const uid = util.uid();
+    // create projects
+    const projects = [];
+    for (var i = 0; i < count; i++) {
+      const projectArgs = createProjectArgs(uid);
+      projectArgs.name += '_' + i;
+      const project = yield projectManagerJs.createProject(admin, contract, projectArgs);
+      projects.push(project);
+    }
+
+    // get all projects
+    const resultProjects = yield projectManagerJs.getProjects(contract);
+    const comparator = function(projectA, projectB) { return projectA.name == projectB.name; };
+    const notFound = util.filter.isContained(projects, resultProjects, comparator, true);
+    assert.equal(notFound.length, 0, JSON.stringify(notFound));
+  });
+
 
   it('Get Projects by buyer', function* () {
     const uid = util.uid();

@@ -135,7 +135,7 @@ describe('UserManager tests', function() {
     }
   });
 
-  it('User address leading zeros', function *() {
+  it.skip('User address leading zeros', function *() {
     this.timeout(60*60*1000);
 
     const count = 16*4; // leading 0 once every 16
