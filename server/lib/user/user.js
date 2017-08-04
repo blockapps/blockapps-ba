@@ -37,8 +37,7 @@ function* getUserById(id) {
 }
 
 function* getUserByAddress(address) {
-  const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
-  const baUser = (yield rest.waitQuery(`${contractName}?address=eq.${trimmed}`, 1))[0];
+  const baUser = (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
   return baUser;
 }
 

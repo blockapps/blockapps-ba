@@ -107,8 +107,7 @@ function* getUsers(admin, contract) {
   rest.verbose('getUsers');
   const state = yield getState(contract);
   const users = state.users;
-  const trimmed = util.trimLeadingZeros(users); // FIXME leading zeros bug
-  const csv = util.toCsv(trimmed); // generate csv string
+  const csv = util.toCsv(users); // generate csv string
   const results = yield rest.query(`${userContractName}?address=in.${csv}`);
   return results;
 }
