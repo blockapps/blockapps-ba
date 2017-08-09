@@ -55,6 +55,22 @@ describe('UserManager tests', function() {
     assert.equal(exists, true, 'should exist')
   });
 
+  it('Test exists() with special characters', function* () {
+    const args = createUserArgs();
+    args.username += ' ? # % ! @ *';
+
+    var exists;
+    // should not exist
+    exists = yield userManagerJs.exists(admin, contract, args.username);
+    assert.isDefined(exists, 'should be defined');
+    assert.isNotOk(exists, 'should not exist');
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    // should exist
+    exists = yield userManagerJs.exists(admin, contract, args.username);
+    assert.equal(exists, true, 'should exist')
+  });
+
   it('Create Duplicate User', function* () {
     const args = createUserArgs();
 
@@ -86,10 +102,7 @@ describe('UserManager tests', function() {
     } catch(error) {
       // error should be NOT_FOUND
       const errorCode = error.message;
-      // if not - throw
-      if (errorCode != ErrorCodes.NOT_FOUND) {
-        throw error;
-      }
+      assert.equal(errorCode, ErrorCodes.NOT_FOUND, 'should throw ErrorCodes.NOT_FOUND');
     }
 
     // create user
@@ -121,6 +134,32 @@ describe('UserManager tests', function() {
       assert.equal(found.length, 1, 'user list should contain ' + args.username);
     }
   });
+
+  it.skip('User address leading zeros', function *() {
+    this.timeout(60*60*1000);
+
+    const count = 16*4; // leading 0 once every 16
+    const users = [];
+    // create users
+    for (var i = 0; i < count; i++) {
+      const name = `User_${i}_`;
+      const args = createUserArgs(name);
+      const user = yield userManagerJs.createUser(admin, contract, args);
+      users.push(user);
+    }
+
+    // get single user
+    for (let user of users) {
+      const resultUser = yield userManagerJs.getUser(admin, contract, user.username);
+    }
+
+    // get all users
+    const resultUsers = yield userManagerJs.getUsers(admin, contract);
+    const comparator = function(a, b) { return a.username == b.username; };
+    const notFound = util.filter.isContained(users, resultUsers, comparator, true);
+    assert.equal(notFound.length, 0, JSON.stringify(notFound));
+  });
+
 
   it('User Login', function* () {
     const args = createUserArgs();
@@ -161,7 +200,7 @@ describe('UserManager tests', function() {
     balance.should.be.bignumber.equal(faucetBalance);
   });
 
-  it('Send funds', function* () {
+  it('Send funds wei', function* () {
     // create buyer/seller
     const buyerArgs = createUserArgs('Buyer', UserRole.BUYER);
     const buyer = yield userManagerJs.createUser(admin, contract, buyerArgs);
@@ -172,19 +211,19 @@ describe('UserManager tests', function() {
     supplier.startingBalance = yield userManagerJs.getBalance(admin, contract, supplier.username);
 
     // TRANSACTION
-    // function* send(fromUser, toUser, valueEther, nonce, node)
-    const valueEther = 12;
-    const receipt = yield rest.send(buyer.blocUser, supplier.blocUser, valueEther);
+    // function* send(fromUser, toUser, value, nonce, node)
+    const value = new BigNumber(12).mul(constants.ETHER);
+    const receipt = yield rest.send(buyer.blocUser, supplier.blocUser, value);
     const txResult = yield rest.transactionResult(receipt.hash);
     assert.equal(txResult[0].status, 'success');
 
     // check balances
     buyer.endBalance = yield userManagerJs.getBalance(admin, contract, buyer.username);
     supplier.endBalance = yield userManagerJs.getBalance(admin, contract, supplier.username);
-
-    const delta = new BigNumber(valueEther).mul(constants.ETHER);
-    assert.isOk(buyer.startingBalance.minus(delta).greaterThan(buyer.endBalance), "buyer's balance should be slightly less than expected due to gas costs");
-    assert.isOk(supplier.startingBalance.plus(delta).equals(supplier.endBalance), "supplier's balance should be as expected after sending ether");
+    // buyer end balance = start - value - fee
+    buyer.startingBalance.minus(value).should.be.bignumber.gt(buyer.endBalance);
+    // supplier end balance = start + value
+    supplier.startingBalance.plus(value).should.be.bignumber.eq(supplier.endBalance);
   });
 });
 
@@ -192,10 +231,10 @@ describe('UserManager tests', function() {
 function createUserArgs(_name, _role) {
   const uid = util.uid();
   const role = _role || UserRole.SUPPLIER;
-  const name = _name || 'User ? # ';
+  const name = _name || 'User_';
   const args = {
     username: name + uid,
-    password: 'Pass' + uid,
+    password: 'Pass_' + uid,
     role: role,
   }
   return args;

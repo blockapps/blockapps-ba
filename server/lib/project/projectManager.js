@@ -3,6 +3,8 @@ const rest = ba.rest;
 const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
+const BigNumber = ba.common.BigNumber;
+const constants = ba.common.constants;
 
 const contractName = 'ProjectManager';
 const contractFilename = `${config.libPath}/project/contracts/ProjectManager.sol`;
@@ -141,7 +143,8 @@ function* setBidState(buyer, bidAddress, state, valueEther) {
     address: buyer.account,
   };
 
-  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueEther);
+  const valueWei = new BigNumber(valueEther).mul(constants.ETHER);
+  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueWei);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -278,8 +281,7 @@ function* getProject(buyer, contract, name) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
   // found - query for the full record
-  const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
-  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1))[0];
+  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${address}`, 1))[0];
   return project;
 }
 
@@ -287,8 +289,7 @@ function* getProjects(contract) {
   rest.verbose('getProjects', contract);
   const state = yield getState(contract);
   const projects = state.projects.slice(1); // remove the first '0000' project
-  const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
-  const csv = util.toCsv(trimmed); // generate csv string
+  const csv = util.toCsv(projects); // generate csv string
   const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
   return results;
 }
