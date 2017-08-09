@@ -28,7 +28,7 @@ contract Bid is ErrorCodes, BidState {
     state = _state;
   }
 
-  function setBidState(BidState newState) returns (ErrorCodes) {
+  function setBidState(BidState newState) payable returns (ErrorCodes) {
     if (state == BidState.OPEN  &&  newState == BidState.ACCEPTED) {
       setState(newState);
       return ErrorCodes.SUCCESS;
