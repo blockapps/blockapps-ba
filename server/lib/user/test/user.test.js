@@ -24,17 +24,20 @@ describe('User tests', function() {
     yield userJs.compileSearch(true);
   })
 
-  it('Create Contract', function* () {
+  it.only('Create Contract', function* () {
     const id = 123;
-    const username = util.uid('User'+id);
+    const uid = util.uid();
+    const email = `Email_${id}_${uid}`;
+    const firstName = `First_${id}_${uid}`;
+    const lastName = `Last_${id}_${uid}`;
     const pwHash = util.toBytes32('1234'); // FIXME this is not a hash
     const role = userJs.UserRole.SUPPLIER;
-    const account = `3db01104b0c639556a3e1757f1ee1f7a1d3541d5`;
 
     // function User(address _account, string _username, bytes32 _pwHash, uint _id, UserRole _role) {
     const args = {
-      _account: account,
-      _username: username,
+      _email: email,
+      _firstName: firstName,
+      _lastName: lastName,
       _pwHash: pwHash,
       _id: id,
       _role: role,
@@ -43,8 +46,9 @@ describe('User tests', function() {
     // create the user with constructor args
     const contract = yield userJs.uploadContract(admin, args);
     const user = yield userJs.getState(contract);
-    assert.equal(user.account, account, 'account');
-    assert.equal(user.username, username, 'username');
+    assert.equal(user.email, email, 'email');
+    assert.equal(user.firstName, firstName, 'firstName');
+    assert.equal(user.lastName, lastName, 'lastName');
     assert.equal(util.fixBytes(user.pwHash), pwHash, 'pwHash');
     assert.equal(user.id, id, 'id');
     assert.equal(util.parseEnum(user.role), userJs.UserRole[role], 'role');
