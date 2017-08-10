@@ -55,6 +55,22 @@ describe('UserManager tests', function() {
     assert.equal(exists, true, 'should exist')
   });
 
+  it('Test exists() with special characters', function* () {
+    const args = createUserArgs();
+    args.username += ' ? # % ! @ *';
+
+    var exists;
+    // should not exist
+    exists = yield userManagerJs.exists(admin, contract, args.username);
+    assert.isDefined(exists, 'should be defined');
+    assert.isNotOk(exists, 'should not exist');
+    // create user
+    const user = yield userManagerJs.createUser(admin, contract, args);
+    // should exist
+    exists = yield userManagerJs.exists(admin, contract, args.username);
+    assert.equal(exists, true, 'should exist')
+  });
+
   it('Create Duplicate User', function* () {
     const args = createUserArgs();
 
@@ -86,10 +102,7 @@ describe('UserManager tests', function() {
     } catch(error) {
       // error should be NOT_FOUND
       const errorCode = error.message;
-      // if not - throw
-      if (errorCode != ErrorCodes.NOT_FOUND) {
-        throw error;
-      }
+      assert.equal(errorCode, ErrorCodes.NOT_FOUND, 'should throw ErrorCodes.NOT_FOUND');
     }
 
     // create user
@@ -121,6 +134,32 @@ describe('UserManager tests', function() {
       assert.equal(found.length, 1, 'user list should contain ' + args.username);
     }
   });
+
+  it.skip('User address leading zeros', function *() {
+    this.timeout(60*60*1000);
+
+    const count = 16*4; // leading 0 once every 16
+    const users = [];
+    // create users
+    for (var i = 0; i < count; i++) {
+      const name = `User_${i}_`;
+      const args = createUserArgs(name);
+      const user = yield userManagerJs.createUser(admin, contract, args);
+      users.push(user);
+    }
+
+    // get single user
+    for (let user of users) {
+      const resultUser = yield userManagerJs.getUser(admin, contract, user.username);
+    }
+
+    // get all users
+    const resultUsers = yield userManagerJs.getUsers(admin, contract);
+    const comparator = function(a, b) { return a.username == b.username; };
+    const notFound = util.filter.isContained(users, resultUsers, comparator, true);
+    assert.equal(notFound.length, 0, JSON.stringify(notFound));
+  });
+
 
   it('User Login', function* () {
     const args = createUserArgs();
@@ -192,10 +231,10 @@ describe('UserManager tests', function() {
 function createUserArgs(_name, _role) {
   const uid = util.uid();
   const role = _role || UserRole.SUPPLIER;
-  const name = _name || 'User ? # ';
+  const name = _name || 'User_';
   const args = {
     username: name + uid,
-    password: 'Pass' + uid,
+    password: 'Pass_' + uid,
     role: role,
   }
   return args;

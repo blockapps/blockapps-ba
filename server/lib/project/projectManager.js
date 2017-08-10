@@ -281,8 +281,7 @@ function* getProject(buyer, contract, name) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
   // found - query for the full record
-  const trimmed = util.trimLeadingZeros(address); // FIXME leading zeros bug
-  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${trimmed}`, 1))[0];
+  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${address}`, 1))[0];
   return project;
 }
 
@@ -290,8 +289,7 @@ function* getProjects(contract) {
   rest.verbose('getProjects', contract);
   const state = yield getState(contract);
   const projects = state.projects.slice(1); // remove the first '0000' project
-  const trimmed = util.trimLeadingZeros(projects); // FIXME leading zeros bug
-  const csv = util.toCsv(trimmed); // generate csv string
+  const csv = util.toCsv(projects); // generate csv string
   const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
   return results;
 }
