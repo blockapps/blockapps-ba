@@ -31,7 +31,7 @@ describe('UserManager tests', function() {
     yield userManagerJs.compileSearch(true);
   });
 
-  it('Create User', function* () {
+  it.only('Create User', function* () {
     const args = createUserArgs();
     const user = yield userManagerJs.createUser(admin, contract, args);
     assert.equal(user.username, args.username, 'username');
