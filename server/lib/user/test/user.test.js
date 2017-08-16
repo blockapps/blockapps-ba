@@ -45,7 +45,7 @@ describe('User tests', function() {
     const user = yield userJs.getState(contract);
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
-    assert.equal(util.fixBytes(user.pwHash), pwHash, 'pwHash');
+    assert.equal(user.pwHash, pwHash, 'pwHash');
     assert.equal(user.id, id, 'id');
     assert.equal(util.parseEnum(user.role), userJs.UserRole[role], 'role');
   });
