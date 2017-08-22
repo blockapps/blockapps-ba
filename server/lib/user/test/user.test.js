@@ -2,6 +2,7 @@ require('co-mocha');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
+const api = common.api;
 const config = common.config;
 const util = common.util;
 const should = common.should;
@@ -22,7 +23,7 @@ describe('User tests', function() {
     admin = yield rest.createUser(adminName, adminPassword);
     // compile if needed
     yield userJs.compileSearch(true);
-  })
+  });
 
   it('Create Contract', function* () {
     const id = 123;
@@ -47,7 +48,7 @@ describe('User tests', function() {
     assert.equal(user.username, username, 'username');
     assert.equal(user.pwHash, pwHash, 'pwHash');
     assert.equal(user.id, id, 'id');
-    assert.equal(util.parseEnum(user.role), userJs.UserRole[role], 'role');
+    assert.equal(user.role, role, 'role');
   });
 
   it('Search Contract', function* () {
