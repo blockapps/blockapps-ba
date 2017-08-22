@@ -133,7 +133,7 @@ describe('ProjectManager tests', function() {
     }
   });
 
-  it('get project leading zeros', function *() {
+  it.skip('get project leading zeros - load test - skipped', function *() {
     this.timeout(60*60*1000);
 
     const count = 16*4; // leading 0 once every 16
@@ -372,6 +372,9 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE.');
     // check that none was affected
     const bids = yield projectManagerJs.getBidsByName(project.name);
+    bids.map(bid => {
+      assert.equal(bid.state, BidState.OPEN);
+    });
   });
 
   it('Accept a Bid and rejects the others', function* () {

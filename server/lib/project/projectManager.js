@@ -151,57 +151,6 @@ function* setBidState(buyer, bidAddress, state, valueEther) {
   }
 }
 
-
-
-
-function* setBidStateList(buyer, bidAddress, state, valueEther) {
-  rest.verbose('setBidStateList', {buyer, bidAddress, state, valueEther});
-
-  // send List
-  const resolve = true;
-  const txs = createTx(buyer, bidAddress, state, valueEther);
-  //function* callList(user, address, txs, txresolve, node) {
-  const receipts = yield rest.callList(buyer, buyer.address, txs, resolve);
-  console.log(receipts);
-  throw new Error(9999);
-
-  /*
-  {
-    "resolve": true,
-    "password": "MyPassword",
-    "txs": [
-      {
-        "contractAddress": "00000000000000000000000000000000deadbeef",
-        "args": {
-          "age": 52,
-          "user": "Bob"
-        },
-        "contractName": "HorroscopeApp",
-        "methodName": "getHoroscope",
-        "value": "10"
-      }
-    ]
-  }
-  */
-
-  function createTx(buyer, bidAddress, state, valueEther) {
-    const txs = [
-      {
-        contractAddress: bidAddress,
-        args: {
-          newState: state,
-        },
-        contractName: 'Bid',
-        methodName: 'setBidState',
-        value: valueEther,
-      }
-    ]
-    return txs;
-  }
-}
-
-
-
 function* settleProject(buyer, contract, projectName, supplierAddress, bidAddress) {
   rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
   // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
