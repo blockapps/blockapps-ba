@@ -7,6 +7,8 @@ This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate
 
 ![Alt text](SupplyChain-Workflow.png?raw=true "Supply Chain Workflow")
 
+![Alt text](sequence-diagram-05.png?raw=true "Supply Chain Sequence Diagram")
+
 ![Alt text](Demo_Application_Stack.png?raw=true "Demo Application Stack")
 
 ![Alt text](Production_Architecture.png?raw=true "Production Architecture")
