@@ -9,7 +9,7 @@ const should = common.should;
 const assert = common.assert;
 const Promise = common.Promise;
 
-const userJs = require('../user');
+var userJs;
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -21,8 +21,7 @@ describe('User tests', function() {
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
-    // compile if needed
-    yield userJs.compileSearch(true);
+    userJs = require('../user')(admin);
   });
 
   it('Create Contract', function* () {
@@ -42,8 +41,8 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(admin, args);
-    const user = yield userJs.getState(contract);
+    const contract = yield userJs.uploadContract(args);
+    const user = yield contract.getState();
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
     assert.equal(user.pwHash, pwHash, 'pwHash');
@@ -68,7 +67,7 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(admin, args);
+    const contract = yield userJs.uploadContract(args);
     // search
     const user = yield userJs.getUserById(id);
 
@@ -97,10 +96,10 @@ describe('User tests', function() {
 
     // create the user with constructor args
     var isAuthenticated;
-    const contract = yield userJs.uploadContract(admin, args);
-    isAuthenticated = yield userJs.authenticate(admin, contract, pwHash);
+    const contract = yield userJs.uploadContract(args);
+    isAuthenticated = yield contract.authenticate(pwHash);
     assert.isOk(isAuthenticated, 'authenticated');
-    isAuthenticated = yield userJs.authenticate(admin, contract, util.toBytes32('666'));
+    isAuthenticated = yield contract.authenticate(util.toBytes32('666'));
     assert.isNotOk(isAuthenticated, 'not authenticated');
  });
 

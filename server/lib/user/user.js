@@ -9,27 +9,23 @@ const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function* compileSearch(onlyIfNotCompiled) {
-  // if only first time, but alreay compiled - bail
-  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
-    return;
+var admin;
+
+function* uploadContract(args) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+  if (! (yield rest.isCompiled(contractName))) {
+    const searchable = [contractName];
+    yield rest.compileSearch(searchable, contractName, contractFilename);
   }
-  // compile
-  const searchable = [contractName];
-  return yield rest.compileSearch(searchable, contractName, contractFilename);
+  contract.getState = function* () {
+    return yield rest.getState(contract);
+  }
+  contract.authenticate = function* (pwHash) {
+    return yield authenticate(admin, contract, pwHash);
+  }
+  return contract;
 }
 
-function* getState(contract) {
-  return yield rest.getState(contract);
-}
-
-function* uploadContract(user, args) {
-  return yield rest.uploadContract(user, contractName, contractFilename, args);
-}
-
-function* isCompiled() {
-  return yield rest.isCompiled(contractName);
-}
 
 function* getUserById(id) {
   const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}`, 1))[0];
@@ -54,19 +50,20 @@ function* authenticate(admin, contract, pwHash) {
 }
 
 
-module.exports = {
-  compileSearch: compileSearch,
-  getState: getState,
-  getUserByAddress: getUserByAddress,
-  getUserById: getUserById,
-  uploadContract: uploadContract,
-  isCompiled: isCompiled,
+module.exports = function(_admin) {
+  admin = _admin;
 
-  // constants
-  contractName: contractName,
-  ErrorCodes: ErrorCodes,
-  UserRole: UserRole,
+  return {
+    uploadContract: uploadContract,
 
-  // business logic
-  authenticate: authenticate,
+    // constants
+    contractName: contractName,
+    ErrorCodes: ErrorCodes,
+    UserRole: UserRole,
+
+    // business logic
+    authenticate: authenticate,
+    getUserByAddress: getUserByAddress,
+    getUserById: getUserById,
+  };
 };
