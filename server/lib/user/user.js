@@ -13,10 +13,9 @@ var admin;
 
 function* uploadContract(args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
-  if (! (yield rest.isCompiled(contractName))) {
-    const searchable = [contractName];
-    yield rest.compileSearch(searchable, contractName, contractFilename);
-  }
+  yield compileSearch();
+  contract.src = 'removed';
+
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
@@ -24,6 +23,18 @@ function* uploadContract(args) {
     return yield authenticate(admin, contract, pwHash);
   }
   return contract;
+}
+
+function* compileSearch() {
+  rest.verbose('compileSearch', contractName);
+
+  if (yield rest.isCompiled(contractName)) {
+    rest.verbose('compileSearch', contractName + ' already compiled');
+    return;
+  }
+  rest.verbose('compileSearch', contractName + ' not compiled');
+  const searchable = [contractName];
+  yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
 
@@ -55,6 +66,7 @@ module.exports = function(_admin) {
 
   return {
     uploadContract: uploadContract,
+    compileSearch: compileSearch,
 
     // constants
     contractName: contractName,

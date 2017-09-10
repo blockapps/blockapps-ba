@@ -10,7 +10,6 @@ const constants = common.constants;
 const BigNumber = common.BigNumber;
 const Promise = common.Promise;
 
-const userManagerJs = require('../userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
@@ -26,32 +25,31 @@ describe('UserManager tests', function() {
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    contract = yield userManagerJs.uploadContract(admin);
-    contract.src = 'removed';
-    yield userManagerJs.compileSearch(true);
+    userManagerJs = require('../userManager')(admin);
+    contract = yield userManagerJs.uploadContract();
   });
 
   it('Create User', function* () {
     const args = createUserArgs();
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
     assert.equal(user.username, args.username, 'username');
     assert.equal(user.role, args.role, 'role');
     // test that the account was created
-    const account = yield userManagerJs.getAccount(user.account);
+    const account = yield rest.getAccount(user.account);
   });
 
-  it('Test exists()', function* () {
+  it.only('Test exists()', function* () {
     const args = createUserArgs();
 
     var exists;
     // should not exist
-    exists = yield userManagerJs.exists(admin, contract, args.username);
+    exists = yield contract.exists(args.username);
     assert.isDefined(exists, 'should be defined');
     assert.isNotOk(exists, 'should not exist');
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
     // should exist
-    exists = yield userManagerJs.exists(admin, contract, args.username);
+    exists = yield contract.exists(args.username);
     assert.equal(exists, true, 'should exist')
   });
 
