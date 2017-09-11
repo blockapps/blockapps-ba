@@ -9,7 +9,6 @@ const contractFilename = `${config.libPath}/user/contracts/UserManager.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
-//const userContractName = require('./user').contractName;
 
 var admin;
 
@@ -26,6 +25,18 @@ function* uploadContract(args) {
   }
   contract.exists = function* (username) {
     return yield exists(admin, contract, username);
+  }
+  contract.getUser = function* (username) {
+    return yield getUser(admin, contract, username);
+  }
+  contract.getUsers = function* () {
+    return yield getUsers(admin, contract);
+  }
+  contract.login = function* (args) {
+    return yield login(admin, contract, args);
+  }
+  contract.getBalance = function* (username, node) {
+    return yield getBalance(admin, contract, username, node);
   }
 
   return contract;
@@ -112,9 +123,10 @@ function* getUser(admin, contract, username) {
 
 function* getUsers(admin, contract) {
   rest.verbose('getUsers');
-  const state = yield getState(contract);
+  const state = yield rest.getState(contract);
   const users = state.users;
   const csv = util.toCsv(users); // generate csv string
+  const userContractName = require('./user')(admin).contractName;
   const results = yield rest.query(`${userContractName}?address=in.${csv}`);
   return results;
 }
@@ -136,8 +148,6 @@ module.exports = function (_admin) {
     uploadContract: uploadContract,
     compileSearch: compileSearch,
     getBalance: getBalance,
-    getUser: getUser,
-    getUsers: getUsers,
     login: login,
   }
 };

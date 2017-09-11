@@ -38,7 +38,7 @@ describe('UserManager tests', function() {
     const account = yield rest.getAccount(user.account);
   });
 
-  it.only('Test exists()', function* () {
+  it('Test exists()', function* () {
     const args = createUserArgs();
 
     var exists;
@@ -59,13 +59,13 @@ describe('UserManager tests', function() {
 
     var exists;
     // should not exist
-    exists = yield userManagerJs.exists(admin, contract, args.username);
+    exists = yield contract.exists(args.username);
     assert.isDefined(exists, 'should be defined');
     assert.isNotOk(exists, 'should not exist');
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
     // should exist
-    exists = yield userManagerJs.exists(admin, contract, args.username);
+    exists = yield contract.exists(args.username);
     assert.equal(exists, true, 'should exist')
   });
 
@@ -73,40 +73,39 @@ describe('UserManager tests', function() {
     const args = createUserArgs();
 
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
+    var duplicateUser;
     try {
       // create duplicate - should fail
-      const duplicateUser = yield userManagerJs.createUser(admin, contract, args);
-      // did not FAIL - that is an error
-      assert.isUndefined(duplicateUser, `Duplicate username was not detected: ${args.username}`);
+      duplicateUser = yield contract.createUser(args);
     } catch(error) {
       // error should be EXISTS
       const errorCode = error.message;
-      // if not - throw
-      if (errorCode != ErrorCodes.EXISTS) {
-        throw error;
-      }
+      assert.equal(errorCode, ErrorCodes.EXISTS, `Unexpected error ${JSON.stringify(error,null,2)}`);
     }
+    // did not FAIL - that is an error
+    assert.isUndefined(duplicateUser, `Duplicate username was not detected: ${args.username}`);
   });
 
   it('Get User', function *() {
     const args = createUserArgs();
 
     // get non-existing user
+    var nonExisting;
     try {
-      const user = yield userManagerJs.getUser(admin, contract, args.username);
-      // did not FAIL - that is an error
-      assert.isUndefined(user, `User should not be found ${args.username}`);
+      nonExisting = yield contract.getUser(args.username);
     } catch(error) {
       // error should be NOT_FOUND
       const errorCode = error.message;
       assert.equal(errorCode, ErrorCodes.NOT_FOUND, 'should throw ErrorCodes.NOT_FOUND');
     }
+    // did not FAIL - that is an error
+    assert.isUndefined(nonExisting, `User should not be defined ${args.username}`);
 
     // create user
-    yield userManagerJs.createUser(admin, contract, args);
+    yield contract.createUser(args);
     // get user - should exist
-    const user = yield userManagerJs.getUser(admin, contract, args.username);
+    const user = yield contract.getUser(args.username);
     assert.equal(user.username, args.username, 'username should be found');
   });
 
@@ -115,17 +114,17 @@ describe('UserManager tests', function() {
 
     // get users - should not exist
     {
-      const users = yield userManagerJs.getUsers(admin, contract);
+      const users = yield contract.getUsers();
       const found = users.filter(function(user) {
         return user.username === args.username;
       });
       assert.equal(found.length, 0, 'user list should NOT contain ' + args.username);
     }
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
     // get user - should exist
     {
-      const users = yield userManagerJs.getUsers(admin, contract);
+      const users = yield contract.getUsers(admin, contract);
       const found = users.filter(function(user) {
         return user.username === args.username;
       });
@@ -142,17 +141,17 @@ describe('UserManager tests', function() {
     for (var i = 0; i < count; i++) {
       const name = `User_${i}_`;
       const args = createUserArgs(name);
-      const user = yield userManagerJs.createUser(admin, contract, args);
+      const user = yield contract.createUser(args);
       users.push(user);
     }
 
     // get single user
     for (let user of users) {
-      const resultUser = yield userManagerJs.getUser(admin, contract, user.username);
+      const resultUser = yield contract.getUser(user.username);
     }
 
     // get all users
-    const resultUsers = yield userManagerJs.getUsers(admin, contract);
+    const resultUsers = yield contract.getUsers(admin, contract);
     const comparator = function(a, b) { return a.username == b.username; };
     const notFound = util.filter.isContained(users, resultUsers, comparator, true);
     assert.equal(notFound.length, 0, JSON.stringify(notFound));
@@ -164,16 +163,16 @@ describe('UserManager tests', function() {
 
     // auth non-existing - should fail
     {
-      const result = yield userManagerJs.login(admin, contract, args);
+      const result = yield contract.login(args);
       assert.isDefined(result, 'auth result should be defined');
       assert.isNotOk(result, 'auth should fail');
     }
 
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
     // auth
     {
-      const result = yield userManagerJs.login(admin, contract, args);
+      const result = yield contract.login(args);
       assert.isOk(result, 'auth should be ok');
     }
   });
@@ -181,9 +180,9 @@ describe('UserManager tests', function() {
   it('Get account', function* () {
     const args = createUserArgs();
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
+    const user = yield contract.createUser(args);
     // check account
-    const account = (yield userManagerJs.getAccount(user.account))[0];
+    const account = (yield rest.getAccount(user.account))[0];
     const balance = new BigNumber(account.balance);
     const faucetBalance = new BigNumber(1000).times(constants.ETHER);
     balance.should.be.bignumber.equal(faucetBalance);
@@ -192,8 +191,8 @@ describe('UserManager tests', function() {
   it('Get balance', function* () {
     const args = createUserArgs();
     // create user
-    const user = yield userManagerJs.createUser(admin, contract, args);
-    const balance = yield userManagerJs.getBalance(admin, contract, user.username);
+    const user = yield contract.createUser(args);
+    const balance = yield contract.getBalance(user.username);
     const faucetBalance = new BigNumber(1000).times(constants.ETHER);
     balance.should.be.bignumber.equal(faucetBalance);
   });
@@ -201,12 +200,12 @@ describe('UserManager tests', function() {
   it('Send funds wei', function* () {
     // create buyer/seller
     const buyerArgs = createUserArgs('Buyer', UserRole.BUYER);
-    const buyer = yield userManagerJs.createUser(admin, contract, buyerArgs);
-    buyer.startingBalance = yield userManagerJs.getBalance(admin, contract, buyer.username);
+    const buyer = yield contract.createUser(buyerArgs);
+    buyer.startingBalance = yield contract.getBalance(buyer.username);
 
     const supplierArgs = createUserArgs('Supplier', UserRole.SUPPLIER);
-    const supplier = yield userManagerJs.createUser(admin, contract, supplierArgs);
-    supplier.startingBalance = yield userManagerJs.getBalance(admin, contract, supplier.username);
+    const supplier = yield contract.createUser(supplierArgs);
+    supplier.startingBalance = yield contract.getBalance(supplier.username);
 
     // TRANSACTION
     // function* send(fromUser, toUser, value, nonce, node)
@@ -216,8 +215,8 @@ describe('UserManager tests', function() {
     assert.equal(txResult[0].status, 'success');
 
     // check balances
-    buyer.endBalance = yield userManagerJs.getBalance(admin, contract, buyer.username);
-    supplier.endBalance = yield userManagerJs.getBalance(admin, contract, supplier.username);
+    buyer.endBalance = yield contract.getBalance(buyer.username);
+    supplier.endBalance = yield contract.getBalance(supplier.username);
     // buyer end balance = start - value - fee
     buyer.startingBalance.minus(value).should.be.bignumber.gt(buyer.endBalance);
     // supplier end balance = start + value
