@@ -15,9 +15,56 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const projectContractName = require('./project').contractName;
 
-function* compileSearch(onlyIfNotCompiled) {
-  // if only first time, but alreay compiled - bail
-  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+function* uploadContract(admin, args) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+  yield compileSearch();
+  contract.src = 'removed';
+  return setContract(admin, contract);
+}
+
+function setContract(admin, contract) {
+  contract.getState = function* () {
+    return yield rest.getState(contract);
+  }
+  contract.createProject = function* (args) {
+    return yield createProject(admin, contract, args);
+  }
+  contract.getProject = function* (name) {
+    return yield getProject(admin, contract, name);
+  }
+  contract.getProjects = function* (name) {
+    return yield getProjects(contract);
+  }
+  contract.exists = function* (name) {
+    return yield exists(admin, contract, name);
+  }
+  contract.getProjectsByBuyer = function* (buyer) {
+    return yield getProjectsByBuyer(contract, buyer);
+  }
+  contract.getProjectsByName = function* (name) {
+    return yield getProjectsByName(contract, name);
+  }
+  contract.getProjectsByState = function* (state) {
+    return yield getProjectsByState(contract, state);
+  }
+  contract.handleEvent = function* (name, projectEvent) {
+    return yield handleEvent(admin, contract, name, projectEvent);
+  }
+  contract.createBid = function* (name, supplier, amount) {
+    return yield createBid(admin, contract, name, supplier, amount);
+  }
+  contract.acceptBid = function* (buyer, bidId, name) {
+    return yield acceptBid(admin, contract, buyer, bidId, name);
+  }
+  contract.settleProject = function* (projectName, supplierAddress, bidAddress) {
+    return yield settleProject(admin, contract, projectName, supplierAddress, bidAddress);
+  }
+  return contract;
+}
+
+function* compileSearch() {
+  rest.verbose('compileSearch', contractName);
+  if (yield rest.isCompiled(contractName)) {
     return;
   }
   // compile dependencies
@@ -32,22 +79,10 @@ function* compileSearch(onlyIfNotCompiled) {
   return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getState(contract) {
-  return yield rest.getState(contract);
-}
-
-function* uploadContract(user, args) {
-  return yield rest.uploadContract(user, contractName, contractFilename, args);
-}
-
-function* isCompiled() {
-  return yield rest.isCompiled(contractName);
-}
-
 // throws: ErrorCodes
 // returns: record from search
-function* createProject(buyer, contract, args) {
-  rest.verbose('createProject', {buyer, args});
+function* createProject(admin, contract, args) {
+  rest.verbose('createProject', {admin, args});
   // function createProject(
   //   string name,
   //   string buyer,
@@ -59,19 +94,19 @@ function* createProject(buyer, contract, args) {
   // ) returns (ErrorCodes) {
   const method = 'createProject';
 
-  const result = yield rest.callMethod(buyer, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
   // get the contract data from search
-  const project = yield getProject(buyer, contract, args.name);
+  const project = yield getProject(admin, contract, args.name);
   return project;
 }
 
 // throws: ErrorCodes
 // returns: record from search
-function* createBid(buyer, contract, name, supplier, amount) {
+function* createBid(admin, contract, name, supplier, amount) {
   rest.verbose('createBid', {name, supplier, amount});
   // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
   const method = 'createBid';
@@ -81,7 +116,7 @@ function* createBid(buyer, contract, name, supplier, amount) {
     amount: amount,
   };
 
-  const result = yield rest.callMethod(buyer, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -151,7 +186,7 @@ function* setBidState(buyer, bidAddress, state, valueEther) {
   }
 }
 
-function* settleProject(buyer, contract, projectName, supplierAddress, bidAddress) {
+function* settleProject(admin, contract, projectName, supplierAddress, bidAddress) {
   rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
   // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
   const method = 'settleProject';
@@ -161,7 +196,7 @@ function* settleProject(buyer, contract, projectName, supplierAddress, bidAddres
     bidAddress: bidAddress,
   };
 
-  const result = yield rest.callMethod(buyer, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -175,7 +210,7 @@ function* getBid(bidId) {
 
 function* getBidsByName(name) {
   rest.verbose('getBidsByName', name);
-  return yield rest.query(`Bid?name=eq.${name}`);
+  return yield rest.query(`Bid?name=eq.${encodeURIComponent(name)}`);
 }
 
 function* getBidsBySupplier(supplier) {
@@ -203,19 +238,19 @@ function* getAcceptedBid(projectName) {
   return accepted[0];
 }
 
-function* exists(buyer, contract, name) {
+function* exists(admin, contract, name) {
   rest.verbose('exists', name);
   // function exists(string name) returns (bool) {
   const method = 'exists';
   const args = {
     name: name,
   };
-  const result = yield rest.callMethod(buyer, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args);
   const exists = (result[0] === true);
   return exists;
 }
 
-function* getProject(buyer, contract, name) {
+function* getProject(admin, contract, name) {
   rest.verbose('getProject', name);
   // function getProject(string name) returns (address) {
   const method = 'getProject';
@@ -224,7 +259,7 @@ function* getProject(buyer, contract, name) {
   };
 
   // returns address
-  const address = (yield rest.callMethod(buyer, contract, method, args))[0];
+  const address = (yield rest.callMethod(admin, contract, method, args))[0];
   // if not found - throw
   if (address == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
@@ -235,8 +270,8 @@ function* getProject(buyer, contract, name) {
 }
 
 function* getProjects(contract) {
-  rest.verbose('getProjects', contract);
-  const state = yield getState(contract);
+  rest.verbose('getProjects');
+  const state = yield rest.getState(contract);
   const projects = state.projects.slice(1); // remove the first '0000' project
   const csv = util.toCsv(projects); // generate csv string
   const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
@@ -284,23 +319,23 @@ function* getProjectsByName(contract, names) {
     const start = i*MAX;
     const end = (i<parts-1) ? (i+1)*MAX : names.length;
     const csv = util.toCsv(names.slice(start, end)); // generate csv string
-    const partialResults = yield rest.query(`${projectContractName}?name=in.${csv}`); // get a part
+    const partialResults = yield rest.query(`${projectContractName}?name=in.${encodeURIComponent(csv)}`); // get a part
     results = results.concat(partialResults); // add to the results
   }
   return results;
 }
 
-function* handleEvent(buyer, contract, name, projectEvent) {
-  rest.verbose('handleEvent', {buyer, name, projectEvent});
+function* handleEvent(admin, contract, name, projectEvent) {
+  rest.verbose('handleEvent', {admin, name, projectEvent});
 
-  const project = yield getProject(buyer, contract, name);
+  const project = yield getProject(admin, contract, name);
   // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
   const method = 'handleEvent';
   const args = {
     projectAddress: project.address,
     projectEvent: projectEvent,
   };
-  const result = yield rest.callMethod(buyer, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -311,23 +346,12 @@ function* handleEvent(buyer, contract, name, projectEvent) {
 
 module.exports = {
   compileSearch: compileSearch,
-  getState: getState,
   uploadContract: uploadContract,
 
-  createProject: createProject,
-  createBid: createBid,
-  acceptBid: acceptBid,
-  exists: exists,
   getAcceptedBid: getAcceptedBid,
   getBid: getBid,
   getBidsByName: getBidsByName,
   getBidsBySupplier: getBidsBySupplier,
-  getProject: getProject,
-  getProjects: getProjects,
-  getProjectsByBuyer: getProjectsByBuyer,
   getProjectsByState: getProjectsByState,
   getProjectsBySupplier: getProjectsBySupplier,
-  getProjectsByName: getProjectsByName,
-  handleEvent: handleEvent,
-  settleProject: settleProject,
 };
