@@ -38,6 +38,22 @@ describe('UserManager tests', function() {
     const account = yield rest.getAccount(user.account);
   });
 
+  it('Create User - illegal name', function* () {
+    const args = createUserArgs();
+    args.username = '123456789012345678901234567890123'
+    var user;
+    try {
+      // create with illegal name - should fail
+      user = yield contract.createUser(args);
+    } catch(error) {
+      // error should be ERROR
+      const errorCode = error.message;
+      assert.equal(errorCode, ErrorCodes.ERROR, `Unexpected error ${JSON.stringify(error,null,2)}`);
+    }
+    // did not FAIL - that is an error
+    assert.isUndefined(user, `Illegal username was not detected: ${args.username}`);
+  });
+
   it('Test exists()', function* () {
     const args = createUserArgs();
 

@@ -32,6 +32,8 @@ contract UserManager is ErrorCodes, Util, UserRole {
   }
 
   function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+    // name must be < 32 bytes
+    if (bytes(username).length > 32) return ErrorCodes.ERROR;
     // fail if username exists
     if (exists(username)) return ErrorCodes.EXISTS;
     // add user
