@@ -22,7 +22,6 @@ assert.isDefined(presetData, 'Demo data read failed');
 assert.isDefined(presetData.users, 'Users data undefined');
 console.log('Preset data', JSON.stringify(presetData, null, 2));
 
-const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
 
 describe('Supply Chain Demo App - deploy contracts', function () {
   this.timeout(900 * 1000);
@@ -37,7 +36,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     // set admin interface
     const admin = yield rest.createUser(adminName, adminPassword);
     const AI = yield dapp.setAdminInterface(admin);
-    // sanity check - get the interface back
+    // read the interface back
     const testAI = yield dapp.getAdminInterface(AI.contract.address);
     assert.deepEqual(AI, testAI);
     // create preset users
@@ -62,14 +61,17 @@ describe('Supply Chain Demo App - deploy contracts', function () {
 
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function* createPresetUsers(admin, contract, users) {
+function* createPresetUsers(admin, aiUserManager, users) {
+  const userManagerJs = require(process.cwd() + '/' + config.libPath + '/user/userManager');
+  const userManagerContract = userManagerJs.setContract(admin, aiUserManager);
+
   for (let user of users) {
     const args = {
       username: user.username,
       password: user.password,
       role: UserRole[user.role],
     }
-    const y = yield userManager.createUser(admin, contract, args);
+    const y = yield userManagerContract.createUser(args);
   }
   // TODO test the users are all in
 }

@@ -143,4 +143,5 @@ function* login(admin, contract, args) {
 module.exports = {
   uploadContract: uploadContract,
   compileSearch: compileSearch,
+  setContract: setContract,
 };

@@ -18,6 +18,7 @@ const usersController = {
 
     co(function* () {
       const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
+      util.response.status500(res, '99999999999');
       const balance = yield dapp.getBalance(deploy.admin, AI.subContracts['UserManager'], username);
       util.response.status200(res, {
         // this is a bignumber
