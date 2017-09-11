@@ -8,33 +8,28 @@ const contractFilename = `${config.libPath}/bid/contracts/Bid.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
-function* compileSearch(onlyIfNotCompiled) {
-  // if only first time, but alreay compiled - bail
-  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+function* uploadContract(admin, args) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+  yield compileSearch();
+  contract.src = 'removed';
+  contract.getState = function* () {
+    return yield rest.getState(contract);
+  }
+  return contract;
+}
+
+function* compileSearch() {
+  rest.verbose('compileSearch', contractName);
+  if (yield rest.isCompiled(contractName)) {
     return;
   }
-  // compile
   const searchable = [contractName];
-  return yield rest.compileSearch(searchable, contractName, contractFilename);
-}
-
-function* getState(contract) {
-  return yield rest.getState(contract);
-}
-
-function* uploadContract(user, args) {
-  return yield rest.uploadContract(user, contractName, contractFilename, args);
-}
-
-function* isCompiled() {
-  return yield rest.isCompiled(contractName);
+  yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
 module.exports = {
   compileSearch: compileSearch,
-  getState: getState,
   uploadContract: uploadContract,
-  isCompiled: isCompiled,
   // constants
   contractName: contractName,
 };

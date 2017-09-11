@@ -27,10 +27,8 @@ function* compileSearch() {
   rest.verbose('compileSearch', contractName);
 
   if (yield rest.isCompiled(contractName)) {
-    rest.verbose('compileSearch', contractName + ' already compiled');
     return;
   }
-  rest.verbose('compileSearch', contractName + ' not compiled');
   const searchable = [contractName];
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }

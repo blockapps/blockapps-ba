@@ -18,12 +18,9 @@ const adminPassword = '1234';
 var admin;
 
 describe('Bid tests', function() {
-  this.timeout(config.timeout);
 
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    // compile if needed
-    yield bidJs.compileSearch(true);
   })
 
   it('Create Contract', function* () {
@@ -41,7 +38,7 @@ describe('Bid tests', function() {
 
     const contract = yield bidJs.uploadContract(admin, args);
     {
-      const bid = yield bidJs.getState(contract);
+      const bid = yield contract.getState();
       assert.equal(bid.id, id, 'id');
       assert.equal(bid.name, name, 'name');
       assert.equal(bid.supplier, supplier, 'supplier');
@@ -61,26 +58,27 @@ describe('Bid tests', function() {
 
 
   it.only('Create many contract', function* () {
+    this.timeout(config.timeout*10);
 
     const id = new Date().getTime();
     for (var i = 0; i < 500; i++) {
       const args = createContractArgs(id,i);
       const contract = yield bidJs.uploadContract(admin, args);
-      // {
-      //   const bid = yield bidJs.getState(contract);
-      //   assert.equal(bid.id, args._id, 'id');
-      //   assert.equal(bid.name, args._name, 'name');
-      //   assert.equal(bid.supplier, args._supplier, 'supplier');
-      //   assert.equal(bid.amount, args._amount, 'amount');
-      // }
-      // const queryResults = yield rest.waitQuery(`${bidJs.contractName}?id=eq.${args._id}`, 1);
-      // {
-      //   const bid = queryResults[0];
-      //   assert.equal(bid.id, args._id, 'id');
-      //   assert.equal(bid.name, args._name, 'name');
-      //   assert.equal(bid.supplier, args._supplier, 'supplier');
-      //   assert.equal(bid.amount, args._amount, 'amount');
-      // }
+      {
+        const bid = yield contract.getState();
+        assert.equal(bid.id, args._id, 'id');
+        assert.equal(bid.name, args._name, 'name');
+        assert.equal(bid.supplier, args._supplier, 'supplier');
+        assert.equal(bid.amount, args._amount, 'amount');
+      }
+      const queryResults = yield rest.waitQuery(`${bidJs.contractName}?id=eq.${args._id}`, 1);
+      {
+        const bid = queryResults[0];
+        assert.equal(bid.id, args._id, 'id');
+        assert.equal(bid.name, args._name, 'name');
+        assert.equal(bid.supplier, args._supplier, 'supplier');
+        assert.equal(bid.amount, args._amount, 'amount');
+      }
     }
 
     function createContractArgs(id, index) {
