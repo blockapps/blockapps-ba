@@ -9,7 +9,7 @@ const should = common.should;
 const assert = common.assert;
 const Promise = common.Promise;
 
-var userJs;
+var userJs = require('../user');
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -21,7 +21,6 @@ describe('User tests', function() {
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
-    userJs = require('../user')(admin);
   });
 
   it('Create Contract', function* () {
@@ -41,7 +40,7 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(args);
+    const contract = yield userJs.uploadContract(admin, args);
     const user = yield contract.getState();
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
@@ -67,7 +66,7 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(args);
+    const contract = yield userJs.uploadContract(admin, args);
     // search
     const user = yield userJs.getUserById(id);
 
@@ -96,7 +95,7 @@ describe('User tests', function() {
 
     // create the user with constructor args
     var isAuthenticated;
-    const contract = yield userJs.uploadContract(args);
+    const contract = yield userJs.uploadContract(admin, args);
     isAuthenticated = yield contract.authenticate(pwHash);
     assert.isOk(isAuthenticated, 'authenticated');
     isAuthenticated = yield contract.authenticate(util.toBytes32('666'));

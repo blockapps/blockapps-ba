@@ -9,9 +9,7 @@ const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-var admin;
-
-function* uploadContract(args) {
+function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
   yield compileSearch();
   contract.src = 'removed';
@@ -37,6 +35,11 @@ function* compileSearch() {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
+function* getUsers(addresses) {
+  const csv = util.toCsv(addresses); // generate csv string
+  const results = yield rest.query(`${contractName}?address=in.${csv}`);
+  return results;
+}
 
 function* getUserById(id) {
   const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}`, 1))[0];
@@ -61,21 +64,18 @@ function* authenticate(admin, contract, pwHash) {
 }
 
 
-module.exports = function(_admin) {
-  admin = _admin;
+module.exports = {
+  uploadContract: uploadContract,
+  compileSearch: compileSearch,
 
-  return {
-    uploadContract: uploadContract,
-    compileSearch: compileSearch,
+  // constants
+  contractName: contractName,
+  ErrorCodes: ErrorCodes,
+  UserRole: UserRole,
 
-    // constants
-    contractName: contractName,
-    ErrorCodes: ErrorCodes,
-    UserRole: UserRole,
-
-    // business logic
-    authenticate: authenticate,
-    getUserByAddress: getUserByAddress,
-    getUserById: getUserById,
-  };
+  // business logic
+  authenticate: authenticate,
+  getUserByAddress: getUserByAddress,
+  getUsers: getUsers,
+  getUserById: getUserById,
 };

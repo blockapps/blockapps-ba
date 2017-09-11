@@ -15,6 +15,7 @@ const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
+const userManagerJs = require('../userManager');
 
 describe('UserManager tests', function() {
   this.timeout(config.timeout);
@@ -25,8 +26,7 @@ describe('UserManager tests', function() {
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    userManagerJs = require('../userManager')(admin);
-    contract = yield userManagerJs.uploadContract();
+    contract = yield userManagerJs.uploadContract(admin);
   });
 
   it('Create User', function* () {
@@ -109,7 +109,7 @@ describe('UserManager tests', function() {
     assert.equal(user.username, args.username, 'username should be found');
   });
 
-  it('Get Users', function* () {
+  it.only('Get Users', function* () {
     const args = createUserArgs();
 
     // get users - should not exist
