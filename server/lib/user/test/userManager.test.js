@@ -109,7 +109,7 @@ describe('UserManager tests', function() {
     assert.equal(user.username, args.username, 'username should be found');
   });
 
-  it.only('Get Users', function* () {
+  it('Get Users', function* () {
     const args = createUserArgs();
 
     // get users - should not exist

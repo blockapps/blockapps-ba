@@ -14,7 +14,10 @@ function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
   yield compileSearch();
   contract.src = 'removed';
+  return setContract(admin, contract);
+}
 
+function setContract(admin, contract) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
@@ -36,7 +39,6 @@ function* uploadContract(admin, args) {
   contract.getBalance = function* (username, node) {
     return yield getBalance(admin, contract, username, node);
   }
-
   return contract;
 }
 

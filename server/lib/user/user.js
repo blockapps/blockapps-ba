@@ -13,7 +13,10 @@ function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
   yield compileSearch();
   contract.src = 'removed';
+  return setContract(admin, contract);
+}
 
+function setContract(admin, contract) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
