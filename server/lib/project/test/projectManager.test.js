@@ -304,8 +304,8 @@ describe('ProjectManager Life Cycle tests', function() {
     userManagerContract = yield userManagerJs.uploadContract(admin);
   });
 
-  it('Create new Bid', function* () {
-    const supplier = 'Supplier1';
+  it.only('Create new Bid', function* () {
+    const supplier = util.uid('Supplier1');
     const amount = 5678;
     const projectArgs = createProjectArgs();
 
@@ -328,6 +328,12 @@ describe('ProjectManager Life Cycle tests', function() {
     // search by project name
     const bids = yield projectManagerJs.getBidsByName(project.name);
     assert.equal(bids.length, 1, 'one and only one');
+
+    const projects = yield contract.getProjectsBySupplier(supplier);
+    assert.equal(projects.length, 1, 'one and only one');
+
+    const notFound = yield contract.getProjectsBySupplier(supplier+'z');
+    assert.equal(notFound.length, 0, 'should not find any');
   });
 
   it('Accept a Bid.', function* () {
