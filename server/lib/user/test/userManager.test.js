@@ -71,7 +71,7 @@ describe('UserManager tests', function() {
 
   it('Test exists() with special characters', function* () {
     const args = createUserArgs();
-    args.username += ' ? # % ! @ *';
+    args.username += ' ?#%!@*';
 
     var exists;
     // should not exist

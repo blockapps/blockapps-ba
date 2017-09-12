@@ -7,7 +7,6 @@ const util = common.util;
 const path = require('path');
 const serverPath = './server';
 const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
-const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const BigNumber = common.BigNumber
 const constants = common.constants
 

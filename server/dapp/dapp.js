@@ -4,13 +4,12 @@ const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
 
-const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
-const projectManager = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
+const userManagerJs = require(process.cwd() + '/' + config.libPath + '/user/userManager');
+const projectManagerJs = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
+
 const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 const ErrorCodes = ba.rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
-const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
-
 
 // ========== Admin (super user) ==========
 
@@ -27,13 +26,18 @@ const AI = {
   },
 };
 
-function* setAdminInterface(admin) {
-  rest.verbose('setAdminInterface', arguments);
+function* uploadContract(admin) {
   const contractName = AI.contract.name;
   const contractFilename = AI.contract.libPath + AI.contract.filename;
-  contract = yield rest.uploadContract(admin, contractName, contractFilename);
-  AI.contract.address = contract.address;
-  return AI;
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename);
+  yield compileSearch();
+  contract.src = 'removed';
+  return yield getDapp(admin, contract.address);
+}
+
+function* compileSearch() {
+  yield projectManagerJs.compileSearch();
+  yield userManagerJs.compileSearch();
 }
 
 function* getAdminInterface(aiAddress) {
@@ -51,23 +55,16 @@ function* getAdminInterface(aiAddress) {
   return AI;
 }
 
-function* compileSearch() {
-  yield projectManager.compileSearch();
-  yield userManager.compileSearch();
-}
-
 function* getDapp(admin, aiAddress) {
   rest.verbose('getDapp', {admin, aiAddress});
   //AI.contract.address = aiAddress;
   const AI = yield getAdminInterface(aiAddress);
 
-  const userManagerJs = require(process.cwd() + '/' + config.libPath + '/user/userManager');
   const userManagerContract = userManagerJs.setContract(admin, AI.subContracts['UserManager']);
-
-  const projectManagerJs = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
   const projectManagerContract = projectManagerJs.setContract(admin, AI.subContracts['ProjectManager']);
 
   const dapp = {}
+  dapp.aiAddress = aiAddress;
   dapp.getBalance = function* (username) {
     rest.verbose('dapp: getBalance', username);
     return yield userManagerContract.getBalance(username);
@@ -93,7 +90,7 @@ function* getDapp(admin, aiAddress) {
   }
   // projects - by supplier
   dapp.getProjectsBySupplier = function* (supplier) {
-    rest.verbose('dapp: getProjectsByState', supplier);
+    rest.verbose('dapp: getProjectsBySupplier', supplier);
     return yield projectManagerContract.getProjectsBySupplier(supplier);
   }
   // create bid
@@ -113,6 +110,10 @@ function* getDapp(admin, aiAddress) {
   // login
   dapp.login = function* (username, password) {
     return yield login(userManagerContract, username, password);
+  }
+  // create preset users
+  dapp.createPresetUsers = function* (presetUsers) {
+    return yield createPresetUsers(userManagerContract, presetUsers);
   }
 
   return dapp;
@@ -178,6 +179,18 @@ function* handleEvent(userManagerContract, projectManagerContract, args) {
     }
 }
 
+function* createPresetUsers(userManagerContract, presetUsers) {
+  const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+  for (let presetUser of presetUsers) {
+    const args = {
+      username: presetUser.username,
+      password: presetUser.password,
+      role: UserRole[presetUser.role],
+    }
+    const user = yield userManagerContract.createUser(args);
+  }
+}
+
 module.exports = function (libPath) {
   rest.verbose('construct', {libPath});
   AI.contract.libPath = libPath;
@@ -185,7 +198,7 @@ module.exports = function (libPath) {
   return {
     getDapp: getDapp,
     compileSearch: compileSearch,
+    uploadContract: uploadContract,
     getAdminInterface: getAdminInterface,
-    setAdminInterface: setAdminInterface,
   };
 };

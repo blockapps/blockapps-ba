@@ -42,7 +42,7 @@ function setContract(admin, contract) {
     return yield getProjectsByBuyer(contract, buyer);
   }
   contract.getProjectsBySupplier = function* (supplier) {
-    return yield getProjectsBySupplier(supplier);
+    return yield getProjectsBySupplier(contract, supplier);
   }
   contract.getProjectsByName = function* (name) {
     return yield getProjectsByName(contract, name);

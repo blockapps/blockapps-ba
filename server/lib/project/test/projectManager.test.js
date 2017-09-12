@@ -44,6 +44,22 @@ describe('ProjectManager tests', function() {
     assert.equal(project.buyer, projectArgs.buyer, 'buyer');
   });
 
+  it('Create Project - illegal name', function* () {
+    const projectArgs = createProjectArgs();
+    projectArgs.name = '123456789012345678901234567890123';
+    var project;
+    try {
+      // create with illegal name - should fail
+      project = yield contract.createProject(projectArgs);
+    } catch(error) {
+      // error should be ERROR
+      const errorCode = error.message;
+      assert.equal(errorCode, ErrorCodes.ERROR, `Unexpected error ${JSON.stringify(error,null,2)}`);
+    }
+    // did not FAIL - that is an error
+    assert.isUndefined(project, `Illegal project name was not detected: ${projectArgs.username}`);
+  });
+
   it('Test exists()', function* () {
     const projectArgs = createProjectArgs();
     // should not exists
