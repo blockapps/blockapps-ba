@@ -56,6 +56,24 @@ function* compileSearch() {
   yield userManager.compileSearch();
 }
 
+function* getDapp(admin, aiAddress) {
+  rest.verbose('getDapp', {admin, aiAddress});
+  //AI.contract.address = aiAddress;
+  const AI = yield getAdminInterface(aiAddress);
+
+  const userManagerJs = require(process.cwd() + '/' + config.libPath + '/user/userManager');
+  const userManagerContract = userManagerJs.setContract(admin, AI.subContracts['UserManager']);
+
+  const dapp = {}
+  dapp.getBalance = function* (username) {
+    return yield userManagerContract.getBalance(username);
+  }
+  return dapp;
+}
+
+
+
+
 // =========================== business functions ========================
 
 function* login(admin, username, password) {
@@ -165,6 +183,7 @@ module.exports = function (libPath) {
 
   return {
     AI: AI,
+    getDapp: getDapp,
     compileSearch: compileSearch,
     getAdminInterface: getAdminInterface,
     setAdminInterface: setAdminInterface,

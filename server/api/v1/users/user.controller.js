@@ -6,7 +6,7 @@ const config = common.config;
 const util = common.util;
 const path = require('path');
 const serverPath = './server';
-const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
+const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const BigNumber = common.BigNumber
 const constants = common.constants
@@ -17,9 +17,9 @@ const usersController = {
     const username = decodeURI(req.params['username']);
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      util.response.status500(res, '99999999999');
-      const balance = yield dapp.getBalance(deploy.admin, AI.subContracts['UserManager'], username);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const balance = yield dapp.getBalance(username);
+
       util.response.status200(res, {
         // this is a bignumber
         balance: balance,
