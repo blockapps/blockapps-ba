@@ -72,6 +72,7 @@ function* getDapp(admin, aiAddress) {
     rest.verbose('dapp: getBalance', username);
     return yield userManagerContract.getBalance(username);
   }
+  // project - create
   dapp.createProject = function* (args) {
     return yield createProject(projectManagerContract, args);
   }
@@ -109,26 +110,26 @@ function* getDapp(admin, aiAddress) {
   dapp.handleEvent = function* (args) {
     return yield handleEvent(userManagerContract, projectManagerContract, args);
   }
+  // login
+  dapp.login = function* (username, password) {
+    return yield login(userManagerContract, username, password);
+  }
 
   return dapp;
 }
 
-
-
-
 // =========================== business functions ========================
 
-function* login(admin, username, password) {
-  rest.verbose('dapp: login', {admin, username, password});
-  const contract = AI.subContracts['UserManager'];
+function* login(userManagerContract, username, password) {
+  rest.verbose('dapp: login', {username, password});
   const args = {username:username, password:password};
-  const result = yield userManager.login(admin, contract, args);
+  const result = yield userManagerContract.login(args);
   // auth failed
   if (!result) {
     return {authenticate: false};
   }
   // auth OK
-  const baUser = yield userManager.getUser(admin, contract, username);
+  const baUser = yield userManagerContract.getUser(username);
   return {authenticate: true, user: baUser};
 }
 
@@ -138,7 +139,6 @@ function* createProject(projectManagerContract, args) {
   const project = yield projectManagerContract.createProject(args);
   return project;
 }
-
 
 // accept bid
 function* acceptBid(userManagerContract, projectManagerContract, buyerName, buyerPassword, bidId, projectName) {
@@ -183,12 +183,9 @@ module.exports = function (libPath) {
   AI.contract.libPath = libPath;
 
   return {
-    AI: AI,
     getDapp: getDapp,
     compileSearch: compileSearch,
     getAdminInterface: getAdminInterface,
     setAdminInterface: setAdminInterface,
-    // business functions
-    login: login,
   };
 };
