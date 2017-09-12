@@ -6,7 +6,7 @@ const config = common.config;
 const util = common.util;
 const path = require('path');
 const serverPath = './server';
-const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
+const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 
@@ -16,8 +16,8 @@ const projectsController = {
     const projectArgs = req.body;
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const result = yield dapp.createProject(deploy.admin, AI.subContracts['ProjectManager'], projectArgs);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const result = yield dapp.createProject(projectArgs);
       util.response.status200(res, {
         project: result,
       });
@@ -32,8 +32,8 @@ const projectsController = {
     const projectName = decodeURIComponent(req.params['name']);
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const result = yield dapp.getProject(deploy.admin, AI.subContracts['ProjectManager'], projectName);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const result = yield dapp.getProject(projectName);
       util.response.status200(res, {
         project: result,
       });
@@ -65,8 +65,8 @@ const projectsController = {
     }
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const projects = yield dapp[listCallback](deploy.admin, AI.subContracts['ProjectManager'], listParam);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const projects = yield dapp[listCallback](listParam);
       util.response.status200(res, {
         projects: projects,
       });
@@ -80,8 +80,8 @@ const projectsController = {
     const deploy = req.app.get('deploy');
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const bid = yield dapp.createBid(deploy.admin, AI.subContracts['ProjectManager'],
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const bid = yield dapp.createBid(
         req.params.name,
         req.body.supplier,
         req.body.amount);
@@ -98,8 +98,8 @@ const projectsController = {
     const deploy = req.app.get('deploy');
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const bids = yield dapp.getBids(deploy.admin, AI, req.params.name);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const bids = yield dapp.getBids(req.params.name);
       util.response.status200(res, {
         bids: bids,
       });
@@ -114,7 +114,7 @@ const projectsController = {
     const username = req.body.username;
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
       // this transaction requires transfer of funds from the buyer to the bid contract
       // IRL this will require to prompt the user for a password
       const password = deploy.users.filter(function(user) {
@@ -129,7 +129,7 @@ const projectsController = {
         bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
       };
 
-      const result = yield dapp.handleEvent(deploy.admin, AI, args);
+      const result = yield dapp.handleEvent(args);
       // got it
       util.response.status200(res, {
         bid: result,

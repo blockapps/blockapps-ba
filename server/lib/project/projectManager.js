@@ -41,6 +41,9 @@ function setContract(admin, contract) {
   contract.getProjectsByBuyer = function* (buyer) {
     return yield getProjectsByBuyer(contract, buyer);
   }
+  contract.getProjectsBySupplier = function* (supplier) {
+    return yield getProjectsBySupplier(supplier);
+  }
   contract.getProjectsByName = function* (name) {
     return yield getProjectsByName(contract, name);
   }
@@ -59,6 +62,8 @@ function setContract(admin, contract) {
   contract.settleProject = function* (projectName, supplierAddress, bidAddress) {
     return yield settleProject(admin, contract, projectName, supplierAddress, bidAddress);
   }
+  contract.getAcceptedBid = getAcceptedBid;
+
   return contract;
 }
 
@@ -347,11 +352,11 @@ function* handleEvent(admin, contract, name, projectEvent) {
 module.exports = {
   compileSearch: compileSearch,
   uploadContract: uploadContract,
+  setContract: setContract,
 
   getAcceptedBid: getAcceptedBid,
   getBid: getBid,
   getBidsByName: getBidsByName,
   getBidsBySupplier: getBidsBySupplier,
   getProjectsByState: getProjectsByState,
-  getProjectsBySupplier: getProjectsBySupplier,
 };
