@@ -20,8 +20,8 @@ const userManagerJs = require('../userManager');
 describe('UserManager tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
-  var contract;
+  let admin;
+  let contract;
 
   // get ready:  admin-user and manager-contract
   before(function* () {
@@ -41,7 +41,7 @@ describe('UserManager tests', function() {
   it('Create User - illegal name', function* () {
     const args = createUserArgs();
     args.username = '123456789012345678901234567890123'
-    var user;
+    let user;
     try {
       // create with illegal name - should fail
       user = yield contract.createUser(args);
@@ -57,7 +57,7 @@ describe('UserManager tests', function() {
   it('Test exists()', function* () {
     const args = createUserArgs();
 
-    var exists;
+    let exists;
     // should not exist
     exists = yield contract.exists(args.username);
     assert.isDefined(exists, 'should be defined');
@@ -73,7 +73,7 @@ describe('UserManager tests', function() {
     const args = createUserArgs();
     args.username += ' ?#%!@*';
 
-    var exists;
+    let exists;
     // should not exist
     exists = yield contract.exists(args.username);
     assert.isDefined(exists, 'should be defined');
@@ -90,7 +90,7 @@ describe('UserManager tests', function() {
 
     // create user
     const user = yield contract.createUser(args);
-    var duplicateUser;
+    let duplicateUser;
     try {
       // create duplicate - should fail
       duplicateUser = yield contract.createUser(args);
@@ -107,7 +107,7 @@ describe('UserManager tests', function() {
     const args = createUserArgs();
 
     // get non-existing user
-    var nonExisting;
+    let nonExisting;
     try {
       nonExisting = yield contract.getUser(args.username);
     } catch(error) {
@@ -154,7 +154,7 @@ describe('UserManager tests', function() {
     const count = 16*4; // leading 0 once every 16
     const users = [];
     // create users
-    for (var i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       const name = `User_${i}_`;
       const args = createUserArgs(name);
       const user = yield contract.createUser(args);

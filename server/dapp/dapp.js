@@ -45,11 +45,11 @@ function* getAdminInterface(aiAddress) {
   AI.contract.address = aiAddress;
 
   const state = yield rest.getState(AI.contract);
-  for (var name in state) {
-    var address = state[name];
+  for (let name in state) {
+    const address = state[name];
     if (address == 0) throw new Error(`getAdminInterface: interface not set: ${name}`);
     // capitalize first letter to match the contract name on the chain
-    var capName = name[0].toUpperCase() + name.substring(1);
+    const capName = name[0].toUpperCase() + name.substring(1);
     AI.subContracts[capName].address = address;
   }
   return AI;

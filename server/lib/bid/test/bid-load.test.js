@@ -15,7 +15,7 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
-var admin;
+let admin;
 
 describe('Bid tests', function() {
 
@@ -61,7 +61,7 @@ describe('Bid tests', function() {
     this.timeout(config.timeout*10);
 
     const id = new Date().getTime();
-    for (var i = 0; i < 500; i++) {
+    for (let i = 0; i < 500; i++) {
       const args = createContractArgs(id,i);
       const contract = yield bidJs.uploadContract(admin, args);
       {

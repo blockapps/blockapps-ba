@@ -25,9 +25,9 @@ const adminPassword = '1234';
 describe('ProjectManager tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
-  var contract;
-  var userManagerContract;
+  let admin;
+  let contract;
+  let userManagerContract;
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
@@ -47,7 +47,7 @@ describe('ProjectManager tests', function() {
   it('Create Project - illegal name', function* () {
     const projectArgs = createProjectArgs();
     projectArgs.name = '123456789012345678901234567890123';
-    var project;
+    let project;
     try {
       // create with illegal name - should fail
       project = yield contract.createProject(projectArgs);
@@ -92,7 +92,7 @@ describe('ProjectManager tests', function() {
     // create project
     const project = yield contract.createProject(projectArgs);
     // create a duplicate - should FAIL
-    var dupProject;
+    let dupProject;
     try {
       dupProject = yield contract.createProject(projectArgs);
     } catch(error) {
@@ -114,7 +114,7 @@ describe('ProjectManager tests', function() {
 
   it('Get non exisiting project', function* () {
     const projectArgs = createProjectArgs();
-    var nonExistingProject;
+    let nonExistingProject;
     try {
       nonExistingProject = yield contract.getProject(projectArgs.name);
     } catch(error) {
@@ -155,7 +155,7 @@ describe('ProjectManager tests', function() {
     const uid = util.uid();
     // create projects
     const projects = [];
-    for (var i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       const projectArgs = createProjectArgs(uid);
       projectArgs.name += '_' + i;
       const project = yield contract.createProject(projectArgs);
@@ -214,7 +214,7 @@ describe('ProjectManager tests', function() {
     const names = projectsArgs.map(projectArgs => {
       return projectArgs.name;
     });
-    for (var i = projectsArgs.length; i < 539; i++) { // push the csv size boundry
+    for (let i = projectsArgs.length; i < 539; i++) { // push the csv size boundry
       names.push(projectsArgs[0].name + i);
     }
 
@@ -293,9 +293,9 @@ function createProjectArgs(_uid) {
 describe('ProjectManager Life Cycle tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
-  var contract;
-  var userManagerContract;
+  let admin;
+  let contract;
+  let userManagerContract;
 
   // get ready:  admin-user and manager-contract
   before(function* () {
@@ -304,7 +304,7 @@ describe('ProjectManager Life Cycle tests', function() {
     userManagerContract = yield userManagerJs.uploadContract(admin);
   });
 
-  it.only('Create new Bid', function* () {
+  it('Create new Bid', function* () {
     const supplier = util.uid('Supplier1');
     const amount = 5678;
     const projectArgs = createProjectArgs();
@@ -380,7 +380,7 @@ describe('ProjectManager Life Cycle tests', function() {
       password: admin.password,
       account: admin.address,
     }
-    var errorCode;
+    let errorCode;
     try {
       yield contract.acceptBid(buyer, bid.id, project.name);
     } catch(error) {
@@ -408,7 +408,7 @@ describe('ProjectManager Life Cycle tests', function() {
     // create suppliers
     const suppliers = yield createSuppliers(3, password, uid);
     // create bids
-    var bids = yield createMultipleBids(projectArgs.name, suppliers, amount);
+    let bids = yield createMultipleBids(projectArgs.name, suppliers, amount);
     // accept one bid
     const buyer = { // pretend the admin is the buyer
       username: admin.name,
@@ -524,10 +524,10 @@ describe('ProjectManager Life Cycle tests', function() {
 
   function* createSuppliers(count, password, uid) {
     const suppliers = [];
-    for (var i = 0 ; i < count; i++) {
-      var name = `Supplier${i}_${uid}`;
-      var supplierArgs = createUserArgs(name, password, UserRole.SUPPLIER);
-      var supplier = yield userManagerContract.createUser(supplierArgs);
+    for (let i = 0 ; i < count; i++) {
+      const name = `Supplier${i}_${uid}`;
+      const supplierArgs = createUserArgs(name, password, UserRole.SUPPLIER);
+      const supplier = yield userManagerContract.createUser(supplierArgs);
       suppliers.push(supplier);
     }
     return suppliers;

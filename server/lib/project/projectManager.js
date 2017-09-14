@@ -319,8 +319,8 @@ function* getProjectsByName(contract, names) {
   // the url might get too long, so the query is broken to multipart
   const MAX = 50; // max names to list in one REST call
   const parts = Math.ceil(names.length/MAX);
-  var results = [];
-  for (var i = 0; i < parts; i++) {
+  let results = [];
+  for (let i = 0; i < parts; i++) {
     const start = i*MAX;
     const end = (i<parts-1) ? (i+1)*MAX : names.length;
     const csv = util.toCsv(names.slice(start, end)); // generate csv string

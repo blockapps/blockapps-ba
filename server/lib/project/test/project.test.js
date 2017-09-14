@@ -16,7 +16,7 @@ const adminPassword = '1234';
 describe('Project tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
+  let admin;
 
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);

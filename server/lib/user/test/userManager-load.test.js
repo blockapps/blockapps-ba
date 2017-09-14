@@ -20,8 +20,8 @@ const userManagerJs = require('../userManager');
 describe('UserManager LOAD tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
-  var contract;
+  let admin;
+  let contract;
 
   // get ready:  admin-user and manager-contract
   before(function* () {
@@ -35,7 +35,7 @@ describe('UserManager LOAD tests', function() {
     const count = 16*4; // leading 0 once every 16
     const users = [];
     // create users
-    for (var i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       const name = `User_${i}_`;
       const args = createUserArgs(name);
       const user = yield contract.createUser(args);

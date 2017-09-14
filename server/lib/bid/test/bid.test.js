@@ -15,7 +15,7 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
-var admin;
+let admin;
 
 describe('Bid tests', function() {
   this.timeout(config.timeout);
@@ -147,7 +147,7 @@ describe('Bid tests', function() {
     const bob = yield rest.createUser(username, password);
     // call method WITH value
     const value = (new BigNumber(1234)).mul(constants.ETHER);
-    var result;
+    let result;
     try {
       result = yield rest.callMethod(admin, contract, method, methodArgs, value);
     } catch(error) {

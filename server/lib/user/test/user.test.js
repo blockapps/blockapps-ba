@@ -9,7 +9,7 @@ const should = common.should;
 const assert = common.assert;
 const Promise = common.Promise;
 
-var userJs = require('../user');
+const userJs = require('../user');
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
@@ -17,7 +17,7 @@ const adminPassword = '1234';
 describe('User tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
+  let admin;
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
@@ -94,7 +94,7 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    var isAuthenticated;
+    let isAuthenticated;
     const contract = yield userJs.uploadContract(admin, args);
     isAuthenticated = yield contract.authenticate(pwHash);
     assert.isOk(isAuthenticated, 'authenticated');
