@@ -16,11 +16,10 @@ const adminPassword = '1234';
 describe('Project tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
+  let admin;
 
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    yield projectJs.compileSearch(true);
   });
 
   /**
@@ -91,7 +90,7 @@ describe('Project tests', function() {
     const contract = yield projectJs.uploadContract(admin, args);
     // state
     {
-      const project = yield projectJs.getState(contract);
+      const project = yield contract.getState();
       assert.equal(project.name, name, 'name');
       assert.equal(project.buyer, buyer, 'buyer');
       assert.equal(project.description, description, 'description');

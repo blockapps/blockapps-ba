@@ -15,15 +15,13 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
-var admin;
+let admin;
 
 describe('Bid tests', function() {
   this.timeout(config.timeout);
 
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    // compile if needed
-    yield bidJs.compileSearch(true);
   })
 
   it('Create Contract', function* () {
@@ -40,7 +38,7 @@ describe('Bid tests', function() {
     };
 
     const contract = yield bidJs.uploadContract(admin, args);
-    const bid = yield bidJs.getState(contract);
+    const bid = yield contract.getState();
     assert.equal(bid.id, id, 'id');
     assert.equal(bid.name, name, 'name');
     assert.equal(bid.supplier, supplier, 'supplier');
@@ -93,7 +91,10 @@ describe('Bid tests', function() {
     };
 
     // create target user
-    const bob = yield rest.createUser(adminName+'bob', adminPassword);
+    const username = util.uid('Bob');
+    const password = '1234';
+    const bob = yield rest.createUser(username, password);
+
     // send tx - works
     const sendValue = 123;
     const receipt = yield rest.send(admin, bob, sendValue);
@@ -141,10 +142,12 @@ describe('Bid tests', function() {
     };
 
     // create target user
-    const bob = yield rest.createUser(adminName+'bob', adminPassword);
+    const username = util.uid('Bob');
+    const password = '1234';
+    const bob = yield rest.createUser(username, password);
     // call method WITH value
     const value = (new BigNumber(1234)).mul(constants.ETHER);
-    var result;
+    let result;
     try {
       result = yield rest.callMethod(admin, contract, method, methodArgs, value);
     } catch(error) {

@@ -17,12 +17,10 @@ const adminPassword = '1234';
 describe('User tests', function() {
   this.timeout(config.timeout);
 
-  var admin;
+  let admin;
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
-    // compile if needed
-    yield userJs.compileSearch(true);
   });
 
   it('Create Contract', function* () {
@@ -43,7 +41,7 @@ describe('User tests', function() {
 
     // create the user with constructor args
     const contract = yield userJs.uploadContract(admin, args);
-    const user = yield userJs.getState(contract);
+    const user = yield contract.getState();
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
     assert.equal(user.pwHash, pwHash, 'pwHash');
@@ -96,11 +94,11 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    var isAuthenticated;
+    let isAuthenticated;
     const contract = yield userJs.uploadContract(admin, args);
-    isAuthenticated = yield userJs.authenticate(admin, contract, pwHash);
+    isAuthenticated = yield contract.authenticate(pwHash);
     assert.isOk(isAuthenticated, 'authenticated');
-    isAuthenticated = yield userJs.authenticate(admin, contract, util.toBytes32('666'));
+    isAuthenticated = yield contract.authenticate(util.toBytes32('666'));
     assert.isNotOk(isAuthenticated, 'not authenticated');
  });
 

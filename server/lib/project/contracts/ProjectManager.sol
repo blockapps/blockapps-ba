@@ -58,6 +58,8 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
     uint created,
     uint targetDelivery
   ) returns (ErrorCodes) {
+    // name must be < 32 bytes
+    if (bytes(name).length > 32) return ErrorCodes.ERROR;
     // fail if username exists
     if (exists(name)) return ErrorCodes.EXISTS;
     // add project
