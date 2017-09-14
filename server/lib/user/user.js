@@ -9,26 +9,37 @@ const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function* compileSearch(onlyIfNotCompiled) {
-  // if only first time, but alreay compiled - bail
-  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+function* uploadContract(admin, args) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+  yield compileSearch();
+  contract.src = 'removed';
+  return setContract(admin, contract);
+}
+
+function setContract(admin, contract) {
+  contract.getState = function* () {
+    return yield rest.getState(contract);
+  }
+  contract.authenticate = function* (pwHash) {
+    return yield authenticate(admin, contract, pwHash);
+  }
+  return contract;
+}
+
+function* compileSearch() {
+  rest.verbose('compileSearch', contractName);
+
+  if (yield rest.isCompiled(contractName)) {
     return;
   }
-  // compile
   const searchable = [contractName];
-  return yield rest.compileSearch(searchable, contractName, contractFilename);
+  yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getState(contract) {
-  return yield rest.getState(contract);
-}
-
-function* uploadContract(user, args) {
-  return yield rest.uploadContract(user, contractName, contractFilename, args);
-}
-
-function* isCompiled() {
-  return yield rest.isCompiled(contractName);
+function* getUsers(addresses) {
+  const csv = util.toCsv(addresses); // generate csv string
+  const results = yield rest.query(`${contractName}?address=in.${csv}`);
+  return results;
 }
 
 function* getUserById(id) {
@@ -55,12 +66,8 @@ function* authenticate(admin, contract, pwHash) {
 
 
 module.exports = {
-  compileSearch: compileSearch,
-  getState: getState,
-  getUserByAddress: getUserByAddress,
-  getUserById: getUserById,
   uploadContract: uploadContract,
-  isCompiled: isCompiled,
+  compileSearch: compileSearch,
 
   // constants
   contractName: contractName,
@@ -69,4 +76,7 @@ module.exports = {
 
   // business logic
   authenticate: authenticate,
+  getUserByAddress: getUserByAddress,
+  getUsers: getUsers,
+  getUserById: getUserById,
 };

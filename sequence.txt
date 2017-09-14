@@ -1,0 +1,17 @@
+@startuml
+title "Supply Chain Demo"
+participant "Buyer" as b1
+database "Blockchain" as bc
+participant "Supplier" as s1
+
+b1 -> bc: create project
+bc -> s1: browse open projects 
+s1 -> bc: create bid
+bc -> b1: browse open bids
+b1 -> bc: accept bid
+b1 --> bc: escrow funds in bid
+s1 -> bc: ship product
+b1 -> bc: recieve product
+bc --> s1: release funds
+
+@enduml

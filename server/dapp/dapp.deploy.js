@@ -14,15 +14,13 @@ const Promise = common.Promise;
 //   deploy the projects contracts
 // ---------------------------------------------------
 
-const dapp = require('./dapp')(config.libPath);
+const dappJs = require('./dapp')(config.libPath);
 
 assert.isDefined(config.dataFilename, 'Data argument missing. Set in config, or use --data <path>');
 const presetData = fsutil.yamlSafeLoadSync(config.dataFilename);
 assert.isDefined(presetData, 'Demo data read failed');
 assert.isDefined(presetData.users, 'Users data undefined');
 console.log('Preset data', JSON.stringify(presetData, null, 2));
-
-const userManager = require(process.cwd() + '/' + config.libPath + '/user/userManager');
 
 describe('Supply Chain Demo App - deploy contracts', function () {
   this.timeout(900 * 1000);
@@ -32,16 +30,12 @@ describe('Supply Chain Demo App - deploy contracts', function () {
 
   // uploading the admin contract and dependencies
   it('should upload the contracts', function* () {
-    // compile search
-    yield dapp.compileSearch();
-    // set admin interface
+    // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
-    const AI = yield dapp.setAdminInterface(admin);
-    // sanity check - get the interface back
-    const testAI = yield dapp.getAdminInterface(AI.contract.address);
-    assert.deepEqual(AI, testAI);
+    const dapp = yield dappJs.uploadContract(admin);
     // create preset users
-    yield createPresetUsers(admin, AI.subContracts['UserManager'], presetData.users);
+    yield dapp.createPresetUsers(presetData.users);   // TODO test the users are all in
+
     const object = {
       url: config.getBlocUrl(),
       admin: {
@@ -50,7 +44,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
         address: admin.address,
       },
       AdminInterface: {
-        address: AI.contract.address,
+        address: dapp.aiAddress,
       },
       users: presetData.users,
     };
@@ -59,17 +53,3 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     fsutil.yamlWrite(object, config.deployFilename);
   });
 });
-
-const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
-
-function* createPresetUsers(admin, contract, users) {
-  for (let user of users) {
-    const args = {
-      username: user.username,
-      password: user.password,
-      role: UserRole[user.role],
-    }
-    const y = yield userManager.createUser(admin, contract, args);
-  }
-  // TODO test the users are all in
-}

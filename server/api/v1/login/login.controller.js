@@ -12,11 +12,11 @@ const loginController = {
     const deploy = req.app.get('deploy');
     const username = req.body.username;
     const password = req.body.password;
-    const dapp = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.libPath);
+    const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.libPath);
 
     co(function* () {
-      const AI = yield dapp.getAdminInterface(deploy.AdminInterface.address);
-      const result = yield dapp.login(deploy.admin, username, password);
+      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const result = yield dapp.login(username, password);
       util.response.status200(res, {
         authenticate: true,
         user: result.user

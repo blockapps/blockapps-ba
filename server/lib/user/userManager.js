@@ -6,44 +6,60 @@ const config = ba.common.config;
 
 const contractName = 'UserManager';
 const contractFilename = `${config.libPath}/user/contracts/UserManager.sol`;
-const user = require('./user');
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
-const userContractName = require('./user').contractName;
 
-function* compileSearch(onlyIfNotCompiled) {
-  // if only first time, but alreay compiled - bail
-  if (onlyIfNotCompiled  &&  (yield isCompiled())) {
+function* uploadContract(admin, args) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+  yield compileSearch();
+  contract.src = 'removed';
+  return setContract(admin, contract);
+}
+
+function setContract(admin, contract) {
+  contract.getState = function* () {
+    return yield rest.getState(contract);
+  }
+  contract.createUser = function* (args) {
+    return yield createUser(admin, contract, args);
+  }
+  contract.exists = function* (username) {
+    return yield exists(admin, contract, username);
+  }
+  contract.getUser = function* (username) {
+    return yield getUser(admin, contract, username);
+  }
+  contract.getUsers = function* () {
+    return yield getUsers(admin, contract);
+  }
+  contract.login = function* (args) {
+    return yield login(admin, contract, args);
+  }
+  contract.getBalance = function* (username, node) {
+    return yield getBalance(admin, contract, username, node);
+  }
+  return contract;
+}
+
+function* compileSearch() {
+  rest.verbose('compileSearch', contractName);
+  if (yield rest.isCompiled(contractName)) {
     return;
   }
+  // compile dependencies
+  const userJs = require('./user');
+  yield userJs.compileSearch();
   // compile
   const searchable = [contractName];
-  return yield rest.compileSearch(searchable, contractName, contractFilename);
-}
+  yield rest.compileSearch(searchable, contractName, contractFilename);
 
-function* getState(contract) {
-  return yield rest.getState(contract);
-}
-
-function* uploadContract(user, args) {
-  return yield rest.uploadContract(user, contractName, contractFilename, args);
-}
-
-function* isCompiled() {
-  return yield rest.isCompiled(contractName);
-}
-
-function* getAccount(address, node) {
-  rest.verbose('getAccount', address);
-  const accounts = yield rest.getAccount(address, node);
-  return accounts;
 }
 
 function* getBalance(admin, contract, username, node) {
   rest.verbose('getBalance', username);
   const baUser = yield getUser(admin, contract, username);
-  const accounts = yield getAccount(baUser.account);
+  const accounts = yield rest.getAccount(baUser.account);
   const balance = new BigNumber(accounts[0].balance);
   return balance;
 }
@@ -99,16 +115,17 @@ function* getUser(admin, contract, username) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
   // found - query for the full user record
-  const baUser = yield user.getUserByAddress(userAddress);
+  const userJs = require('./user');
+  const baUser = yield userJs.getUserByAddress(userAddress);
   return baUser;
 }
 
 function* getUsers(admin, contract) {
   rest.verbose('getUsers');
-  const state = yield getState(contract);
+  const state = yield rest.getState(contract);
   const users = state.users;
-  const csv = util.toCsv(users); // generate csv string
-  const results = yield rest.query(`${userContractName}?address=in.${csv}`);
+  const userJs = require('./user');
+  const results = yield userJs.getUsers(users);
   return results;
 }
 
@@ -124,15 +141,7 @@ function* login(admin, contract, args) {
 }
 
 module.exports = {
-  compileSearch: compileSearch,
-  isCompiled: isCompiled,
-  getState: getState,
   uploadContract: uploadContract,
-  getAccount: getAccount,
-  getBalance: getBalance,
-  createUser: createUser,
-  exists: exists,
-  getUser: getUser,
-  getUsers: getUsers,
-  login: login,
+  compileSearch: compileSearch,
+  setContract: setContract,
 };
