@@ -10,7 +10,7 @@ deployFilename: ./server/config/192.deploy.yaml
 # node 0 is the default url for all single node api calls
 nodes:
   - id: 0
-    explorerUrl: 'http://192.168.99.100:9000'
-    stratoUrl: 'http://192.168.99.100/strato-api'
-    blocUrl: 'http://192.168.99.100/bloc/v2.1'
-    searchUrl: 'http://192.168.99.100/cirrus'
+    explorerUrl: 'http://192.168.0.106:9000'
+    stratoUrl: 'http://192.168.0.106/strato-api'
+    blocUrl: 'http://192.168.0.106/bloc/v2.1'
+    searchUrl: 'http://192.168.0.106/cirrus'

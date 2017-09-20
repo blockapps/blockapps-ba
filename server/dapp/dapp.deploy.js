@@ -4,7 +4,6 @@ const rest = ba.rest;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
-const fsutil = common.fsutil;
 const should = common.should;
 const assert = common.assert;
 const expect = common.expect;
@@ -33,23 +32,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
     const dapp = yield dappJs.uploadContract(admin);
-    // create preset users
-    yield dapp.createPresetUsers(presetData.users);   // TODO test the users are all in
-
-    const object = {
-      url: config.getBlocUrl(),
-      admin: {
-        name: adminName,
-        password: adminPassword,
-        address: admin.address,
-      },
-      AdminInterface: {
-        address: dapp.aiAddress,
-      },
-      users: presetData.users,
-    };
-    console.log(config.deployFilename);
-    console.log(fsutil.yamlSafeDumpSync(object));
-    fsutil.yamlWrite(object, config.deployFilename);
+    console.log(dapp);
+    yield dapp.deploy(presetData);
   });
 });

@@ -11,6 +11,8 @@ const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 const ErrorCodes = ba.rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
+let libPath;
+
 // ========== Admin (super user) ==========
 
 // ========== Admin Interface ==========
@@ -28,11 +30,11 @@ const AI = {
 
 function* uploadContract(admin) {
   const contractName = AI.contract.name;
-  const contractFilename = AI.contract.libPath + AI.contract.filename;
+  const contractFilename = libPath + AI.contract.filename;
   const contract = yield rest.uploadContract(admin, contractName, contractFilename);
-  yield compileSearch();
   contract.src = 'removed';
-  return yield getDapp(admin, contract.address);
+  yield compileSearch();
+  return yield setContract(admin, contract);
 }
 
 function* compileSearch() {
@@ -55,68 +57,82 @@ function* getAdminInterface(aiAddress) {
   return AI;
 }
 
-function* getDapp(admin, aiAddress) {
-  rest.verbose('getDapp', {admin, aiAddress});
-  //AI.contract.address = aiAddress;
-  const AI = yield getAdminInterface(aiAddress);
+const subContractsNames = ['userManager', 'projectManager'];
 
-  const userManager = userManagerJs.setContract(admin, AI.subContracts['UserManager']);
-  const projectManager = projectManagerJs.setContract(admin, AI.subContracts['ProjectManager']);
+function* getSubContracts(contract) {
+  rest.verbose('getSubContracts', {contract, subContractsNames});
+  const state = yield rest.getState(contract);
+  const subContracts = {}
+  subContractsNames.map(name => {
+    subContracts[name] = {
+      name: name[0].toUpperCase() + name.substring(1),
+      address: state[name],
+    }
+  });
+  return subContracts;
+}
 
-  const dapp = {}
-  dapp.aiAddress = aiAddress;
-  dapp.getBalance = function* (username) {
+
+function* setContract(admin, contract) {
+  rest.verbose('setContract', {admin, contract});
+  const subContarcts = yield getSubContracts(contract);
+  console.log(subContarcts);
+
+  const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
+  const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
+
+  contract.getBalance = function* (username) {
     rest.verbose('dapp: getBalance', username);
     return yield userManager.getBalance(username);
   }
   // project - create
-  dapp.createProject = function* (args) {
+  contract.createProject = function* (args) {
     return yield createProject(projectManager, args);
   }
   // project - by name
-  dapp.getProject = function* (name) {
+  contract.getProject = function* (name) {
     rest.verbose('dapp: getProject', name);
     return yield projectManager.getProject(name);
   }
   // projects - by buyer
-  dapp.getProjectsByBuyer = function* (buyer) {
+  contract.getProjectsByBuyer = function* (buyer) {
     rest.verbose('dapp: getProjectsByBuyer', buyer);
     return yield projectManager.getProjectsByBuyer(buyer);
   }
   // projects - by state
-  dapp.getProjectsByState = function* (state) {
+  contract.getProjectsByState = function* (state) {
     rest.verbose('dapp: getProjectsByState', state);
     return yield projectManager.getProjectsByState(state);
   }
   // projects - by supplier
-  dapp.getProjectsBySupplier = function* (supplier) {
+  contract.getProjectsBySupplier = function* (supplier) {
     rest.verbose('dapp: getProjectsBySupplier', supplier);
     return yield projectManager.getProjectsBySupplier(supplier);
   }
   // create bid
-  dapp.createBid = function* (name, supplier, amount) {
+  contract.createBid = function* (name, supplier, amount) {
     rest.verbose('dapp: createBid', {name, supplier, amount});
     return yield projectManager.createBid(name, supplier, amount);
   }
   // bids by name
-  dapp.getBids = function* (name) {
+  contract.getBids = function* (name) {
     rest.verbose('dapp: getBids', name);
     return yield projectManagerJs.getBidsByName(name);
   }
   // handle event
-  dapp.handleEvent = function* (args) {
+  contract.handleEvent = function* (args) {
     return yield handleEvent(userManager, projectManager, args);
   }
   // login
-  dapp.login = function* (username, password) {
+  contract.login = function* (username, password) {
     return yield login(userManager, username, password);
   }
-  // create preset users
-  dapp.createPresetUsers = function* (presetUsers) {
-    return yield createPresetUsers(userManager, presetUsers);
+  // deploy
+  contract.deploy = function* (presetData) {
+    return yield deploy(admin, contract, userManager, presetData);
   }
 
-  return dapp;
+  return contract;
 }
 
 // =========================== business functions ========================
@@ -191,12 +207,36 @@ function* createPresetUsers(userManager, presetUsers) {
   }
 }
 
-module.exports = function (libPath) {
-  rest.verbose('construct', {libPath});
-  AI.contract.libPath = libPath;
+function* deploy(admin, contract, userManager, presetData) {
+  rest.verbose('dapp: deploy', presetData);
+
+  // create preset users
+  yield createPresetUsers(userManager, presetData.users);   // TODO test the users are all in
+
+  const object = {
+    url: config.getBlocUrl(),
+    admin: admin,
+    contract: {
+      name: contract.name,
+      address: contract.address,
+    },
+    preset: presetData,
+    users: presetData.users,
+  };
+  // write
+  const fsutil = ba.common.fsutil;
+  console.log(config.deployFilename);
+  console.log(fsutil.yamlSafeDumpSync(object));
+
+  fsutil.yamlWrite(object, config.deployFilename);
+}
+
+module.exports = function (_libPath) {
+  rest.verbose('construct', {_libPath});
+  libPath = _libPath;
 
   return {
-    getDapp: getDapp,
+    setContract: setContract,
     compileSearch: compileSearch,
     uploadContract: uploadContract,
   };
