@@ -197,6 +197,7 @@ function* handleEvent(userManager, projectManager, args) {
 
 function* createPresetUsers(userManager, presetUsers) {
   const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+  const users = [];
   for (let presetUser of presetUsers) {
     const args = {
       username: presetUser.username,
@@ -204,14 +205,21 @@ function* createPresetUsers(userManager, presetUsers) {
       role: UserRole[presetUser.role],
     }
     const user = yield userManager.createUser(args);
+    users.push(user);
   }
+  return users;
 }
 
-function* deploy(admin, contract, userManager, presetData) {
-  rest.verbose('dapp: deploy', presetData);
+function* deploy(admin, contract, userManager, presetDataFilename) {
+  rest.verbose('dapp: deploy', presetDataFilename);
+  const fsutil = ba.common.fsutil;
+
+  const presetData = fsutil.yamlSafeLoadSync(presetDataFilename);
+  if (presetData === undefined) throw new Error('Preset data read failed ' + presetDataFilename);
+  console.log('Preset data', JSON.stringify(presetData, null, 2));
 
   // create preset users
-  yield createPresetUsers(userManager, presetData.users);   // TODO test the users are all in
+  const users = yield createPresetUsers(userManager, presetData.users);   // TODO test the users are all in
 
   const object = {
     url: config.getBlocUrl(),
@@ -220,11 +228,9 @@ function* deploy(admin, contract, userManager, presetData) {
       name: contract.name,
       address: contract.address,
     },
-    preset: presetData,
     users: presetData.users,
   };
   // write
-  const fsutil = ba.common.fsutil;
   console.log(config.deployFilename);
   console.log(fsutil.yamlSafeDumpSync(object));
 

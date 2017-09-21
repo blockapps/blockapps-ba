@@ -15,24 +15,19 @@ const Promise = common.Promise;
 
 const dappJs = require('./dapp')(config.libPath);
 
-assert.isDefined(config.dataFilename, 'Data argument missing. Set in config, or use --data <path>');
-const presetData = fsutil.yamlSafeLoadSync(config.dataFilename);
-assert.isDefined(presetData, 'Demo data read failed');
-assert.isDefined(presetData.users, 'Users data undefined');
-console.log('Preset data', JSON.stringify(presetData, null, 2));
-
 describe('Supply Chain Demo App - deploy contracts', function () {
   this.timeout(900 * 1000);
 
+  assert.isDefined(config.dataFilename, 'Data argument missing. Set in config, or use --data <path>');
+
   const adminName = util.uid('Admin');  // FIXME
-  const adminPassword = '1234';   // FIXME
+  const adminPassword = '7890';   // FIXME
 
   // uploading the admin contract and dependencies
   it('should upload the contracts', function* () {
     // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
     const dapp = yield dappJs.uploadContract(admin);
-    console.log(dapp);
-    yield dapp.deploy(presetData);
+    yield dapp.deploy(config.dataFilename);
   });
 });
