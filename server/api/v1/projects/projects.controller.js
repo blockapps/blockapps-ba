@@ -6,7 +6,7 @@ const config = common.config;
 const util = common.util;
 const path = require('path');
 const serverPath = './server';
-const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
+const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 
 const projectsController = {
   create: function(req, res) {

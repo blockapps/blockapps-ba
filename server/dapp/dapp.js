@@ -7,31 +7,15 @@ const Promise = ba.common.Promise;
 const userManagerJs = require(process.cwd() + '/' + config.libPath + '/user/userManager');
 const projectManagerJs = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
 
-const bid = require(process.cwd() + '/' + config.libPath + '/bid/bid');
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 const ErrorCodes = ba.rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
-let libPath;
+const contractName = 'AdminInterface';
+const contractFilename = '/admin/AdminInterface.sol';
+const subContractsNames = ['userManager', 'projectManager'];
 
-// ========== Admin (super user) ==========
-
-// ========== Admin Interface ==========
-const AI = {
-  contract: {
-    name: 'AdminInterface',
-    filename: '/admin/AdminInterface.sol',
-    libPath: undefined,
-  },
-  subContracts: {
-    UserManager: {name: 'UserManager', address: undefined},
-    ProjectManager: {name: 'ProjectManager', address: undefined},
-  },
-};
-
-function* uploadContract(admin) {
-  const contractName = AI.contract.name;
-  const contractFilename = libPath + AI.contract.filename;
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename);
+function* uploadContract(admin, libPath) {
+  const contract = yield rest.uploadContract(admin, contractName, libPath + contractFilename);
   contract.src = 'removed';
   yield compileSearch();
   return yield setContract(admin, contract);
@@ -41,23 +25,6 @@ function* compileSearch() {
   yield projectManagerJs.compileSearch();
   yield userManagerJs.compileSearch();
 }
-
-function* getAdminInterface(aiAddress) {
-  rest.verbose('getAdminInterface', {aiAddress, AI});
-  AI.contract.address = aiAddress;
-
-  const state = yield rest.getState(AI.contract);
-  for (let name in state) {
-    const address = state[name];
-    if (address == 0) throw new Error(`getAdminInterface: interface not set: ${name}`);
-    // capitalize first letter to match the contract name on the chain
-    const capName = name[0].toUpperCase() + name.substring(1);
-    AI.subContracts[capName].address = address;
-  }
-  return AI;
-}
-
-const subContractsNames = ['userManager', 'projectManager'];
 
 function* getSubContracts(contract) {
   rest.verbose('getSubContracts', {contract, subContractsNames});
@@ -72,12 +39,10 @@ function* getSubContracts(contract) {
   return subContracts;
 }
 
-
 function* setContract(admin, contract) {
   rest.verbose('setContract', {admin, contract});
+  // set the managers
   const subContarcts = yield getSubContracts(contract);
-  console.log(subContarcts);
-
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
   const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
 
@@ -221,7 +186,7 @@ function* deploy(admin, contract, userManager, presetDataFilename) {
   // create preset users
   const users = yield createPresetUsers(userManager, presetData.users);   // TODO test the users are all in
 
-  const object = {
+  const deployment = {
     url: config.getBlocUrl(),
     admin: admin,
     contract: {
@@ -232,18 +197,14 @@ function* deploy(admin, contract, userManager, presetDataFilename) {
   };
   // write
   console.log(config.deployFilename);
-  console.log(fsutil.yamlSafeDumpSync(object));
+  console.log(fsutil.yamlSafeDumpSync(deployment));
 
-  fsutil.yamlWrite(object, config.deployFilename);
+  fsutil.yamlWrite(deployment, config.deployFilename);
+  return deployment;
 }
 
-module.exports = function (_libPath) {
-  rest.verbose('construct', {_libPath});
-  libPath = _libPath;
-
-  return {
-    setContract: setContract,
-    compileSearch: compileSearch,
-    uploadContract: uploadContract,
-  };
+module.exports = {
+  setContract: setContract,
+  compileSearch: compileSearch,
+  uploadContract: uploadContract,
 };

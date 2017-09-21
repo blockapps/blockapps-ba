@@ -13,7 +13,7 @@ const Promise = common.Promise;
 //   deploy the projects contracts
 // ---------------------------------------------------
 
-const dappJs = require('./dapp')(config.libPath);
+const dappJs = require('./dapp');
 
 describe('Supply Chain Demo App - deploy contracts', function () {
   this.timeout(900 * 1000);
@@ -27,7 +27,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   it('should upload the contracts', function* () {
     // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
-    const dapp = yield dappJs.uploadContract(admin);
-    yield dapp.deploy(config.dataFilename);
+    const dapp = yield dappJs.uploadContract(admin, config.libPath);
+    const deployment = yield dapp.deploy(config.dataFilename);
   });
 });

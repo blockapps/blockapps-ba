@@ -12,7 +12,7 @@ const loginController = {
     const deploy = req.app.get('deploy');
     const username = req.body.username;
     const password = req.body.password;
-    const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.libPath);
+    const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 
     co(function* () {
       const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
