@@ -6,7 +6,7 @@ const config = common.config;
 const util = common.util;
 const path = require('path');
 const serverPath = './server';
-const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
+const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 
 const projectsController = {
   create: function(req, res) {
@@ -14,7 +14,7 @@ const projectsController = {
     const projectArgs = req.body;
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const result = yield dapp.createProject(projectArgs);
       util.response.status200(res, {
         project: result,
@@ -30,7 +30,7 @@ const projectsController = {
     const projectName = decodeURIComponent(req.params['name']);
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const result = yield dapp.getProject(projectName);
       util.response.status200(res, {
         project: result,
@@ -63,7 +63,7 @@ const projectsController = {
     }
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const projects = yield dapp[listCallback](listParam);
       util.response.status200(res, {
         projects: projects,
@@ -78,7 +78,7 @@ const projectsController = {
     const deploy = req.app.get('deploy');
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const bid = yield dapp.createBid(
         req.params.name,
         req.body.supplier,
@@ -96,7 +96,7 @@ const projectsController = {
     const deploy = req.app.get('deploy');
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const bids = yield dapp.getBids(req.params.name);
       util.response.status200(res, {
         bids: bids,
@@ -112,7 +112,7 @@ const projectsController = {
     const username = req.body.username;
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       // this transaction requires transfer of funds from the buyer to the bid contract
       // IRL this will require to prompt the user for a password
       const password = deploy.users.filter(function(user) {
