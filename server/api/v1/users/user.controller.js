@@ -16,7 +16,7 @@ const usersController = {
     const username = decodeURI(req.params['username']);
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const balance = yield dapp.getBalance(username);
 
       util.response.status200(res, {

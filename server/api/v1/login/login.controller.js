@@ -15,7 +15,7 @@ const loginController = {
     const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.libPath);
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const result = yield dapp.login(username, password);
       util.response.status200(res, {
         authenticate: true,
