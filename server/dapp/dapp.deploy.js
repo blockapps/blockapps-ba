@@ -28,6 +28,6 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
     const dapp = yield dappJs.uploadContract(admin, config.libPath);
-    const deployment = yield dapp.deploy(config.dataFilename);
+    const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename);
   });
 });

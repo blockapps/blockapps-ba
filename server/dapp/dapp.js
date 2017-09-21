@@ -31,9 +31,11 @@ function* getSubContracts(contract) {
   const state = yield rest.getState(contract);
   const subContracts = {}
   subContractsNames.map(name => {
+    const address = state[name];
+    if (address === undefined || address == 0) throw new Error('Sub contract address not found ' + name);
     subContracts[name] = {
       name: name[0].toUpperCase() + name.substring(1),
-      address: state[name],
+      address: address,
     }
   });
   return subContracts;
@@ -93,8 +95,8 @@ function* setContract(admin, contract) {
     return yield login(userManager, username, password);
   }
   // deploy
-  contract.deploy = function* (presetData) {
-    return yield deploy(admin, contract, userManager, presetData);
+  contract.deploy = function* (dataFilename, deployFilename) {
+    return yield deploy(admin, contract, userManager, dataFilename, deployFilename);
   }
 
   return contract;
@@ -175,8 +177,8 @@ function* createPresetUsers(userManager, presetUsers) {
   return users;
 }
 
-function* deploy(admin, contract, userManager, presetDataFilename) {
-  rest.verbose('dapp: deploy', presetDataFilename);
+function* deploy(admin, contract, userManager, presetDataFilename, deployFilename) {
+  rest.verbose('dapp: deploy', {presetDataFilename, deployFilename});
   const fsutil = ba.common.fsutil;
 
   const presetData = fsutil.yamlSafeLoadSync(presetDataFilename);
@@ -196,10 +198,10 @@ function* deploy(admin, contract, userManager, presetDataFilename) {
     users: presetData.users,
   };
   // write
-  console.log(config.deployFilename);
+  console.log('deploy filename:', deployFilename);
   console.log(fsutil.yamlSafeDumpSync(deployment));
 
-  fsutil.yamlWrite(deployment, config.deployFilename);
+  fsutil.yamlWrite(deployment, deployFilename);
   return deployment;
 }
 
