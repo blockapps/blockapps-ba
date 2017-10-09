@@ -13,5 +13,5 @@ nodes:
   - id: 0
     explorerUrl: 'http://localhost:9000'
     stratoUrl: 'http://localhost/strato-api'
-    blocUrl: 'http://localhost/bloc/v2.1'
+    blocUrl: 'http://localhost/bloc/v2.2'
     searchUrl: 'http://localhost/cirrus'
