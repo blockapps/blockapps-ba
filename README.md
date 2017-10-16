@@ -17,9 +17,9 @@ This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate
 
 Node v7.2 or more recent.
 
-This application requires a [BlockApps Strato](http://blockapps.net/blockapps-strato-blockchain-application-development/) node. Follow the instruction in the [Strato getting started guide](https://github.com/blockapps/strato-getting-started) to install a local instance.
+This application requires a [BlockApps STRATO](http://blockapps.net/blockapps-strato-blockchain-application-development/) node. Follow the instruction in the [STRATO getting started guide](https://github.com/blockapps/strato-getting-started) to install a local instance.
 
-Once you have a functional strato node, you can clone this project and deploy it to the strato instance using the instructions below.
+Once you have a functional STRATO node, you can clone this project and deploy it to the STRATO instance using the instructions below.
 
 ### Dependencies
 
@@ -114,7 +114,7 @@ On Windows:
 set "SERVER=<server-name>" & npm run test-windows
 ```
 <!--MKDOCS_DOC_DIVIDER_USAGE-->
-## Using the Blockapps Supply Chain Demo App
+## Using the BlockApps Supply Chain Demo App
 
 Open the app in the browser.
 
