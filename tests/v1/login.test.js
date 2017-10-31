@@ -17,6 +17,34 @@ describe("Login Test", function(){
   const password = "1234";
   const timeout = 20 * 1000;
 
+  it('should fail to login with wrong password', function(done) {
+    this.timeout(timeout);
+    chai.request(server)
+      .post('/api/v1/login')
+      .send({
+        username: username ,
+        password: password + 'x',
+      })
+      .end((err, res) => {
+        assert.equal(res.statusCode, 401, 'Login should fail');
+        done();
+      });
+  });
+
+  it('should fail to login with wrong username', function(done) {
+    this.timeout(timeout);
+    chai.request(server)
+      .post('/api/v1/login')
+      .send({
+        username: username + 'x',
+        password: password ,
+      })
+      .end((err, res) => {
+        assert.equal(res.statusCode, 401, 'Login should fail');
+        done();
+      });
+  });
+
   it('should log the user in', function(done) {
     this.timeout(timeout);
     chai.request(server)

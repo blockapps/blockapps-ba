@@ -17,10 +17,11 @@ const loginController = {
     co(function* () {
       const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const result = yield dapp.login(username, password);
-      util.response.status200(res, {
-        authenticate: true,
-        user: result.user
-      });
+      if(!result.authenticate) {
+        util.response.status(401, res, 'Login failed');
+        return;
+      }
+      util.response.status200(res, result);
     }).catch(err => {
       console.log('Login Error:', err);
       util.response.status(401, res, 'Login failed');
