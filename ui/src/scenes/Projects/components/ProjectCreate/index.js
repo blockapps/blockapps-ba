@@ -14,6 +14,11 @@ import './ProjectCreate.css';
 
 class ProjectCreate extends Component {
 
+  constructor(props){
+    super(props);
+    this.enable = false;
+  }
+
   submit = (values) => {
     mixpanel.track('create_project_click');
     this.props.projectCreate(
@@ -31,7 +36,20 @@ class ProjectCreate extends Component {
       }
     );
   };
-
+ 
+  onFormChange(e) {
+    this.setState({
+      [e.target.name]: e.target.value
+    },function() {
+      if(this.state.name && this.state.description && this.state.price && this.state.targetDelivery && this.state.spec) {
+          this.enable = true;
+      } else {
+        this.enable = false;
+      }
+      this.forceUpdate();
+    })
+  }
+ 
   render() {
     const {handleSubmit} = this.props;
 
@@ -44,7 +62,7 @@ class ProjectCreate extends Component {
               title="New Project"
             />
             <CardText>
-              <form onSubmit={handleSubmit(this.submit)}>
+              <form onSubmit={handleSubmit(this.submit)} onChange={(e)=>this.onFormChange(e)}>
                 <div className="md-grid">
                   <Field
                     id="name"
@@ -127,7 +145,7 @@ class ProjectCreate extends Component {
                     component={ReduxedTextField} />
                   <div className="md-cell md-cell--12" />
                   <div className="md-cell md-cell--12 md-text-right">
-                    <Button raised primary label="Create" type="submit" />
+                    <Button raised primary label="Create" type="submit" disabled={!this.enable}/>
                     <Link to="/projects">
                       <Button className="margin-left" raised label="Cancel" />
                     </Link>
