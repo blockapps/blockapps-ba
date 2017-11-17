@@ -40,35 +40,35 @@ class ProjectCreate extends Component {
  
   //Called on change of any field in form
   onFormChange(e) {
-
     //Setting the required states with change of form field
     this.setState({
       [e.target.name]: e.target.value
     },function() {
-
-      //Checking the fields to be null
-      if( this.state.name && 
-        this.state.description && 
-        this.state.price && 
-        this.state.targetDelivery && 
-        this.state.spec ) {
-
-          //Checking whitespaces in fields
-          if( !this.state.name.trim().length <= 0 && 
-            !this.state.description.trim().length <= 0 &&
-            !this.state.price.trim().length <= 0 &&
-            !this.state.targetDelivery.trim().length <= 0 &&
-            !this.state.spec.trim().length <= 0 ){
-              this.enable = true;
-          } else {
-            this.enable = false;
-          }
-      } else {
-        this.enable = false;
-      }
+      //Validation of form
+      this.enable = this.isFormValid(this.state);  
       //Re-rendering of form
       this.forceUpdate();
     })
+  }
+  
+  //Validating the fields of form
+  isFormValid(state) {
+    if( this.isEmpty(state.name) || this.isEmpty(state.name.trim())) 
+      return false;
+    if(this.isEmpty(state.description) || this.isEmpty(state.description.trim())) 
+      return false;
+    if(this.isEmpty(state.price) || this.isEmpty(state.price.trim())) 
+      return false;
+    if(this.isEmpty(state.targetDelivery) || this.isEmpty(state.targetDelivery.trim())) 
+      return false;
+    if(this.isEmpty(state.spec) || this.isEmpty(state.spec.trim())) 
+      return false;
+    return true;
+  }
+
+  //Checking the empty string
+  isEmpty(str) {
+    return (!str || 0 === str.length);
   }
  
   render() {
