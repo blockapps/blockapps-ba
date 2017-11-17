@@ -14,9 +14,10 @@ import './ProjectCreate.css';
 
 class ProjectCreate extends Component {
 
+  //Initialising the local and state variable
   constructor(props){
     super(props);
-    this.enable = false;
+    this.enable = false; //Storing the create-button state
   }
 
   submit = (values) => {
@@ -37,15 +38,35 @@ class ProjectCreate extends Component {
     );
   };
  
+  //Called on change of any field in form
   onFormChange(e) {
+
+    //Setting the required states with change of form field
     this.setState({
       [e.target.name]: e.target.value
     },function() {
-      if(this.state.name && this.state.description && this.state.price && this.state.targetDelivery && this.state.spec) {
-          this.enable = true;
+
+      //Checking the fields to be null
+      if( this.state.name && 
+        this.state.description && 
+        this.state.price && 
+        this.state.targetDelivery && 
+        this.state.spec ) {
+
+          //Checking whitespaces in fields
+          if( !this.state.name.trim().length <= 0 && 
+            !this.state.description.trim().length <= 0 &&
+            !this.state.price.trim().length <= 0 &&
+            !this.state.targetDelivery.trim().length <= 0 &&
+            !this.state.spec.trim().length <= 0 ){
+              this.enable = true;
+          } else {
+            this.enable = false;
+          }
       } else {
         this.enable = false;
       }
+      //Re-rendering of form
       this.forceUpdate();
     })
   }
@@ -62,7 +83,9 @@ class ProjectCreate extends Component {
               title="New Project"
             />
             <CardText>
-              <form onSubmit={handleSubmit(this.submit)} onChange={(e)=>this.onFormChange(e)}>
+              <form onSubmit={handleSubmit(this.submit)} 
+              onChange={(e)=>this.onFormChange(e)} //Detects the change in form fields
+              >
                 <div className="md-grid">
                   <Field
                     id="name"
@@ -145,7 +168,9 @@ class ProjectCreate extends Component {
                     component={ReduxedTextField} />
                   <div className="md-cell md-cell--12" />
                   <div className="md-cell md-cell--12 md-text-right">
-                    <Button raised primary label="Create" type="submit" disabled={!this.enable}/>
+                    <Button raised primary label="Create" type="submit" 
+                    disabled={!this.enable} //Disbale the button according to its status
+                    />
                     <Link to="/projects">
                       <Button className="margin-left" raised label="Cancel" />
                     </Link>
