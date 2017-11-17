@@ -53,22 +53,17 @@ class ProjectCreate extends Component {
   
   //Validating the fields of form
   isFormValid(state) {
-    if( this.isEmpty(state.name) || this.isEmpty(state.name.trim())) 
-      return false;
-    if(this.isEmpty(state.description) || this.isEmpty(state.description.trim())) 
-      return false;
-    if(this.isEmpty(state.price) || this.isEmpty(state.price.trim())) 
-      return false;
-    if(this.isEmpty(state.targetDelivery) || this.isEmpty(state.targetDelivery.trim())) 
-      return false;
-    if(this.isEmpty(state.spec) || this.isEmpty(state.spec.trim())) 
-      return false;
+    if( this.isEmpty(state.name) ) return false;
+    if( this.isEmpty(state.description) ) return false;
+    if( this.isEmpty(state.price) ) return false;
+    if( this.isEmpty(state.targetDelivery) ) return false;
+    if( this.isEmpty(state.spec) ) return false;
     return true;
   }
 
   //Checking the empty string
   isEmpty(str) {
-    return (!str || 0 === str.length);
+    return (!str || 0 === str.trim().length);
   }
  
   render() {
