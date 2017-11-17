@@ -12,6 +12,11 @@ import { ROLES } from '../../../../constants';
 
 class UserBadge extends Component {
 
+  constructor(props){
+    super(props);
+    this.assigned= false; // Flag variable to show 'space' at balance until actual balance value is loaded
+  }
+
   componentWillMount() {
     this.props.userBalanceSubmit(this.props.username);
   }
@@ -46,8 +51,17 @@ class UserBadge extends Component {
 }
 
 function mapStateToProps(state) {
-  return {
-    balance: state.balance.balance
+
+ 
+  const bal = state.balance.balance;
+  if(!this.assigned) { 
+    // If flag variable is false, keep balance as 'space' and update the flag to 'true'
+
+    state.balance.balance = "";
+    this.assigned = !this.assigned;
+  }
+  return { 
+    balance: bal   // return value of balance
   };
 }
 
