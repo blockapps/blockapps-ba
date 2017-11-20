@@ -12,8 +12,22 @@ import { ROLES } from '../../../../constants';
 
 class UserBadge extends Component {
 
+  constructor(props){
+    super(props);
+    this.state={
+      balance: '' // initialize the balance state as empty string
+    }
+  }
+
   componentWillMount() {
+
     this.props.userBalanceSubmit(this.props.username);
+  }
+
+  componentWillReceiveProps(nextProps){
+    
+    this.setState({ balance: nextProps.balance }) //use this life cycle hook to update our state
+    
   }
 
   handleLogoutClick = (e) => {
@@ -22,6 +36,7 @@ class UserBadge extends Component {
     this.props.userLogout();
     this.props.setUserMessage('You logged out');
   };
+
 
   render() {
     const userIcon = <Avatar
@@ -34,7 +49,7 @@ class UserBadge extends Component {
         <div className="md-cell md-cell--8 md-cell--middle">
           <span className="md-font-bold">{this.props.username}</span>
           <br />
-          <span className="md-font-light">Balance: {this.props.balance}</span>
+          <span className="md-font-light">Balance: {this.state.balance}</span>
         </div>
         <div className="md-cell md-cell--1 md-text-center md-cell--middle">
           <a className="md-avatar--color" href="#" onClick={(e) => this.handleLogoutClick(e)}><FontIcon>exit_to_app</FontIcon></a>
@@ -46,9 +61,10 @@ class UserBadge extends Component {
 }
 
 function mapStateToProps(state) {
-  return {
-    balance: state.balance.balance
-  };
+
+ return{ 
+   balance: state.balance.balance // fetching balance from store and receiving as prop.
+   }  
 }
 
 export default connect(mapStateToProps, { setUserMessage, userLogout, userBalanceSubmit })(UserBadge);
