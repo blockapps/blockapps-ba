@@ -11,16 +11,22 @@ const initialState = {
 
 const reducer = function loginReducer (state = initialState, action) {
   switch(action.type) {
+    //Action when the balance is not received
     case USER_BALANCE_SUBMIT:
-      return state;
+      return {
+        balance: '',
+        error: null
+      };
+    //Action when the balance is received
     case USER_BALANCE_SUCCESS:
       return {
         balance: action.balance,
         error: null
       };
+    //Action when balance api call fails
     case USER_BALANCE_FAILURE:
       return {
-        balance: state.balance,
+        balance: '',
         error: action.error
       };
     default:
