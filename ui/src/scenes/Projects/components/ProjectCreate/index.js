@@ -14,6 +14,12 @@ import './ProjectCreate.css';
 
 class ProjectCreate extends Component {
 
+  //Initialising the local and state variable
+  constructor(props){
+    super(props);
+    this.enable = false; //Storing the create-button state
+  }
+
   submit = (values) => {
     mixpanel.track('create_project_click');
     this.props.projectCreate(
@@ -31,7 +37,35 @@ class ProjectCreate extends Component {
       }
     );
   };
+ 
+  //Called on change of any field in form
+  onFormChange(e) {
+    //Setting the required states with change of form field
+    this.setState({
+      [e.target.name]: e.target.value
+    },function() {
+      //Validation of form
+      this.enable = this.isFormValid(this.state);  
+      //Re-rendering of form
+      this.forceUpdate();
+    })
+  }
+  
+  //Validating the fields of form
+  isFormValid(state) {
+    if( this.isEmpty(state.name) ) return false;
+    if( this.isEmpty(state.description) ) return false;
+    if( this.isEmpty(state.price) ) return false;
+    if( this.isEmpty(state.targetDelivery) ) return false;
+    if( this.isEmpty(state.spec) ) return false;
+    return true;
+  }
 
+  //Checking the empty string
+  isEmpty(str) {
+    return (!str || 0 === str.trim().length);
+  }
+ 
   render() {
     const {handleSubmit} = this.props;
 
@@ -44,7 +78,9 @@ class ProjectCreate extends Component {
               title="New Project"
             />
             <CardText>
-              <form onSubmit={handleSubmit(this.submit)}>
+              <form onSubmit={handleSubmit(this.submit)} 
+              onChange={(e)=>this.onFormChange(e)} //Detects the change in form fields
+              >
                 <div className="md-grid">
                   <Field
                     id="name"
@@ -127,7 +163,9 @@ class ProjectCreate extends Component {
                     component={ReduxedTextField} />
                   <div className="md-cell md-cell--12" />
                   <div className="md-cell md-cell--12 md-text-right">
-                    <Button raised primary label="Create" type="submit" />
+                    <Button raised primary label="Create" type="submit" 
+                    disabled={!this.enable} //Disbale the button according to its status
+                    />
                     <Link to="/projects">
                       <Button className="margin-left" raised label="Cancel" />
                     </Link>
