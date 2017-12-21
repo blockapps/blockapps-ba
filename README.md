@@ -64,7 +64,7 @@ nodes:
   - id: 0
     explorerUrl: 'http://<your-ip-or-dns>:9000'
     stratoUrl: 'http://<your-ip-or-dns>/strato-api'
-    blocUrl: 'http://<your-ip-or-dns>/bloc/v2.1'
+    blocUrl: 'http://<your-ip-or-dns>/bloc/v2.2'
     searchUrl: 'http://<your-ip-or-dns>/cirrus'
 ```
 
