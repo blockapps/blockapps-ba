@@ -117,8 +117,10 @@ SERVER=<server-name> npm run deploy
 On Windows:
 
 ```
-set "SERVER=<server-name>" & npm run deploy-windows
+set "SERVER=<local-ip>" & npm run deploy-windows
 ```
+
+Here <local-ip> can be 127.0.0.1 or the local network ip.
 
 #### Launching the API
 
