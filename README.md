@@ -19,10 +19,12 @@ Node v7.2 or more recent.
 
 This application requires a [BlockApps STRATO](http://blockapps.net/blockapps-strato-blockchain-application-development/) node. Follow the instruction in the [STRATO getting started guide](https://github.com/blockapps/strato-getting-started) to install a local instance.
 
+Please make sure that ports 80, 3030, and 3031 are publicly accessible. If you are using AWS or Azure, you may need to allow traffic on these ports by changing the firewall settings.
+
 Once you have a functional STRATO node, you can clone this project and deploy it to the STRATO instance using the instructions below.
 
-### Dependencies
 
+### Dependencies
 
 Install the dependencies
 
@@ -37,16 +39,54 @@ cd ui
 npm i
 ```
 
-### Deployment
+### Deploying on Localhost
 
+#### Uploading the smart contracts required by the demo app
+ 
 If you are deploying using STRATO on `localhost` (Linux and Mac users only):
 Run the following from the **project root**:
+
 ```
 npm run deploy
 ```
 
-If you are deploying using STRATO on the remote server:
-Make sure there is a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. The contents of the file should be as follows:
+Windows users should run
+
+```
+set "SERVER=localhost" & npm run deploy-windows
+```
+
+#### Launching the API
+
+From the project root (Linux, Mac and Windows):
+
+```
+npm run start
+```
+
+#### Launching the UI
+
+If you are deploying using STRATO on localhost (Linux and Mac users only):
+
+```
+cd ui
+npm run start
+```
+
+On Windows:
+
+```
+cd ui
+set "REACT_APP_API_URL=http://localhost:3031" & set "PORT=3030" & npm run start-windows
+```
+
+### Deploying on a remote server (AWS, azure etc)
+
+Create a config file under `./server/config` with the naming convention `<server-name>.config.yaml`. You are free to chose the `server-name`. 
+
+Copy the content of `localhost.config.yaml` to a new file `<server-name>.config.yaml`, located at `./server/config`. ou are free to chose the `server-name`. 
+
+Configfure `<server-name>.config.yaml` as follows:
 
 ```
 apiDebug: true
@@ -68,51 +108,58 @@ nodes:
     searchUrl: 'http://<your-ip-or-dns>/cirrus'
 ```
 
-Replace <server-name> with your actual server name in the above file and then run the following from the **project root**:
+Replace <server-name> with the name of your config file (excluding `config.yaml`) and `<your-ip-or-dns>` with the IP or the DNS name of your remote server and then run the following from the **project root**:
 
 ```
 SERVER=<server-name> npm run deploy
 ```
-**On Windows:**
+
+On Windows:
+
 ```
 set "SERVER=<server-name>" & npm run deploy-windows
 ```
 
-### Launch the API
+#### Launching the API
 
-from the **project root** (Linux, Mac and Windows):
+From the project root (Linux, Mac and Windows):
 
 ```
 npm run start
 ```
 
-### Launch the UI
-If you are deploying using STRATO on `localhost` (Linux and Mac users only):
+#### Launching the UI
+
 ```
 cd ui
-npm run start
+API_URL="http://<your-ip-or-dns>:3031" npm run start
 ```
-If you are deploying using STRATO on the remote server:
-```
-cd ui
-API_URL="<api-server-url>" npm run start
-```
+
 On Windows:
+
 ```
 cd ui
-set "REACT_APP_API_URL=<api-server-url>" & set "PORT=3030" & npm run start-windows
+set "REACT_APP_API_URL=http://<your-ip-or-dns>:3031" & set "PORT=3030" & npm run start-windows
 ```
-where `<api-server-url>` - broadcasted API URL in format http://url:port (e.g. http://example.com:3031)
+
+where `<your-ip-or-dns>` is the IP or DNS name of the remote machine. Eg: 
+
+```
+set "REACT_APP_API_URL=http://some.remote.cloudapp.provider.com:3031" & set "PORT=3030" & npm run start-windows
+```
 
 ### Testing
 
 ```
 npm run test
 ```
+
 On Windows:
+
 ```
 set "SERVER=<server-name>" & npm run test-windows
 ```
+
 <!--MKDOCS_DOC_DIVIDER_USAGE-->
 ## Using the BlockApps Supply Chain Demo App
 
