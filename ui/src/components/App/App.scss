@@ -17,4 +17,45 @@ $md-secondary-color: $md-pink-a-200 !default;
   padding-left: 10px;
 }
 
+@media (max-width: 840px) { 
+  #app-title {
+    font-size: medium !important;
+  }
+}
+
+@media (max-width: 840px) { 
+  .userbadge-desk-view {
+    display: none !important;
+  }
+
+  .userbadge-mobile-view {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 840px) { 
+  .mobile-sidebar-menu {
+    display: none !important;
+  }
+}
+
+@media (max-width: 840px) { 
+  .project-title h2 {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 125px;
+  }
+}
+
+@media (min-width: 840px) { 
+  .userbadge-desk-view {
+    display: flex !important;
+  }
+
+  .userbadge-mobile-view {
+    display: none !important;
+  }
+}
+
 @include react-md-everything;
