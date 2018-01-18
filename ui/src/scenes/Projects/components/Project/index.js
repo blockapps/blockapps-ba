@@ -14,7 +14,7 @@ import Status from './components/Status';
 import Detail from './components/Detail';
 import Bids from './components/Bids';
 import mixpanel from 'mixpanel-browser';
-import {ROLES, BID_STATES, STATES} from '../../../../constants';
+import { ROLES, BID_STATES, STATES } from '../../../../constants';
 import './Project.css';
 
 class Project extends Component {
@@ -32,7 +32,7 @@ class Project extends Component {
     return parseInt(this.props.login['role'], 10) === ROLES.SUPPLIER;
   }
 
-  handleProjectEventClick = function(e, projectName, projectEvent) {
+  handleProjectEventClick = function (e, projectName, projectEvent) {
     e.stopPropagation();
     // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
     const location = 'project_event_' + projectEvent;
@@ -44,7 +44,7 @@ class Project extends Component {
     const project = this.props.project;
     const actions = [];
     const children = [];
-    if(project && project.name && parseInt(project.state, 10)) {
+    if (project && project.name && parseInt(project.state, 10)) {
       //children
       children.push(
         <Chip
@@ -58,21 +58,21 @@ class Project extends Component {
       if (this.isBuyer) {
 
         if (parseInt(project.state, 10) === STATES.INTRANSIT) {
-            actions.push(
-              <Button
-                icon
-                primary
-                onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
-                tooltipLabel="Mark as Received"
-                key="mood"
-              >
-                mood
+          actions.push(
+            <Button
+              icon
+              primary
+              onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
+              tooltipLabel="Mark as Received"
+              key="mood"
+            >
+              mood
               </Button>
-            );
+          );
         }
       }
 
-      if(this.isSupplier) {
+      if (this.isSupplier) {
         if (parseInt(project.state, 10) === STATES.PRODUCTION) {
           const myBidAccepted = this.props.bids.some(
             bid =>
@@ -92,19 +92,19 @@ class Project extends Component {
           }
         }
 
-        if(parseInt(project.state, 10) === STATES.OPEN) {
+        if (parseInt(project.state, 10) === STATES.OPEN) {
           actions.push(
             <Button
               icon
               key="gavel"
               tooltipLabel="Bid"
               onClick={(e) => {
-                  e.stopPropagation();
-                  mixpanel.track('open_bid_modal_click');
-                  this.props.openBidModal();
-                }
+                e.stopPropagation();
+                mixpanel.track('open_bid_modal_click');
+                this.props.openBidModal();
+              }
               }>
-                gavel
+              gavel
               </Button>
           );
         }
@@ -116,12 +116,12 @@ class Project extends Component {
           key="home"
           tooltipLabel="Home"
           onClick={(e) => {
-              e.stopPropagation();
-              mixpanel.track('home_click');
-              browserHistory.push('/projects');
-            }
+            e.stopPropagation();
+            mixpanel.track('home_click');
+            browserHistory.push('/projects');
+          }
           }>
-            home
+          home
         </Button>
       );
     }
@@ -131,16 +131,17 @@ class Project extends Component {
         <Toolbar
           themed
           title={project.name}
+          className="project-title"
           actions={actions}
           children={children}
         />
-        <BidModal name={project.name}/>
+        <BidModal name={project.name} />
         <div className="md-grid">
           <div className="md-cell md-cell--4 md-cell--12-phone">
             <Status state={project.state} />
           </div>
           <div className="md-cell md-cell--4 md-cell--12-phone">
-            <Detail project={project}/>
+            <Detail project={project} />
           </div>
           <div className="md-cell md-cell--4  md-cell--12-phone">
             <Bids project={project} bids={this.props.bids} />

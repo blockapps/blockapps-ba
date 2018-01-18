@@ -11,15 +11,15 @@ nodes:
   - id: 0
     explorerUrl: 'http://p2p-n0.eastus.cloudapp.azure.com:9000'
     stratoUrl: 'http://p2p-n0.eastus.cloudapp.azure.com/strato-api'
-    blocUrl: 'http://p2p-n0.eastus.cloudapp.azure.com/bloc/v2.1'
+    blocUrl: 'http://p2p-n0.eastus.cloudapp.azure.com/bloc/v2.2'
     searchUrl: 'http://p2p-n0.eastus.cloudapp.azure.com/cirrus'
   - id: 1
     explorerUrl: 'http://p2p-n1.eastus.cloudapp.azure.com:9000'
     stratoUrl: 'http://p2p-n1.eastus.cloudapp.azure.com/strato-api'
-    blocUrl: 'http://p2p-n1.eastus.cloudapp.azure.com/bloc/v2.1'
+    blocUrl: 'http://p2p-n1.eastus.cloudapp.azure.com/bloc/v2.2'
     searchUrl: 'http://p2p-n1.eastus.cloudapp.azure.com/cirrus'
   - id: 2
     explorerUrl: 'http://p2p-n2.eastus.cloudapp.azure.com:9000'
     stratoUrl: 'http://p2p-n2.eastus.cloudapp.azure.com/strato-api'
-    blocUrl: 'http://p2p-n2.eastus.cloudapp.azure.com/bloc/v2.1'
+    blocUrl: 'http://p2p-n2.eastus.cloudapp.azure.com/bloc/v2.2'
     searchUrl: 'http://p2p-n2.eastus.cloudapp.azure.com/cirrus'
