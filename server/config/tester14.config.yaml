@@ -13,5 +13,5 @@ nodes:
   - id: 0
     explorerUrl: 'http://tester14.eastus.cloudapp.azure.com:9000'
     stratoUrl: 'http://tester14.eastus.cloudapp.azure.com/strato-api'
-    blocUrl: 'http://tester14.eastus.cloudapp.azure.com/bloc/v2.1'
+    blocUrl: 'http://tester14.eastus.cloudapp.azure.com/bloc/v2.2'
     searchUrl: 'http://tester14.eastus.cloudapp.azure.com/cirrus'

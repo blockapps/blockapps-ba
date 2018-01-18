@@ -6,7 +6,7 @@ const config = common.config;
 const util = common.util;
 const path = require('path');
 const serverPath = './server';
-const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`)(config.contractsPath);
+const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 const BigNumber = common.BigNumber
 const constants = common.constants
 
@@ -16,7 +16,7 @@ const usersController = {
     const username = decodeURI(req.params['username']);
 
     co(function* () {
-      const dapp = yield dappJs.getDapp(deploy.admin, deploy.AdminInterface.address);
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const balance = yield dapp.getBalance(username);
 
       util.response.status200(res, {
