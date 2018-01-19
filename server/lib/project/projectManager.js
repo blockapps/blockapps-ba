@@ -17,7 +17,7 @@ const projectContractName = require('./project').contractName;
 
 function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
-  yield compileSearch();
+  yield compileSearch(contract);
   contract.src = 'removed';
   return setContract(admin, contract);
 }
@@ -67,20 +67,17 @@ function setContract(admin, contract) {
   return contract;
 }
 
-function* compileSearch() {
-  rest.verbose('compileSearch', contractName);
-  if (yield rest.isCompiled(contractName)) {
+function* compileSearch(contract) {
+  rest.verbose('compileSearch', contract.codeHash);
+  if (yield rest.isCompiled(contract.codeHash)) {
     return;
   }
   // compile dependencies
-  const bid = require('../bid/bid');
-  yield bid.compileSearch();
-  const user = require('../user/user');
-  yield user.compileSearch();
-  const project = require('./project');
-  yield project.compileSearch();
+  const bidJs = require('../bid/bid');
+  const userJs = require('../user/user');
+  const projectJs = require('./project');
   // compile
-  const searchable = [contractName];
+  const searchable = [bidJs.contractName, projectJs.contractName, contractName];
   return yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 

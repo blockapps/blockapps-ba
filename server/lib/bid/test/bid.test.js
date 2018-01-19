@@ -151,7 +151,7 @@ describe('Bid tests', function() {
     try {
       result = yield rest.callMethod(admin, contract, method, methodArgs, value);
     } catch(error) {
-      assert.equal(error.name, 'HttpError');
+      assert.equal(error.name, 'HttpError400');
       assert.equal(error.status, '400');
     }
     // if didnt throw - error

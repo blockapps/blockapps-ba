@@ -10,7 +10,7 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 
 function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
-  yield compileSearch();
+  yield compileSearch(contract);
   contract.src = 'removed';
   return setContract(admin, contract);
 }
@@ -22,9 +22,9 @@ function setContract(admin, contract) {
   return contract;
 }
 
-function* compileSearch() {
-  rest.verbose('compileSearch', contractName);
-  if (yield rest.isCompiled(contractName)) {
+function* compileSearch(contract) {
+  rest.verbose('compileSearch', contract.codeHash);
+  if (yield rest.isCompiled(contract.codeHash)) {
     return;
   }
   const searchable = [contractName];
