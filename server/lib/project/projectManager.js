@@ -347,6 +347,7 @@ function* handleEvent(admin, contract, name, projectEvent) {
 }
 
 module.exports = {
+  contractName:contractName,
   compileSearch: compileSearch,
   uploadContract: uploadContract,
   setContract: setContract,
