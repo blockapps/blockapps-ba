@@ -48,30 +48,30 @@ class BidTable extends Component {
                 currency="USD" />
             </span>
           </TableColumn>
-          {parseInt(this.props['projectState'], 10) !== STATES.OPEN ?
-            <TableColumn data-th="">
-              {
-                this.isBuyer
-                  ?
-                  <Button
-                    flat
-                    label="Accept bid"
-                    onClick={
-                      (e) => this.handleBidAcceptClick(e, bid)
-                    }
-                  >gavel</Button>
-                  :
-                  (BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED')
-                    ?
-                    <Chip
-                      label="ACCEPTED"
-                      avatar={<Avatar icon={<FontIcon>check</FontIcon>} />}
-                    />
-                    :
-                    ''
-
-              }
-            </TableColumn> : null}
+          <TableColumn data-th="">
+            <span className="md-subheading-2">
+            {
+              parseInt(this.props['projectState'], 10) === STATES.OPEN && this.isBuyer ?
+                
+                <Button
+                  flat
+                  label="Accept bid"
+                  onClick={
+                    (e) => this.handleBidAcceptClick(e, bid)
+                  }
+                >gavel</Button>
+              :
+              (BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED')
+                ?
+                <Chip
+                  label="ACCEPTED"
+                  avatar={<Avatar icon={<FontIcon>check</FontIcon>} />}
+                />
+                :
+                ''
+            }
+            </span>
+          </TableColumn> 
         </TableRow>
     )
       :
