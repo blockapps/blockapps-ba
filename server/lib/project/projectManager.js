@@ -69,7 +69,7 @@ function setContract(admin, contract) {
 
 function* compileSearch(contract) {
   rest.verbose('compileSearch', contract.codeHash);
-  if (yield rest.isCompiled(contract.codeHash)) {
+  if (yield rest.isSearchable(contract.codeHash)) {
     return;
   }
   // compile dependencies
