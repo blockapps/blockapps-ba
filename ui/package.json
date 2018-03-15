@@ -1,5 +1,6 @@
 {
   "name": "ui",
+  "author": "BlockApps Inc",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -22,7 +23,8 @@
   "devDependencies": {
     "node-sass": "^4.5.2",
     "npm-run-all": "^4.0.2",
-    "react-scripts": "0.9.5"
+    "react-scripts": "0.9.5",
+    "read-package-json": "^2.0.13"
   },
   "scripts": {
     "build-css": "node-sass src/ -o src/",
@@ -32,7 +34,7 @@
     "start:back": "npm-run-all -p watch-css start-js > stdout.text 2> stderr.txt &",
     "start-js-windows": "react-scripts start",
     "start-windows": "npm-run-all -p watch-css start-js-windows",
-    "build": "npm run build-css && react-scripts build",
+    "build": "npm run build-css && react-scripts build && cp initfile.json ./build && node scripts/create-metadata.js && cp -a contracts ./build && cd build && zip -r app.zip *",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

@@ -1,0 +1,7 @@
+{
+    "masterContract": {
+      "contractName": "MasterContract",
+        "contractFilename": "contracts/MasterContract.sol",
+        "args": {}
+    }
+}
