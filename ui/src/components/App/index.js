@@ -12,15 +12,16 @@ import mixpanel from 'mixpanel-browser';
 import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.action';
 import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
 import { userLogout } from '../../scenes/Login/login.actions';
+import scenes from '../../routes';
 import './App.css';
 
 mixpanel.init('17bfafc2d7d8643cfe775c63898f4ced');
 
 class App extends Component {
 
-  componentWillMount() {
-    this.props.getExplorerUrl();
-  }
+  // componentWillMount() {
+  //   this.props.getExplorerUrl();
+  // }
 
   handleLogoutClick = (e) => {
     mixpanel.track('logout click');
@@ -45,7 +46,7 @@ class App extends Component {
           toolbarActions={<UserBadge username={this.props.login.username} role={this.props.login.role} />}
         >
           <LoadingBar style={{ position: 'fixed', zIndex: 15 }} />
-          {this.props.children}
+          {scenes}
         </NavigationDrawer>
       )
     }
@@ -65,7 +66,7 @@ class App extends Component {
             }
           />
           <LoadingBar />
-          {this.props.children}
+          {scenes}
         </div>
       )
     }
