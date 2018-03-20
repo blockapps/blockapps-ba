@@ -4,7 +4,7 @@ import {
   bidSuccess,
   bidFailure
 } from './bidModal.actions';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
@@ -54,7 +54,7 @@ function* submitBid(action){
     yield put(hideLoading());
     yield put(bidSuccess());
     yield put(setUserMessage('Bid Success'));
-    browserHistory.goBack();
+    hashHistory.goBack();
   }
   catch(err) {
     yield put(hideLoading());

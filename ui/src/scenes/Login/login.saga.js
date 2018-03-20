@@ -4,7 +4,7 @@ import {
   userLoginSuccess,
   userLoginFailure
 } from './login.actions';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../environment';
 import { handleApiError } from '../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
@@ -59,7 +59,7 @@ function* submitLogin(action) {
     yield put(userLoginFailure(err));
     yield put(hideLoading());
   }
-  browserHistory.push('/projects');
+  hashHistory.push('/projects');
 }
 
 export default function* watchLoginSubmit() {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { connect } from 'react-redux';
 import Button from 'react-md/lib/Buttons/Button';
 import Toolbar from 'react-md/lib/Toolbars';
@@ -12,7 +12,7 @@ class Projects extends Component {
   handleNewProjectClick = function(e) {
     e.stopPropagation();
     mixpanel.track('create_project_modal_click');
-    browserHistory.push(`/projects/create`);
+    hashHistory.push(`/projects/create`);
   };
 
   // TODO: move to common place

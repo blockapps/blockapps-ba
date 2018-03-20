@@ -6,7 +6,7 @@ import {
   acceptBidSuccess,
   acceptBidFailure
 } from '../actions/acceptBid.actions';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../../../../../../environment';
 import { handleApiError } from '../../../../../../../../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
@@ -49,7 +49,7 @@ function* acceptBid(action){
     yield put(acceptBidSuccess());
     yield put(userBalanceSubmit(action.username));
     yield put(setUserMessage('Bid Accepted'));
-    browserHistory.goBack(); // todo: update current project data on the page instead?
+    hashHistory.goBack(); // todo: update current project data on the page instead?
   }
   catch(err) {
     yield put(acceptBidFailure(err));

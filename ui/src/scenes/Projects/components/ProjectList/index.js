@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { FormattedNumber, FormattedDate } from 'react-intl';
 
 import Card from 'react-md/lib/Cards/Card';
@@ -25,7 +25,7 @@ class ProjectList extends Component {
   handleProjectClick = function (e, projectName) {
     e.stopPropagation();
     mixpanel.track('project_click');
-    browserHistory.push(`/projects/${encodeURI(projectName)}`);
+    hashHistory.push(`/projects/${encodeURI(projectName)}`);
   };
 
   render() {

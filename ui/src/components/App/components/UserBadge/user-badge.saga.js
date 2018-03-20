@@ -4,7 +4,7 @@ import {
   userBalanceSuccess,
   userBalanceFailure
 } from './user-badge.actions';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 
@@ -47,7 +47,7 @@ function* submitGetBalance(action) {
   {
     yield put(userBalanceFailure(err));
   }
-  browserHistory.push('/projects');
+  hashHistory.push('/projects');
 }
 
 export default function* watchBalanceSubmit() {

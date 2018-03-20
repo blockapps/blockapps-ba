@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import Button from 'react-md/lib/Buttons/Button';
 import Chip from 'react-md/lib/Chips';
 import Toolbar from 'react-md/lib/Toolbars';
@@ -118,7 +118,7 @@ class Project extends Component {
           onClick={(e) => {
             e.stopPropagation();
             mixpanel.track('home_click');
-            browserHistory.push('/projects');
+            hashHistory.push('/projects');
           }
           }>
           home

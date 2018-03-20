@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 
 class EnsureAuthenticated extends Component {
   componentDidMount() {
     if(!this.props.authenticated) {
-      browserHistory.replace('/login');
+      hashHistory.replace('/login');
     }
   }
 

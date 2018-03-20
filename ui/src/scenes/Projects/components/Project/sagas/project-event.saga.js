@@ -6,7 +6,7 @@ import {
   projectEventSuccess,
   projectEventFailure
 } from '../actions/project-event.actions';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../../environment';
 import { handleApiError } from '../../../../../lib/apiErrorHandler';
 import { PROJECT_EVENTS } from '../../../../../constants';
@@ -52,7 +52,7 @@ function* projectEvent(action){
     yield put(userBalanceSubmit(action.username));
     yield put(hideLoading());
     yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent]));
-    browserHistory.goBack(); // todo: update current project data on the page instead?
+    hashHistory.goBack(); // todo: update current project data on the page instead?
   }
   catch(err) {
     yield put(projectEventFailure(err));

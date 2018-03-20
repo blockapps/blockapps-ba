@@ -3,6 +3,7 @@
   "author": "BlockApps Inc",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "mixpanel-browser": "^2.11.1",
     "react": "15.5.4",
