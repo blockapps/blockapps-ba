@@ -1,0 +1,3 @@
+contract Version {
+  uint version;
+}

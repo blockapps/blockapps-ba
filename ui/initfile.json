@@ -1,7 +1,86 @@
 {
-    "masterContract": {
-      "contractName": "MasterContract",
-        "contractFilename": "contracts/MasterContract.sol",
+    "adminInterface": {
+      "contractName": "AdminInterface",
+        "contractFilename": "contracts/AdminInterface.sol",
+        "args": {}
+    },
+    "bid": {
+      "contractName": "Bid",
+        "contractFilename": "contracts/Bid.sol",
+        "args": {
+          "_id": "1000000000",
+          "_name": "ABC",
+          "_supplier": "XYZ",
+          "_amount": "1000"
+        }
+    },
+    "bidState": {
+      "contractName": "BidState",
+        "contractFilename": "contracts/BidState.sol",
+        "args": {}
+    },
+    "errorCodes": {
+      "contractName": "ErrorCodes",
+        "contractFilename": "contracts/ErrorCodes.sol",
+        "args": {}
+    },
+    "project": {
+      "contractName": "Project",
+        "contractFilename": "contracts/Project.sol",
+        "args": {
+          "_name": "ABC",
+          "_buyer": "XYZ",
+          "_description": "DEFG",
+          "_spec": "HIJ",
+          "_price": "1000",
+          "_created": "1281930090",
+          "_targetDelivery": "1681930090"
+        }
+    },
+    "projectEvent": {
+      "contractName": "ProjectEvent",
+        "contractFilename": "contracts/ProjectEvent.sol",
+        "args": {}
+    },
+    "projectManager": {
+      "contractName": "ProjectManager",
+        "contractFilename": "contracts/ProjectManager.sol",
+        "args": {}
+    },
+    "projectState": {
+      "contractName": "ProjectState",
+        "contractFilename": "contracts/ProjectState.sol",
+        "args": {}
+    },
+    "user": {
+      "contractName": "User",
+        "contractFilename": "contracts/User.sol",
+        "args": {
+          "_account": "78fcb4b5c16e83d63866f0b82544cdf475710075",
+          "_username": "ABC",
+          "_pwHash": "qiyh4XPJGsOZ2MEAyLkfWqeQ",
+          "_id": "1000000000",
+          "_role": "ADMIN"
+        }
+    },
+    "userManager": {
+      "contractName": "UserManager",
+        "contractFilename": "contracts/UserManager.sol",
+        "args": {}
+    },
+    "userRole": {
+      "contractName": "UserRole",
+        "contractFilename": "contracts/UserRole.sol",
+        "args": {}
+    },
+    "util": {
+      "contractName": "Util",
+        "contractFilename": "contracts/Util.sol",
+        "args": {}
+    },
+    "version": {
+      "contractName": "Version",
+        "contractFilename": "contracts/Version.sol",
         "args": {}
     }
 }
