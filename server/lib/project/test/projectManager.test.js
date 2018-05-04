@@ -272,7 +272,7 @@ describe('ProjectManager tests', function() {
 function createProjectArgs(_uid) {
   const uid = _uid || util.uid();
   const projectArgs = {
-    name: 'P_ ?%#@!:* ' + uid.substring(uid.length-5),
+    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length-5),
     buyer: 'Buyer_ ?%#@!:* ' + uid,
     description: 'description_ ?%#@!:* ' + uid,
     spec: 'spec_ ?%#@!:* ' + uid,
