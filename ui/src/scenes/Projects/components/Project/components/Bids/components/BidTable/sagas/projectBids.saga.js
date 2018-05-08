@@ -18,9 +18,9 @@ import { showLoading, hideLoading } from 'react-redux-loading-bar';
 // TODO: define API endpoint for projects
 const url = API_URL + '/projects/:name/bids';
 
-function getBids(name){
-  if(API_MOCK) {
-    return new Promise(function(resolve, reject){
+function getBids(name) {
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({
         data: {
           bids: [
@@ -41,7 +41,7 @@ function getBids(name){
   }
 
   return fetch(
-    url.replace(':name',name),
+    url.replace(':name', name),
     {
       method: 'GET',
       headers: {
@@ -50,24 +50,29 @@ function getBids(name){
       }
     })
     .then(handleApiError)
-    .then(function(response) {
+    .then(function (response) {
       return response.json();
     })
-    .catch(function(error){
+    .catch(function (error) {
       throw error;
     });
 
 }
 
 
-function* fetchProjectBids(action){
+function* fetchProjectBids(action) {
   try {
     yield put(showLoading());
     let response = yield call(getBids, action.name);
     yield put(hideLoading());
-    yield put(fetchProjectBidsSuccess(response.data.bids));
+    if (action.role === "2") {
+      yield put(fetchProjectBidsSuccess(response.data.bids));
+    } else if (action.role === "3") {
+      // TODO: fetch bids according to privacy
+      yield put(fetchProjectBidsSuccess(response.data.bids));
+    }
   }
-  catch(err) {
+  catch (err) {
     yield put(hideLoading());
     yield put(fetchProjectBidsFailure(err));
   }

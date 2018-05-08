@@ -8,7 +8,7 @@ const userMessageReducer = function(state = null, action) {
     return null;
   }
   else if (error) {
-    return action.error.message;
+    return action.error.message || null;
   }
   else if (type === ActionTypes.SET_USER_MESSAGE) {
     return action.message;

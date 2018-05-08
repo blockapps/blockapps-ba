@@ -1,27 +1,35 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import Button from 'react-md/lib/Buttons/Button';
-import Paper from 'react-md/lib/Papers';
-import Card from 'react-md/lib/Cards/Card';
-import CardTitle from 'react-md/lib/Cards/CardTitle';
-import { reduxForm, Field } from 'redux-form';
-import { userLoginSubmit } from './login.actions';
-import ReduxedTextField from '../../components/ReduxedTextField/';
-import Media, { MediaOverlay } from 'react-md/lib/Media';
-import mixpanel from 'mixpanel-browser';
-import './Login.css';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import Button from "react-md/lib/Buttons/Button";
+import Paper from "react-md/lib/Papers";
+import Card from "react-md/lib/Cards/Card";
+import CardTitle from "react-md/lib/Cards/CardTitle";
+import { reduxForm, Field, SubmissionError } from "redux-form";
+import { userLoginSubmit, userLoginFailure } from "./login.actions";
+import ReduxedTextField from "../../components/ReduxedTextField/";
+import Media, { MediaOverlay } from "react-md/lib/Media";
+import mixpanel from "mixpanel-browser";
+import "./Login.css";
+import ReduxedSelectField from "../../components/ReduxedSelectField";
+import { validate } from "./validate";
 
 class Login extends Component {
+  submit = values => {
+    mixpanel.track("login_click");
 
-  submit = (values) => {
-    mixpanel.track('login_click');
-    this.props.userLoginSubmit(values.username, values.password);
-  }
+    // TODO: with consortium
+    if (values.consortium !== "microsoft") {
+      this.props.userLoginSubmit(values.username, values.password);
+    } else {
+      this.props.userLoginFailure({ message: "login credentials is invalid" });
+    }
+  };
 
   render() {
     const {
       // login,
-      handleSubmit
+      handleSubmit,
+      error
     } = this.props;
 
     return (
@@ -32,8 +40,7 @@ class Login extends Component {
             <Media>
               <img src="img/supply-chain.jpeg" alt="Login splash" />
               <MediaOverlay>
-                <CardTitle title="Blockchain Enabled SCM" >
-                </CardTitle>
+                <CardTitle title="Blockchain Enabled SCM" />
               </MediaOverlay>
             </Media>
             <Paper className="login-paper" zDepth={3}>
@@ -41,12 +48,26 @@ class Login extends Component {
                 <div className="md-grid">
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <Field
+                    id="consortium"
+                    name="consortium"
+                    type="select"
+                    label="Select Consortium"
+                    menuItems={["blockapps", "microsoft"]}
+                    required
+                    className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
+                    component={ReduxedSelectField}
+                  />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <Field
                     id="username"
                     name="username"
                     type="text"
                     label="Enter Username"
+                    required
                     className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                    component={ReduxedTextField} />
+                    component={ReduxedTextField}
+                  />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <Field
@@ -54,8 +75,10 @@ class Login extends Component {
                     name="password"
                     type="password"
                     label="Enter Password"
+                    required
                     className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                    component={ReduxedTextField} />
+                    component={ReduxedTextField}
+                  />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">
@@ -78,8 +101,8 @@ function mapStateToProps(state) {
   };
 }
 
-const connected = connect(mapStateToProps, { userLoginSubmit })(Login);
+const connected = connect(mapStateToProps, { userLoginSubmit, userLoginFailure })(Login);
 
-const formedComponent = reduxForm({ form: 'login'})(connected);
+const formedComponent = reduxForm({ form: "login", validate })(connected);
 
 export default formedComponent;
