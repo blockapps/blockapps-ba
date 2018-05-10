@@ -11,7 +11,6 @@ deployFilename: ./server/config/localhost.deploy.yaml
 # node 0 is the default url for all single node api calls
 nodes:
   - id: 0
-    explorerUrl: 'http://localhost:9000'
     stratoUrl: 'http://localhost/strato-api'
     blocUrl: 'http://localhost/bloc/v2.2'
     searchUrl: 'http://localhost/cirrus'
