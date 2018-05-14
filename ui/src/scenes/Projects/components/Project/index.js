@@ -18,6 +18,10 @@ import { ROLES, BID_STATES, STATES } from '../../../../constants';
 import './Project.css';
 
 class Project extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { isClicked: false };
+  }
 
   componentWillMount() {
     this.props.fetchProject(encodeURI(this.props.params['pname']));
@@ -59,15 +63,28 @@ class Project extends Component {
 
         if (parseInt(project.state, 10) === STATES.INTRANSIT) {
           actions.push(
-            <Button
-              icon
-              primary
-              onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
-              tooltipLabel="Mark as Received"
-              key="mood"
-            >
-              mood
+            <div>
+              <Button
+                icon
+                primary
+                onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
+                tooltipLabel="Mark as Received"
+                key="mood"
+              >
+                mood
+                </Button>
+
+              <Button
+                icon
+                primary={!this.state.isClicked}
+                secondary={this.state.isClicked}
+                tooltipLabel="Mark as Received"
+                onClick={() => { this.setState({ isClicked: true }) }}
+                key="mood_bad"
+              >
+                mood_bad
               </Button>
+            </div>
           );
         }
       }
