@@ -12,6 +12,7 @@ import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import { FormattedNumber } from 'react-intl';
 import { ROLES, STATES, BID_STATES } from '../../../../../../../../constants';
+import InviteEntity from '../InviteEntity';
 import '../../../../../../Responsive-Grid.scss'
 
 class BidTable extends Component {
@@ -50,28 +51,28 @@ class BidTable extends Component {
           </TableColumn>
           <TableColumn data-th="">
             <span className="md-subheading-2">
-            {
-              parseInt(this.props['projectState'], 10) === STATES.OPEN && this.isBuyer ?
-                
-                <Button
-                  flat
-                  label="Accept bid"
-                  onClick={
-                    (e) => this.handleBidAcceptClick(e, bid)
-                  }
-                >gavel</Button>
-              :
-              (BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED')
-                ?
-                <Chip
-                  label="ACCEPTED"
-                  avatar={<Avatar icon={<FontIcon>check</FontIcon>} />}
-                />
-                :
-                ''
-            }
+              {
+                parseInt(this.props['projectState'], 10) === STATES.OPEN && this.isBuyer ?
+
+                  <Button
+                    flat
+                    label="Accept bid"
+                    onClick={
+                      (e) => this.handleBidAcceptClick(e, bid)
+                    }
+                  >gavel</Button>
+                  :
+                  (BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED')
+                    ?
+                    <Chip
+                      label="ACCEPTED"
+                      avatar={<Avatar icon={<FontIcon>check</FontIcon>} />}
+                    />
+                    :
+                    ''
+              }
             </span>
-          </TableColumn> 
+          </TableColumn>
         </TableRow>
     )
       :
@@ -83,20 +84,23 @@ class BidTable extends Component {
       </TableRow>;
 
     return (
-      <DataTable plain className="rwd-table">
-        <TableHeader>
-          <TableRow
-            autoAdjust={false}
-          >
-            <TableColumn header={true}>Supplier</TableColumn>
-            <TableColumn header={true} numeric={true}>Bid</TableColumn>
-            {parseInt(this.props['projectState'], 10) !== STATES.OPEN ? <TableColumn header={true}></TableColumn> : null}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {bidRows}
-        </TableBody>
-      </DataTable>
+      <div>
+        <DataTable plain className="rwd-table">
+          <TableHeader>
+            <TableRow
+              autoAdjust={false}
+            >
+              <TableColumn header={true}>Supplier</TableColumn>
+              <TableColumn header={true} numeric={true}>Bid</TableColumn>
+              {parseInt(this.props['projectState'], 10) !== STATES.OPEN ? <TableColumn header={true}></TableColumn> : null}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {bidRows}
+          </TableBody>
+        </DataTable>
+        <InviteEntity />
+      </div>
     )
   }
 }

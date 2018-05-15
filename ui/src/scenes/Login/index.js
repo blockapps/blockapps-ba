@@ -4,7 +4,7 @@ import Button from "react-md/lib/Buttons/Button";
 import Paper from "react-md/lib/Papers";
 import Card from "react-md/lib/Cards/Card";
 import CardTitle from "react-md/lib/Cards/CardTitle";
-import { reduxForm, Field, SubmissionError } from "redux-form";
+import { reduxForm, Field } from "redux-form";
 import { userLoginSubmit, userLoginFailure } from "./login.actions";
 import ReduxedTextField from "../../components/ReduxedTextField/";
 import Media, { MediaOverlay } from "react-md/lib/Media";
@@ -22,8 +22,7 @@ class Login extends Component {
   render() {
     const {
       // login,
-      handleSubmit,
-      error
+      handleSubmit
     } = this.props;
 
     return (
