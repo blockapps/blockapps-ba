@@ -99,7 +99,7 @@ class BidTable extends Component {
             {bidRows}
           </TableBody>
         </DataTable>
-        <InviteEntity />
+        {this.isBuyer && <InviteEntity />}
       </div>
     )
   }
