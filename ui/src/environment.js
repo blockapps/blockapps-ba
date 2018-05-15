@@ -7,6 +7,6 @@ export const API_MOCK =
     ? process.env.REACT_APP_API_MOCK
     : false;
 // TODO: set APEX_URL for production 
-export const APEX_URL = process.env.APEX_URL 
-  ? process.env.APEX_URL 
+export const APEX_URL = process.env.REACT_APP_APEX_URL 
+  ? process.env.REACT_APP_APEX_URL 
   : 'http://localhost:3001'
