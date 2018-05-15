@@ -20,6 +20,7 @@ import projectCreateReducer from './scenes/Projects/components/ProjectCreate/red
 import bidModalReducer from './scenes/Projects/components/BidModal/bidModal.reducer';
 import userBalanceReducer from './components/App/components/UserBadge/user-badge.reducer';
 import inviteEntityReducer from './scenes/Projects/components/Project/components/Bids/components/InviteEntity/inviteEntity.reducer';
+import requestRemovalReducer from './scenes/Projects/components/Project/components/RequestRemoval/requestRemoval.reducer';
 
 import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
 import watchLoginSubmit from './scenes/Login/login.saga';
@@ -32,6 +33,7 @@ import watchBidAccept from './scenes/Projects/components/Project/components/Bids
 import watchFetchProjectBids from './scenes/Projects/components/Project/components/Bids/components/BidTable/sagas/projectBids.saga.js';
 import watchBalanceSubmit from './components/App/components/UserBadge/user-badge.saga';
 import watchEntitiesActions from './scenes/Projects/components/Project/components/Bids/components/InviteEntity/inviteEntity.saga';
+import watchRequestRemovalActions from './scenes/Projects/components/Project/components/RequestRemoval/requestRemoval.saga';
 
 const rootReducer = combineReducers({
   form: formReducer,
@@ -46,7 +48,8 @@ const rootReducer = combineReducers({
   createProject: projectCreateReducer,
   loadingBar: loadingBarReducer,
   balance: userBalanceReducer,
-  inviteEntity: inviteEntityReducer
+  inviteEntity: inviteEntityReducer,
+  requestRemoval: requestRemovalReducer
 });
 
 const rootSaga = function* startForeman() {
@@ -61,7 +64,8 @@ const rootSaga = function* startForeman() {
     fork(watchBidAccept),
     fork(watchFetchProjectBids),
     fork(watchBalanceSubmit),
-    fork(watchEntitiesActions)
+    fork(watchEntitiesActions),
+    fork(watchRequestRemovalActions)
   ]
 };
 

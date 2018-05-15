@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Dialog from 'react-md/lib/Dialogs';
 import ReduxedTextField from '../../../../../../../../components/ReduxedTextField';
 import { reduxForm, Field } from 'redux-form';
+import Dialog from 'react-md/lib/Dialogs';
 import Button from 'react-md/lib/Buttons';
 import Snackbar from 'react-md/lib/Snackbars';
 import { openInviteEntityModal, closeInviteEntityModal, inviteEntityRequest, resetMessage } from './inviteEntity.actions';

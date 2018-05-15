@@ -16,6 +16,8 @@ import Bids from './components/Bids';
 import mixpanel from 'mixpanel-browser';
 import { ROLES, BID_STATES, STATES } from '../../../../constants';
 import './Project.css';
+import { openRequestRemovalModal } from './components/RequestRemoval/requestRemoval.actions';
+import RequestRemoval from './components/RequestRemoval';
 
 class Project extends Component {
   constructor(props) {
@@ -78,8 +80,11 @@ class Project extends Component {
                 icon
                 primary={!this.state.isClicked}
                 secondary={this.state.isClicked}
-                tooltipLabel="Mark as Received"
-                onClick={() => { this.setState({ isClicked: true }) }}
+                tooltipLabel="Unsatisfied"
+                onClick={() => { 
+                  this.setState({ isClicked: true }); 
+                  this.props.openRequestRemovalModal();
+                }}
                 key="mood_bad"
               >
                 mood_bad
@@ -164,6 +169,7 @@ class Project extends Component {
             <Bids project={project} bids={this.props.bids} />
           </div>
         </div>
+        <RequestRemoval />
       </section>
     );
   }
@@ -177,4 +183,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { fetchProject, fetchProjectBids, projectEvent, openBidModal })(Project);
+export default connect(mapStateToProps, { fetchProject, fetchProjectBids, projectEvent, openBidModal, openRequestRemovalModal })(Project);
