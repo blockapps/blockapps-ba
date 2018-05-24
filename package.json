@@ -1,11 +1,11 @@
 {
   "name": "blockapps-ba",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/index.js",
-    "start:back": "node server/index.js > server/stdout.txt 2> server/stderr.txt &",
+    "start": "PORT=${PORT:-3031} node server/index.js",
+    "start:back": "PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "deploy": "mocha server/dapp/dapp.deploy.js --config server/config/${SERVER:-localhost}.config.yaml -b && cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml",
     "deploy-windows": "mocha server/dapp/dapp.deploy.js --config server/config/%SERVER%.config.yaml -b",
     "test": "npm run test:user && npm run test:project && npm run test:routes",
