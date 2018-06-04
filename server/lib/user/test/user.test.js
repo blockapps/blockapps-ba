@@ -21,6 +21,16 @@ describe('User tests', function() {
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
+    yield rest.fill(admin, true); // add Ether
+    yield rest.fill(admin, true); // add Ether
+    console.log('created user');
+    console.log(admin);
+    let balance;
+    console.log('waiting for the block');
+    do {
+      balance = yield rest.getBalance(admin.address);
+      yield new Promise(resolve => setTimeout(resolve, 1000));
+    } while (balance < 1);
   });
 
   it('Create Contract', function* () {
@@ -40,6 +50,7 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
+
     const contract = yield userJs.uploadContract(admin, args);
     const user = yield contract.getState();
     assert.equal(user.account, account, 'account');

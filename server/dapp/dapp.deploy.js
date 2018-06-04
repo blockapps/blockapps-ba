@@ -23,10 +23,27 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   const adminName = util.uid('Admin');  // FIXME
   const adminPassword = '7890';   // FIXME
 
+
+
++    console.log('Uploading the VehicleManager contract');
+     vehicleManager = yield vehicleManagerJs.uploadContract(admin);
++    console.log('Uploaded the VehicleManager contract');
+     ingester = require('../ingester')(admin, vehicleManager);
+
   // uploading the admin contract and dependencies
   it('should upload the contracts', function* () {
     // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
+    yield rest.fill(admin, true); // add Ether
+    yield rest.fill(admin, true); // add Ether
+    console.log('created user');
+    console.log(admin);
+    let balance;
+    console.log('waiting for the block');
+    do {
+      balance = yield rest.getBalance(admin.address);
+      yield new Promise(resolve => setTimeout(resolve, 1000));
+    } while (balance < 1);
     const dapp = yield dappJs.uploadContract(admin, config.libPath);
     const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename);
   });
