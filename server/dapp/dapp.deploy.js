@@ -23,13 +23,6 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   const adminName = util.uid('Admin');  // FIXME
   const adminPassword = '7890';   // FIXME
 
-
-
-+    console.log('Uploading the VehicleManager contract');
-     vehicleManager = yield vehicleManagerJs.uploadContract(admin);
-+    console.log('Uploaded the VehicleManager contract');
-     ingester = require('../ingester')(admin, vehicleManager);
-
   // uploading the admin contract and dependencies
   it('should upload the contracts', function* () {
     // get the dapp
