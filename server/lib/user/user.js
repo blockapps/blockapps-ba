@@ -29,9 +29,9 @@ function setContract(admin, contract) {
 function* compileSearch() {
   rest.verbose('compileSearch', contractName);
 
-  if (yield rest.isCompiled(contractName)) {
-    return;
-  }
+  // if (yield rest.isCompiled(contractName)) {
+  //   return;
+  // }
   const searchable = [contractName];
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }

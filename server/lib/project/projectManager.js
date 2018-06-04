@@ -69,9 +69,9 @@ function setContract(admin, contract) {
 
 function* compileSearch() {
   rest.verbose('compileSearch', contractName);
-  if (yield rest.isCompiled(contractName)) {
-    return;
-  }
+  // if (yield rest.isCompiled(contractName)) {
+  //   return;
+  // }
   // compile dependencies
   const bid = require('../bid/bid');
   yield bid.compileSearch();
