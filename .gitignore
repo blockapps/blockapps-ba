@@ -41,3 +41,5 @@ config.yaml
 
 # Deploy files
 server/config/*.deploy.yaml
+
+.idea

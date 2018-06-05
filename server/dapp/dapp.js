@@ -22,8 +22,21 @@ function* uploadContract(admin, libPath) {
 }
 
 function* compileSearch() {
-  yield projectManagerJs.compileSearch();
-  yield userManagerJs.compileSearch();
+  const libPath = process.cwd() + '/' + config.libPath;
+  // compile dependencies
+  const bidJs = require(`${libPath}/bid/bid`);
+  const userJs = require(`${libPath}/user/user`);
+  const projectJs = require(`${libPath}/project/project`);
+  // compile
+  const searchable = [
+    bidJs.contractName,
+    projectJs.contractName,
+    userJs.contractName,
+    userManagerJs.contractName,
+    projectManagerJs.contractName,
+    contractName
+  ];
+  yield rest.compileSearch(searchable, contractName, config.libPath + contractFilename)
 }
 
 function* getSubContracts(contract) {

@@ -33,7 +33,10 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     console.log(admin);
     let balance;
     console.log('waiting for the block');
+
+    // wait for the transaction to be added to blockchain
     do { yield new Promise(resolve => setTimeout(resolve, 1000))} while ((yield rest.getBalance(admin.address)) < 1);
+
     const dapp = yield dappJs.uploadContract(admin, config.libPath);
     const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename);
   });

@@ -15,10 +15,9 @@ chai.use(chaiHttp);
 describe("Login Test", function(){
   const username = "Supplier1";
   const password = "1234";
-  const timeout = 20 * 1000;
 
   it('should fail to login with wrong password', function(done) {
-    this.timeout(timeout);
+    this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/login')
       .send({
@@ -32,7 +31,7 @@ describe("Login Test", function(){
   });
 
   it('should fail to login with wrong username', function(done) {
-    this.timeout(timeout);
+    this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/login')
       .send({
@@ -46,7 +45,7 @@ describe("Login Test", function(){
   });
 
   it('should log the user in', function(done) {
-    this.timeout(timeout);
+    this.timeout(config.timeout);
     chai.request(server)
       .post('/api/v1/login')
       .send({
