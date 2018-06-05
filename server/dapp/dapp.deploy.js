@@ -27,6 +27,8 @@ describe('Supply Chain Demo App - deploy contracts', function () {
   it('should upload the contracts', function* () {
     // get the dapp
     const admin = yield rest.createUser(adminName, adminPassword);
+    // wait for the transaction to be added to blockchain
+    do yield new Promise(resolve => setTimeout(resolve, 1000)) while ((yield rest.getBalance(admin.address)) < 1);
     const dapp = yield dappJs.uploadContract(admin, config.libPath);
     const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename);
   });
