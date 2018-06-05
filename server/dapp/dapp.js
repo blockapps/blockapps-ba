@@ -45,6 +45,7 @@ function* setContract(admin, contract) {
   rest.verbose('setContract', {admin, contract});
   // set the managers
   const subContarcts = yield getSubContracts(contract);
+  do { yield new Promise(resolve => setTimeout(resolve, 1000))} while (subContarcts.address < 1);
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
   const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
 
