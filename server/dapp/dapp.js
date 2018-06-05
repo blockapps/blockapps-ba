@@ -41,7 +41,9 @@ function* compileSearch() {
 
 function* getSubContracts(contract) {
   rest.verbose('getSubContracts', {contract, subContractsNames});
+  do { yield new Promise(resolve => setTimeout(resolve, 1000))} while ((yield rest.getAccount(contract.address)) < 1);
   const state = yield rest.getState(contract);
+
   const subContracts = {}
   subContractsNames.map(name => {
     const address = state[name];
@@ -57,8 +59,9 @@ function* getSubContracts(contract) {
 function* setContract(admin, contract) {
   rest.verbose('setContract', {admin, contract});
   // set the managers
+  do { yield new Promise(resolve => setTimeout(resolve, 1000))} while ((yield rest.getAccount(contract.address)) < 1);
   const subContarcts = yield getSubContracts(contract);
-  do { yield new Promise(resolve => setTimeout(resolve, 1000))} while (subContarcts.address < 1);
+  // do { yield new Promise(resolve => setTimeout(resolve, 1000))} while (subContarcts.address < 1);
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
   const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
 
@@ -110,6 +113,8 @@ function* setContract(admin, contract) {
   }
   // deploy
   contract.deploy = function* (dataFilename, deployFilename) {
+    console.log("contract:" + contract)
+    console.log("mgr:" + userManager)
     return yield deploy(admin, contract, userManager, dataFilename, deployFilename);
   }
 
