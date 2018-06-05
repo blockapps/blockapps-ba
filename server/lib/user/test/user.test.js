@@ -52,7 +52,11 @@ describe('User tests', function() {
     // create the user with constructor args
 
     const contract = yield userJs.uploadContract(admin, args);
-    const user = yield contract.getState();
+    let user 
+    do {
+      user = yield contract.getState();
+      yield new Promise(resolve => setTimeout(resolve, 1000));
+    } while (user.account == '0000000000000000000000000000000000000000');
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
     assert.equal(user.pwHash, pwHash, 'pwHash');
