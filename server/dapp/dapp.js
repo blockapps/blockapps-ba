@@ -17,6 +17,7 @@ const subContractsNames = ['userManager', 'projectManager'];
 function* uploadContract(admin, libPath) {
   const contract = yield rest.uploadContract(admin, contractName, libPath + contractFilename);
   contract.src = 'removed';
+  console.log("Contract: " + contract)
   yield compileSearch();
   return yield setContract(admin, contract);
 }
@@ -41,15 +42,32 @@ function* compileSearch() {
 
 function* getSubContracts(contract) {
   rest.verbose('getSubContracts', {contract, subContractsNames});
-  const state = yield rest.getState(contract);
+
   const subContracts = {}
+  let state
+  var counter
+  do {
+    yield new Promise(resolve => setTimeout(resolve, 1000))
+    counter ++
+    state = yield rest.getState(contract);
+  } while ((state.userManager == "0000000000000000000000000000000000000000" && state.projectManager == "0000000000000000000000000000000000000000") || counter < 20);
+  
+  console.log("State1.name: " + state.name + "This: " + this)
+
+  counter = 0
+  do {
+    yield new Promise(resolve => setTimeout(resolve, 1000))
+    counter ++
+  } while (typeof state.address === undefined || counter < 20);
+  
+  console.log("Address: " + state.address + " Name: " + state.name + " This: " + this)
   subContractsNames.map(name => {
-    const address = state[name];
-    if (address === undefined || address == 0) throw new Error('Sub contract address not found ' + name);
+
+  if (state.address === undefined || state.address == 0) throw new Error('Sub contract address not found ');
     subContracts[name] = {
-      name: name[0].toUpperCase() + name.substring(1),
-      address: address,
-    }
+    name: name[0].toUpperCase() + name.substring(1),
+    address: address,
+  }
   });
   return subContracts;
 }
@@ -58,6 +76,12 @@ function* setContract(admin, contract) {
   rest.verbose('setContract', {admin, contract});
   // set the managers
   const subContarcts = yield getSubContracts(contract);
+
+  console.log(admin)
+  var usr = yield rest.getState(state.userManager);
+  console.log("user: "+ usr)
+  var mgr = yield rest.getState(state.projectManager);
+  console.log("manager" + mgr)
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
   const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
 
