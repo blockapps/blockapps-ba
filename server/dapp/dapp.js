@@ -40,7 +40,38 @@ function* compileSearch() {
   yield rest.compileSearch(searchable, contractName, config.libPath + contractFilename)
 }
 
+function* waitState(contract, timeout=60) {
+  for (let i = 0; i < timeout; i++) {
+    const state = yield rest.getState(contract);
+    if (
+      state.userManager !== undefined &&
+      parseInt(state.userManager) != 0 &&
+      state.projectManager !== undefined &&
+      parseInt(state.projectManager) != 0) {
+        return state;
+    }
+    yield util.sleep(1*1000);
+  }
+  throw new Error('waitState: timeout: ' + timeout);
+}
+
 function* getSubContracts(contract) {
+  rest.verbose('getSubContracts', {contract, subContractsNames});
+  //const state = yield rest.getState(contract);  // needs to wait
+  const state = yield waitState(contract);  // wait for state to stabilize
+  const subContracts = {}
+  subContractsNames.map(name => {
+    const address = state[name];
+    if (address === undefined || address == 0) throw new Error('Sub contract address not found ' + name);
+    subContracts[name] = {
+      name: name[0].toUpperCase() + name.substring(1),
+      address: address,
+    }
+  });
+  return subContracts;
+}
+
+function* getSubContracts_NEW(contract) {
   rest.verbose('getSubContracts', {contract, subContractsNames});
 
   const subContracts = {}
@@ -51,7 +82,7 @@ function* getSubContracts(contract) {
     counter ++
     state = yield rest.getState(contract);
   } while ((state.userManager == "0000000000000000000000000000000000000000" && state.projectManager == "0000000000000000000000000000000000000000") || counter < 20);
-  
+
   console.log("State1.name: " + state.name + "This: " + this)
 
   counter = 0
@@ -59,7 +90,7 @@ function* getSubContracts(contract) {
     yield new Promise(resolve => setTimeout(resolve, 1000))
     counter ++
   } while (typeof state.address === undefined || counter < 20);
-  
+
   console.log("Address: " + state.address + " Name: " + state.name + " This: " + this)
   subContractsNames.map(name => {
 
