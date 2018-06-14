@@ -26,12 +26,7 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     const adminName = util.uid('Admin');  // FIXME
     const adminPassword = '1234';   // FIXME
     admin = yield rest.createUser(adminName, adminPassword, false);
-    var counter,balance = 0
-    do {
-      yield new Promise(resolve => setTimeout(resolve, 1000))
-      counter ++
-      var balance = yield rest.getBalance(admin.address)
-    } while (balance < 1|| counter == 50);
+    waitBalance(admin.address)
 
   });
   // uploading the admin contract and dependencies
@@ -42,3 +37,16 @@ describe('Supply Chain Demo App - deploy contracts', function () {
     const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename);
   });
 });
+
+function* waitBalance(address) {
+  for (let i = 0; i < 60; i++) {
+    const balance = yield rest.getBalance(admin.address)
+    if (
+      balance !== undefined &&
+      balance != 0 ) {
+        return balance;
+    }
+    yield util.sleep(1*1000);
+  }
+  throw new Error('waitBalance: timeout: 60');
+}

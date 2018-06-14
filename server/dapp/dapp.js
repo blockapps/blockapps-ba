@@ -210,7 +210,9 @@ function* handleEvent(userManager, projectManager, args) {
 }
 
 function* createPresetUsers(userManager, presetUsers) {
-  const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
+  const UserRole = yield rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
   const users = [];
   for (let presetUser of presetUsers) {
     const args = {
@@ -245,10 +247,10 @@ function* deploy(admin, contract, userManager, presetDataFilename, deployFilenam
     users: presetData.users,
   };
   // write
-  console.log('deploy filename:', deployFilename);
-  console.log(fsutil.yamlSafeDumpSync(deployment));
+  // console.log('deploy filename:', deployFilename);
+  // console.log(fsutil.yamlSafeDumpSync(deployment));
 
-  fsutil.yamlWrite(deployment, deployFilename);
+  // fsutil.yamlWrite(deployment, deployFilename);
   return deployment;
 }
 
