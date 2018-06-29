@@ -381,11 +381,15 @@ describe('ProjectManager Life Cycle tests', function() {
       account: admin.address,
     }
     let errorCode;
+    console.log("Attempting to accept a bid: " + JSON.stringify(buyer) + ", " + JSON.stringify(bid) + ", " + JSON.stringify(project));
     try {
-      yield contract.acceptBid(buyer, bid.id, project.name);
+      let x = yield contract.acceptBid(buyer, bid.id, project.name);
+      console.log("acceptBid Succeeded: " + JSON.stringify(x));
     } catch(error) {
+      console.log("We caught an error: " + JSON.stringify(error));
       errorCode = parseInt(error.message);
     }
+    console.log("The errorCode is: " + JSON.stringify(errorCode));
     // did not FAIL - that is an error
     assert.isDefined(errorCode, 'accepting a bid with insufficient balance should fail');
     // error should be INSUFFICIENT_BALANCE
