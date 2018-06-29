@@ -387,14 +387,14 @@ describe('ProjectManager Life Cycle tests', function() {
       let x = yield contract.acceptBid(buyer, bid.id, project.name);
       console.log("acceptBid Succeeded: " + JSON.stringify(x));
     } catch(error) {
-      console.log("We caught an error: " + JSON.stringify(error));
+      console.log("We caught an error: " + JSON.stringify(error) + error);
       err2 = error;
       errorCode = parseInt(error.message);
     }
     console.log("The errorCode is: " + JSON.stringify(errorCode));
     // did not FAIL - that is an error
     assert.isDefined(errorCode, 'accepting a bid with insufficient balance should fail');
-    assert(!isNaN(errorCode), "Somebody gave us garbage: " + JSON.stringify(err2));
+    assert(!isNaN(errorCode), "Somebody gave us garbage: " + err2);
     // error should be INSUFFICIENT_BALANCE
     assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE.');
     // check that none was affected
