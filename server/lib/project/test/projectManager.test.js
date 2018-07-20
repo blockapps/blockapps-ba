@@ -241,8 +241,10 @@ describe('ProjectManager tests', function() {
     }
     // change state for the first half
     const changedProjectsArgs = projectsArgs.slice(0,changed);
+    var sleep = require('thread-sleep');
     for (let projectArgs of changedProjectsArgs) {
       const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
+      var res = sleep(1000);
       assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
     }
 
@@ -258,13 +260,17 @@ describe('ProjectManager tests', function() {
 
   it('ACCEPT an OPEN project - change to PRODUCTION', function* () {
     const projectArgs = createProjectArgs(util.uid());
+    var sleep = require('thread-sleep');
     // create project
     yield contract.createProject(projectArgs);
     // set the state
     const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
     assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
     // check the new state
+    var res = sleep(8000);
     const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}`, 1))[0];
+    console.log("______project: ", project);
+    console.log("______project.state: ", project.state);
     assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
