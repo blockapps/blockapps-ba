@@ -269,8 +269,6 @@ describe('ProjectManager tests', function() {
     // check the new state
     var res = sleep(8000);
     const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}`, 1))[0];
-    console.log("______project: ", project);
-    console.log("______project.state: ", project.state);
     assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
