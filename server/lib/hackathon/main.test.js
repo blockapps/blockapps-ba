@@ -125,6 +125,13 @@ describe('Hackathon Tests', function() {
 
     })
 
+
+    //How about new functions - what else would your company want to do w/ this data?
+    it('Try, adding new functions to modify data in a project', function* (){
+
+    })
+
+
     //Projects are easy to get by name, but what happens if two projects have the same name
     it('Try, getting project by address', function* (){
 
