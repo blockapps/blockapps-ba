@@ -21,6 +21,13 @@ const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
 
+/*
+
+Running the test from the command line
+    mocha server/lib/hackathon/main.test.js --config config/localhost.config.yaml --timeout=60000 -b
+
+ */
+
 describe('Hackathon Tests', function() {
     this.timeout(config.timeout);
 
@@ -52,8 +59,7 @@ describe('Hackathon Tests', function() {
 
         //list all projects
         const projects = yield contract.getProjects();
-        console.log('===PROJECTS===')
-        console.log(projects)
+        titledLog('PROJECTS', projects)
         */
     });
 
@@ -69,21 +75,18 @@ describe('Hackathon Tests', function() {
         const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
         const buyer = yield userManagerContract.createUser(buyerArgs);
         buyer.password = password; //comment this line out and the test fails, find out why!
-        console.log('=== Buyer ===')
-        console.log(buyer)
+        titledLog('BUYER', buyer)
 
         // create suppliers
         const suppliers = yield createSuppliers(numSuppliers, password, uid, userManagerContract);
 
         // create a project
         const project = yield contract.createProject(projectArgs);
-        console.log('=== Project ===')
-        console.log(project)
+        titledLog('Project', project)
 
         // create bids
         const createdBids = yield createMultipleBids(projectArgs.name, suppliers, amount);
-        console.log('=== Bids ===')
-        console.log(project)
+        titledLog('Created Bids', createdBids)
 
         { // test
             const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
@@ -96,8 +99,7 @@ describe('Hackathon Tests', function() {
 
         // get the bids
         const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
-        console.log('=== Bids ===')
-        console.log(project)
+        titledLog('Bids', bids)
 
         // check that the expected bid is ACCEPTED and all others are REJECTED
         bids.map(bid => {
@@ -124,7 +126,7 @@ describe('Hackathon Tests', function() {
     })
 
     //Projects are easy to get by name, but what happens if two projects have the same name
-    it('Try, getting project by address?', function* (){
+    it('Try, getting project by address', function* (){
 
     })
 
@@ -132,6 +134,9 @@ describe('Hackathon Tests', function() {
     it('Try, creating a new user role', function* (){
 
     })
+
+
+    //generator/utility functions
 
     function* createMultipleBids(projectName, suppliers, amount) {
         const bids = [];
@@ -195,6 +200,14 @@ describe('Hackathon Tests', function() {
             role: role,
         }
         return args;
+    }
+
+    function titledLog(title,content){
+        console.log(' ')
+        console.log(`===== ${title} =====`)
+        console.log(content)
+        console.log(`===== END ${title} =====`)
+        console.log(' ')
     }
 
 });
