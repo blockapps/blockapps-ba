@@ -68,7 +68,7 @@ describe('Hackathon Tests', function() {
         // create buyer and suppliers
         const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
         const buyer = yield userManagerContract.createUser(buyerArgs);
-        buyer.password = password;
+        buyer.password = password; //comment this line out and the test fails, find out why!
         console.log('=== Buyer ===')
         console.log(buyer)
 
