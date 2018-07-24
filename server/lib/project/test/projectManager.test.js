@@ -244,7 +244,7 @@ describe('ProjectManager tests', function() {
     for (let projectArgs of changedProjectsArgs) {
       const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
       //Wait for the value to be available in Cirrus
-      const project = (yield rest.waitQuery(`Project?name=eq.${projectArgs.name}&state=eq.${newState}`, 1))[0];
+      const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}&state=eq.${newState}`, 1))[0];
       assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
     }
 
@@ -274,10 +274,10 @@ describe('ProjectManager tests', function() {
 function createProjectArgs(_uid) {
   const uid = _uid || util.uid();
   const projectArgs = {
-    name: 'P__ ' + uid.toString().substring(uid.length-5),
-    buyer: 'Buyer__ ' + uid,
-    description: 'description__ ' + uid,
-    spec: 'spec__ ' + uid,
+    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length-5),
+    buyer: 'Buyer_ ?%#@!:* ' + uid,
+    description: 'description_ ?%#@!:* ' + uid,
+    spec: 'spec_ ?%#@!:* ' + uid,
     price: 234,
 
     created: new Date().getTime(),
