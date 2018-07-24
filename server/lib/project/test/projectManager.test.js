@@ -241,10 +241,10 @@ describe('ProjectManager tests', function() {
     }
     // change state for the first half
     const changedProjectsArgs = projectsArgs.slice(0,changed);
-    var sleep = require('thread-sleep');
     for (let projectArgs of changedProjectsArgs) {
       const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
-      var res = sleep(1000);
+      //Wait for the value to be available in Cirrus
+      const project = (yield rest.waitQuery(`Project?name=eq.${projectArgs.name}&state=eq.${newState}`, 1))[0];
       assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
     }
 
@@ -260,15 +260,13 @@ describe('ProjectManager tests', function() {
 
   it('ACCEPT an OPEN project - change to PRODUCTION', function* () {
     const projectArgs = createProjectArgs(util.uid());
-    var sleep = require('thread-sleep');
     // create project
     yield contract.createProject(projectArgs);
     // set the state
     const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
     assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
-    // check the new state
-    var res = sleep(8000);
-    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}`, 1))[0];
+    //Wait for the results to be available from Cirrus
+    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}&state=eq.${newState}`, 1))[0];
     assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
@@ -276,10 +274,10 @@ describe('ProjectManager tests', function() {
 function createProjectArgs(_uid) {
   const uid = _uid || util.uid();
   const projectArgs = {
-    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length-5),
-    buyer: 'Buyer_ ?%#@!:* ' + uid,
-    description: 'description_ ?%#@!:* ' + uid,
-    spec: 'spec_ ?%#@!:* ' + uid,
+    name: 'P__ ' + uid.toString().substring(uid.length-5),
+    buyer: 'Buyer__ ' + uid,
+    description: 'description__ ' + uid,
+    spec: 'spec__ ' + uid,
     price: 234,
 
     created: new Date().getTime(),
