@@ -17,7 +17,7 @@
     "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
   },
   "dependencies": {
-    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git",
+    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git#slipstream-update",
     "body-parser": "^1.15.2",
     "chai": "^4.0.2",
     "co": "^4.6.0",
