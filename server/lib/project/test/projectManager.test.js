@@ -243,6 +243,8 @@ describe('ProjectManager tests', function() {
     const changedProjectsArgs = projectsArgs.slice(0,changed);
     for (let projectArgs of changedProjectsArgs) {
       const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
+      //Wait for the value to be available in Cirrus
+      const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}&state=eq.${newState}`, 1))[0];
       assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
     }
 
@@ -263,8 +265,8 @@ describe('ProjectManager tests', function() {
     // set the state
     const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
     assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
-    // check the new state
-    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}`, 1))[0];
+    //Wait for the results to be available from Cirrus
+    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}&state=eq.${newState}`, 1))[0];
     assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
@@ -272,7 +274,7 @@ describe('ProjectManager tests', function() {
 function createProjectArgs(_uid) {
   const uid = _uid || util.uid();
   const projectArgs = {
-    name: 'P_ ?%#@!:* ' + uid.substring(uid.length-5),
+    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length-5),
     buyer: 'Buyer_ ?%#@!:* ' + uid,
     description: 'description_ ?%#@!:* ' + uid,
     spec: 'spec_ ?%#@!:* ' + uid,

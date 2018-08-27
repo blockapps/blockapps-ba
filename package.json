@@ -1,12 +1,12 @@
 {
   "name": "blockapps-ba",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/index.js",
-    "start:back": "node server/index.js > server/stdout.txt 2> server/stderr.txt &",
-    "deploy": "mocha server/dapp/dapp.deploy.js --config server/config/${SERVER:-localhost}.config.yaml -b && cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml",
+    "start": "PORT=${PORT:-3031} node server/index.js",
+    "start:back": "PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
+    "deploy": "cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml; mocha server/dapp/dapp.deploy.js $NODE_DEBUG_OPTION --config server/config/${SERVER:-localhost}.config.yaml -b",
     "deploy-windows": "mocha server/dapp/dapp.deploy.js --config server/config/%SERVER%.config.yaml -b",
     "test": "npm run test:user && npm run test:project && npm run test:routes",
     "test:project": "mocha server/lib/project/test/ --config server/config/${SERVER:-localhost}.config.yaml -b",
@@ -17,7 +17,7 @@
     "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
   },
   "dependencies": {
-    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git#v4.0.2",
+    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git",
     "body-parser": "^1.15.2",
     "chai": "^4.0.2",
     "co": "^4.6.0",

@@ -11,7 +11,7 @@ const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).
 
 function* uploadContract(admin, args) {
   const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
-  yield compileSearch();
+  yield compileSearch(contract);
   contract.src = 'removed';
   return setContract(admin, contract);
 }
@@ -26,12 +26,12 @@ function setContract(admin, contract) {
   return contract;
 }
 
-function* compileSearch() {
-  rest.verbose('compileSearch', contractName);
-
-  if (yield rest.isCompiled(contractName)) {
+function* compileSearch(contract) {
+  rest.verbose('compileSearch', contract.codeHash);
+  if (yield rest.isSearchable(contract.codeHash)) {
     return;
   }
+
   const searchable = [contractName];
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
@@ -79,4 +79,5 @@ module.exports = {
   getUserByAddress: getUserByAddress,
   getUsers: getUsers,
   getUserById: getUserById,
+  contractName: contractName,
 };

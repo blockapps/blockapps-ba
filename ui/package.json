@@ -27,7 +27,7 @@
   "scripts": {
     "build-css": "node-sass src/ -o src/",
     "watch-css": "npm run build-css && node-sass src/ -o src/ --watch --recursive",
-    "start-js": "PORT=3030 REACT_APP_API_MOCK=${API_MOCK} REACT_APP_API_URL=${API_URL} react-scripts start",
+    "start-js": "PORT=${PORT:-3030} REACT_APP_API_MOCK=${API_MOCK} REACT_APP_API_URL=${API_URL} react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "start:back": "npm-run-all -p watch-css start-js > stdout.text 2> stderr.txt &",
     "start-js-windows": "react-scripts start",
