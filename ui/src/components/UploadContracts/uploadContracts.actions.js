@@ -1,0 +1,24 @@
+export const UPLOAD_CONTRACTS_REQUEST = 'UPLOAD_CONTRACTS_REQUEST';
+export const UPLOAD_CONTRACTS_SUCCESS = 'UPLOAD_CONTRACTS_REQUEST_SUCCESS';
+export const UPLOAD_CONTRACTS_FAILURE = 'UPLOAD_CONTRACTS_FAILURE';
+
+export const uploadContracts = function (chainId) {
+  return {
+    type: UPLOAD_CONTRACTS_REQUEST,
+    chainId
+  }
+};
+
+export const uploadContractsSuccess = function (data) {
+  return {
+    type: UPLOAD_CONTRACTS_SUCCESS,
+    data: data
+  }
+};
+
+export const uploadContractsFailure = function (error) {
+  return {
+    type: UPLOAD_CONTRACTS_FAILURE,
+    error: error
+  }
+};

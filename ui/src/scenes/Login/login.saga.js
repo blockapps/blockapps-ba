@@ -11,9 +11,9 @@ import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const loginUrl = API_URL + '/login';
 
-function loginApiCall(username,password) {
-  if(API_MOCK) {
-    return new Promise(function(resolve, reject){
+function loginApiCall(username, password, chainId) {
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({
         data: {
           authenticate: true,
@@ -32,15 +32,15 @@ function loginApiCall(username,password) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ username, password})
+      body: JSON.stringify({ username, password, chainId })
     })
-    .then(handleApiError)
-    .then(function(response) {
-      return response.json();
-    })
-    .catch(function(error){
-      throw error;
-    });
+      .then(handleApiError)
+      .then(function (response) {
+        return response.json();
+      })
+      .catch(function (error) {
+        throw error;
+      });
   }
 }
 
@@ -48,14 +48,13 @@ function* submitLogin(action) {
   try {
     yield put(showLoading());
 
-    const response = yield call(loginApiCall, action.username, action.password);
+    const response = yield call(loginApiCall, action.username, action.password, action.chainId);
     yield put(hideLoading());
-    if(response.data.authenticate) {
+    if (response.data.authenticate) {
       yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
     }
   }
-  catch(err)
-  {
+  catch (err) {
     yield put(userLoginFailure(err));
     yield put(hideLoading());
   }

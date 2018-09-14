@@ -6,16 +6,41 @@ import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import { reduxForm, Field } from 'redux-form';
 import { userLoginSubmit } from './login.actions';
-import ReduxedTextField from '../../components/ReduxedTextField/';
+import ReduxedTextField from '../../components/ReduxedTextField';
+import ReduxedSelectField from '../../components/ReduxedSelectField';
 import Media, { MediaOverlay } from 'react-md/lib/Media';
 import mixpanel from 'mixpanel-browser';
 import './Login.css';
+import { fetchChains } from '../../components/Chains/chains.actions';
+import { uploadContracts } from '../../components/UploadContracts/uploadContracts.actions';
 
 class Login extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      chainId: null
+    }
+  }
+
+  componentDidMount() {
+    this.props.fetchChains();
+  }
+
+  deployButton = (e) => {
+    e.stopPropagation();
+    if (this.state.chainId) {
+      this.props.uploadContracts(this.state.chainId);
+    }
+  }
+
+  onChainIdChange = (value, index, event, details) => {
+    this.setState({ chainId: index });
+  }
+
   submit = (values) => {
     mixpanel.track('login_click');
-    this.props.userLoginSubmit(values.username, values.password);
+    this.props.userLoginSubmit(values.username, values.password, values.chainId);
   }
 
   render() {
@@ -39,6 +64,22 @@ class Login extends Component {
             <Paper className="login-paper" zDepth={3}>
               <form onSubmit={handleSubmit(this.submit)}>
                 <div className="md-grid">
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <Field
+                    id="chainId"
+                    name="chainId"
+                    type="select"
+                    label="Select Chain"
+                    onChange={this.onChainIdChange}
+                    menuItems={this.props.chains}
+                    className="md-cell md-cell--6-desktop md-cell--10-tablet md-cell--10-phone"
+                    component={ReduxedSelectField}
+                    required
+                  />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone vertical-center">
+                    <Button raised primary label="Deploy" type="button" onClick={this.deployButton} disabled={this.props.isUploading} />
+                  </div>
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <Field
                     id="username"
@@ -74,12 +115,14 @@ class Login extends Component {
 
 function mapStateToProps(state) {
   return {
-    login: state.login
+    login: state.login,
+    chains: state.chains.chainIds,
+    isUploading: state.uploadContract.isLoading
   };
 }
 
-const connected = connect(mapStateToProps, { userLoginSubmit })(Login);
+const connected = connect(mapStateToProps, { userLoginSubmit, fetchChains, uploadContracts })(Login);
 
-const formedComponent = reduxForm({ form: 'login'})(connected);
+const formedComponent = reduxForm({ form: 'login' })(connected);
 
 export default formedComponent;

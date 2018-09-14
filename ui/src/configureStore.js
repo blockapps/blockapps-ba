@@ -19,6 +19,8 @@ import projectBidsReducer from './scenes/Projects/components/Project/components/
 import projectCreateReducer from './scenes/Projects/components/ProjectCreate/reducers/project-create.reducer';
 import bidModalReducer from './scenes/Projects/components/BidModal/bidModal.reducer';
 import userBalanceReducer from './components/App/components/UserBadge/user-badge.reducer';
+import chainsReducer from './components/Chains/chains.reducer';
+import uploadContractsReducer from './components/UploadContracts/uploadContracts.reducer';
 
 import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
 import watchLoginSubmit from './scenes/Login/login.saga';
@@ -30,6 +32,8 @@ import watchBidSubmit from './scenes/Projects/components/BidModal/bidModal.saga.
 import watchBidAccept from './scenes/Projects/components/Project/components/Bids/components/BidTable/sagas/acceptBid.saga.js';
 import watchFetchProjectBids from './scenes/Projects/components/Project/components/Bids/components/BidTable/sagas/projectBids.saga.js';
 import watchBalanceSubmit from './components/App/components/UserBadge/user-badge.saga';
+import watchFetchChains from './components/Chains/chains.saga';
+import watchUploadContracts from './components/UploadContracts/uploadContracts.saga';
 
 const rootReducer = combineReducers({
   form: formReducer,
@@ -44,6 +48,8 @@ const rootReducer = combineReducers({
   createProject: projectCreateReducer,
   loadingBar: loadingBarReducer,
   balance: userBalanceReducer,
+  chains: chainsReducer,
+  uploadContract: uploadContractsReducer
 });
 
 const rootSaga = function* startForeman() {
@@ -58,6 +64,8 @@ const rootSaga = function* startForeman() {
     fork(watchBidAccept),
     fork(watchFetchProjectBids),
     fork(watchBalanceSubmit),
+    fork(watchFetchChains),
+    fork(watchUploadContracts),
   ]
 };
 
@@ -66,7 +74,7 @@ const configureStore = () => {
   return {
     ...createStore(rootReducer,
       window.devToolsExtension ? window.devToolsExtension() : f => f,
-      applyMiddleware(sagaMiddleware,loadingBarMiddleware())
+      applyMiddleware(sagaMiddleware, loadingBarMiddleware())
     ),
     runSaga: sagaMiddleware.run(rootSaga)
   };
