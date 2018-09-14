@@ -3,11 +3,13 @@ const heartbeat = require('./api/v1/heartbeat');
 const login = require('./api/v1/login');
 const projects = require('./api/v1/projects');
 const users = require('./api/v1/users');
+const uploadContracts = require('./api/v1/uploadContract');
 
 routes.use('/api/v1/heartbeat', heartbeat);
 routes.use('/api/v1/login', login);
 routes.use('/api/v1/projects', projects);
 routes.use('/api/v1/users', users);
+routes.use('/api/v1/uploadContracts', uploadContracts);
 /**
  * Serve the docs for the api
  */

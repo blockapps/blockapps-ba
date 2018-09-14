@@ -3,6 +3,8 @@ const rest = ba.rest;
 const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
+const fs = require('fs');
+const yaml = require('js-yaml');
 
 const userManagerJs = require(process.cwd() + '/' + config.libPath + '/user/userManager');
 const projectManagerJs = require(process.cwd() + '/' + config.libPath + '/project/projectManager');
@@ -40,7 +42,7 @@ function* compileSearch() {
 }
 
 function* getSubContracts(contract) {
-  rest.verbose('getSubContracts', {contract, subContractsNames});
+  rest.verbose('getSubContracts', { contract, subContractsNames });
   const state = yield rest.getState(contract);
   const subContracts = {}
   subContractsNames.map(name => {
@@ -55,7 +57,7 @@ function* getSubContracts(contract) {
 }
 
 function* setContract(admin, contract) {
-  rest.verbose('setContract', {admin, contract});
+  rest.verbose('setContract', { admin, contract });
   // set the managers
   const subContarcts = yield getSubContracts(contract);
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
@@ -91,7 +93,7 @@ function* setContract(admin, contract) {
   }
   // create bid
   contract.createBid = function* (name, supplier, amount) {
-    rest.verbose('dapp: createBid', {name, supplier, amount});
+    rest.verbose('dapp: createBid', { name, supplier, amount });
     return yield projectManager.createBid(name, supplier, amount);
   }
   // bids by name
@@ -108,8 +110,8 @@ function* setContract(admin, contract) {
     return yield login(userManager, username, password);
   }
   // deploy
-  contract.deploy = function* (dataFilename, deployFilename) {
-    return yield deploy(admin, contract, userManager, dataFilename, deployFilename);
+  contract.deploy = function* (dataFilename, deployFilename, chainId) {
+    return yield deploy(admin, contract, userManager, dataFilename, deployFilename, chainId);
   }
 
   return contract;
@@ -118,20 +120,20 @@ function* setContract(admin, contract) {
 // =========================== business functions ========================
 
 function* login(userManager, username, password) {
-  rest.verbose('dapp: login', {username, password});
-  const args = {username:username, password:password};
+  rest.verbose('dapp: login', { username, password });
+  const args = { username: username, password: password };
   const result = yield userManager.login(args);
   // auth failed
   if (!result) {
-    return {authenticate: false};
+    return { authenticate: false };
   }
   // auth OK
   const baUser = yield userManager.getUser(username);
-  return {authenticate: true, user: baUser};
+  return { authenticate: true, user: baUser };
 }
 
 function* createProject(projectManager, args) {
-  rest.verbose('dapp: createProject', {args});
+  rest.verbose('dapp: createProject', { args });
   args.created = +new Date();
   const project = yield projectManager.createProject(args);
   return project;
@@ -139,7 +141,7 @@ function* createProject(projectManager, args) {
 
 // accept bid
 function* acceptBid(userManager, projectManager, buyerName, buyerPassword, bidId, projectName) {
-  rest.verbose('dapp: acceptBid', {buyerName, buyerPassword, bidId, projectName});
+  rest.verbose('dapp: acceptBid', { buyerName, buyerPassword, bidId, projectName });
   const buyer = yield userManager.getUser(buyerName);
   buyer.password = buyerPassword;
   const result = yield projectManager.acceptBid(buyer, bidId, projectName);
@@ -163,16 +165,16 @@ function* handleEvent(userManager, projectManager, args) {
   const name = args.name;
   rest.verbose('dapp: project handleEvent', args);
 
-    switch(args.projectEvent) {
-      case ProjectEvent.RECEIVE:
-        return yield receiveProject(userManager, projectManager, args.projectName);
+  switch (args.projectEvent) {
+    case ProjectEvent.RECEIVE:
+      return yield receiveProject(userManager, projectManager, args.projectName);
 
-      case ProjectEvent.ACCEPT:
-        return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName);
+    case ProjectEvent.ACCEPT:
+      return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName);
 
-      default:
-        return yield projectManager.handleEvent(args.projectName, args.projectEvent);
-    }
+    default:
+      return yield projectManager.handleEvent(args.projectName, args.projectEvent);
+  }
 }
 
 function* createPresetUsers(userManager, presetUsers) {
@@ -190,8 +192,8 @@ function* createPresetUsers(userManager, presetUsers) {
   return users;
 }
 
-function* deploy(admin, contract, userManager, presetDataFilename, deployFilename) {
-  rest.verbose('dapp: deploy', {presetDataFilename, deployFilename});
+function* deploy(admin, contract, userManager, presetDataFilename, deployFilename, chainId) {
+  rest.verbose('dapp: deploy', { presetDataFilename, deployFilename });
   const fsutil = ba.common.fsutil;
 
   const presetData = fsutil.yamlSafeLoadSync(presetDataFilename);
@@ -201,20 +203,26 @@ function* deploy(admin, contract, userManager, presetDataFilename, deployFilenam
   // create preset users
   const users = yield createPresetUsers(userManager, presetData.users);   // TODO test the users are all in
 
+  // TODO: Add users in every chain
+
   const deployment = {
-    url: config.getBlocUrl(),
-    admin: admin,
-    contract: {
-      name: contract.name,
-      address: contract.address,
-    },
-    users: presetData.users,
+    [chainId]: {
+      url: config.getBlocUrl(),
+      admin: admin,
+      contract: {
+        name: contract.name,
+        address: contract.address,
+      }
+    }
   };
+  
   // write
   console.log('deploy filename:', deployFilename);
   console.log(fsutil.yamlSafeDumpSync(deployment));
 
-  fsutil.yamlWrite(deployment, deployFilename);
+  const temp = yaml.safeDump(deployment);
+  fs.appendFileSync(deployFilename, temp);
+
   return deployment;
 }
 
