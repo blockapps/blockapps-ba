@@ -9,4 +9,5 @@ export const API_MOCK =
     ? process.env.REACT_APP_API_MOCK
     : false;
     
-export const bloc_url = `${HTTP_PROTOCOL}://${window.location.hostname}/strato-api/eth/v1.2`;
+export const strato_url = `${HTTP_PROTOCOL}://${window.location.hostname}/strato-api/eth/v1.2`;
+export const bloc_url =  `${HTTP_PROTOCOL}://${window.location.hostname}/bloc/v2.2`;

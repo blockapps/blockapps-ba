@@ -27,7 +27,7 @@ const reducer = function (state = initialState, action) {
       return {
         ...state,
         isLoading: false,
-        error: action.error
+        // error: action.error
       };
     default:
       return state;

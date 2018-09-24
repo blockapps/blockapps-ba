@@ -2,10 +2,10 @@ export const UPLOAD_CONTRACTS_REQUEST = 'UPLOAD_CONTRACTS_REQUEST';
 export const UPLOAD_CONTRACTS_SUCCESS = 'UPLOAD_CONTRACTS_REQUEST_SUCCESS';
 export const UPLOAD_CONTRACTS_FAILURE = 'UPLOAD_CONTRACTS_FAILURE';
 
-export const uploadContracts = function (chainId) {
+export const uploadContracts = function (data) {
   return {
     type: UPLOAD_CONTRACTS_REQUEST,
-    chainId
+    data
   }
 };
 

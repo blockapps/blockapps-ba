@@ -8,9 +8,9 @@ import {
   fetchChainsSuccess,
   fetchChainsFailure
 } from './chains.actions';
-import { bloc_url } from '../../environment';
+import { strato_url } from '../../environment';
 
-const chainUrl = bloc_url + "/chain";
+const chainUrl = strato_url + "/chain";
 
 export function getChainsApi() {
   return fetch(

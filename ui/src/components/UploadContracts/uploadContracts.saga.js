@@ -9,10 +9,11 @@ import {
   uploadContractsFailure
 } from './uploadContracts.actions';
 import { API_URL } from '../../environment';
+import { setUserMessage } from '../UserMessage/user-message.action';
 
 const uploadContractsUrl = API_URL + "/uploadContracts";
 
-export function uploadContractsApi(chainId) {
+export function uploadContractsApi(username, address, password, chainId) {
   return fetch(
     uploadContractsUrl,
     {
@@ -21,7 +22,7 @@ export function uploadContractsApi(chainId) {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ chainId })
+      body: JSON.stringify({ username, address, password, chainId })
     })
     .then(function (response) {
       return response.json()
@@ -33,8 +34,13 @@ export function uploadContractsApi(chainId) {
 
 export function* uploadContracts(action) {
   try {
-    const response = yield call(uploadContractsApi, action.chainId);
-    yield put(uploadContractsSuccess(response));
+    const response = yield call(uploadContractsApi, action.data.admin_username, action.data.admin_address, action.data.password, action.data.chainId);
+    if (response.error) {
+      yield put(setUserMessage(response.error));
+      yield put(uploadContractsFailure(response.error));
+    } else {
+      yield put(uploadContractsSuccess(response));
+    }
   }
   catch (err) {
     yield put(uploadContractsFailure(err));
