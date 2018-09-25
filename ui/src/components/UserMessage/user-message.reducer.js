@@ -2,7 +2,7 @@ import * as ActionTypes from './user-message.action';
 
 // Updates error message to notify about the failed fetches OR user notification message
 const userMessageReducer = function (state = null, action) {
-  const { type, error } = action;
+  const { type } = action;
   if (type === ActionTypes.RESET_USER_MESSAGE) {
     return null;
   }

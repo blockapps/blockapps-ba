@@ -8,6 +8,7 @@ import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../environment';
 import { handleApiError } from '../../lib/apiErrorHandler';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
+import { setUserMessage } from '../../components/UserMessage/user-message.action';
 
 const loginUrl = API_URL + '/login';
 
@@ -47,7 +48,6 @@ function loginApiCall(username, password, chainId) {
 function* submitLogin(action) {
   try {
     yield put(showLoading());
-
     const response = yield call(loginApiCall, action.username, action.password, action.chainId);
     yield put(hideLoading());
     if (response.data.authenticate) {
@@ -56,6 +56,7 @@ function* submitLogin(action) {
   }
   catch (err) {
     yield put(userLoginFailure(err));
+    yield put(setUserMessage(err));
     yield put(hideLoading());
   }
   browserHistory.push('/projects');

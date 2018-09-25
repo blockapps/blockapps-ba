@@ -1,12 +1,15 @@
 import {
   FETCH_CHAINS_SUCCESS,
-  FETCH_CHAINS_FAILURE
+  FETCH_CHAINS_FAILURE,
+  SET_CHAIN_ID,
+  RESET_CHAIN_ID
 } from './chains.actions';
 
 const initialState = {
   chains: {},
   chainIds: [],
-  error: null
+  error: null,
+  chainId: null
 };
 
 const reducer = function (state = initialState, action) {
@@ -37,6 +40,16 @@ const reducer = function (state = initialState, action) {
         chains: state.chains,
         error: action.error
       };
+    case SET_CHAIN_ID:
+      return {
+        ...state,
+        chainId: action.chainId
+      }
+    case RESET_CHAIN_ID:
+      return {
+        ...state,
+        chainId: null
+      }
     default:
       return state;
   }

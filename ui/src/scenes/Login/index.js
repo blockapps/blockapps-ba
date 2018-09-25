@@ -17,7 +17,7 @@ class Login extends Component {
 
   submit = (values) => {
     mixpanel.track('login_click');
-    this.props.userLoginSubmit(values.username, values.password, values.chainId);
+    this.props.userLoginSubmit(values.username, values.password, this.props.chainId);
   }
 
   render() {
@@ -43,7 +43,7 @@ class Login extends Component {
                 <div className="md-grid">
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone">
-                    <b>CHAIN ID: </b>
+                    <b>CHAIN ID: {this.props.chainId} </b>
                   </div>
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
@@ -83,6 +83,7 @@ function mapStateToProps(state) {
   return {
     login: state.login,
     chains: state.chains.chainIds,
+    chainId: state.chains.chainId,
     isUploading: state.uploadContract.isLoading
   };
 }

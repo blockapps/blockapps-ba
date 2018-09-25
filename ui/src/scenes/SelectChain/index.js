@@ -9,7 +9,7 @@ import ReduxedTextField from '../../components/ReduxedTextField';
 import ReduxedSelectField from '../../components/ReduxedSelectField';
 import Media, { MediaOverlay } from 'react-md/lib/Media';
 import mixpanel from 'mixpanel-browser';
-import { fetchChains } from '../../components/Chains/chains.actions';
+import { fetchChains, setChainID } from '../../components/Chains/chains.actions';
 import { uploadContracts } from '../../components/UploadContracts/uploadContracts.actions';
 import { fetchAccounts, fetchUserAddresses } from '../../components/Accounts/accounts.actions';
 import { browserHistory } from 'react-router';
@@ -31,6 +31,7 @@ class SelectChain extends Component {
 
   submit = (values) => {
     mixpanel.track('deploy_click');
+    this.props.setChainID(values.chainId);
     this.props.uploadContracts(values);
   }
 
@@ -145,7 +146,7 @@ function mapStateToProps(state) {
   };
 }
 
-const connected = connect(mapStateToProps, { fetchChains, uploadContracts, fetchAccounts, fetchUserAddresses })(SelectChain);
+const connected = connect(mapStateToProps, { fetchChains, uploadContracts, fetchAccounts, fetchUserAddresses, setChainID })(SelectChain);
 
 const formedComponent = reduxForm({ form: 'select-chain', validate })(connected);
 
