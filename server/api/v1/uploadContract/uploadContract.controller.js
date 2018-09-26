@@ -20,7 +20,6 @@ const uploadContractsController = {
 
 
     co(function* () {
-      // TODO: check chainId is exists in yaml or not (reason deploy of contracts)
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const keys = deploy ? Object.keys(deploy) : [];
 

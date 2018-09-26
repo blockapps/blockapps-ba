@@ -2,11 +2,12 @@ export const FETCH_PROJECT_LIST = 'FETCH_PROJECTS';
 export const FETCH_PROJECT_LIST_SUCCESS = 'FETCH_PROJECTS_SUCCESS';
 export const FETCH_PROJECT_LIST_FAILURE = 'FETCH_PROJECTS_FAILURE';
 
-export const fetchProjectList = function (listType, username=null) {
+export const fetchProjectList = function (listType, username=null, chainId) {
   return {
     type: FETCH_PROJECT_LIST,
     listType: listType,
     username: username,
+    chainId: chainId
   }
 };
 

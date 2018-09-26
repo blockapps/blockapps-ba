@@ -22,33 +22,33 @@ function* uploadContract(admin, args) {
   return setContract(admin, contract);
 }
 
-function setContract(admin, contract) {
+function setContract(admin, contract, chainId) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
-  contract.createProject = function* (args) {
-    return yield createProject(admin, contract, args);
+  contract.createProject = function* (args, chainId) {
+    return yield createProject(admin, contract, args, chainId);
   }
-  contract.getProject = function* (name) {
-    return yield getProject(admin, contract, name);
+  contract.getProject = function* (name, chainId) {
+    return yield getProject(admin, contract, name, chainId);
   }
-  contract.getProjects = function* (name) {
-    return yield getProjects(contract);
+  contract.getProjects = function* (chainId, name) {
+    return yield getProjects(contract, chainId);
   }
   contract.exists = function* (name) {
     return yield exists(admin, contract, name);
   }
-  contract.getProjectsByBuyer = function* (buyer) {
-    return yield getProjectsByBuyer(contract, buyer);
+  contract.getProjectsByBuyer = function* (buyer, chainId) {
+    return yield getProjectsByBuyer(contract, buyer, chainId);
   }
-  contract.getProjectsBySupplier = function* (supplier) {
-    return yield getProjectsBySupplier(contract, supplier);
+  contract.getProjectsBySupplier = function* (supplier, chainId) {
+    return yield getProjectsBySupplier(contract, supplier, chainId);
   }
   contract.getProjectsByName = function* (name) {
     return yield getProjectsByName(contract, name);
   }
-  contract.getProjectsByState = function* (state) {
-    return yield getProjectsByState(contract, state);
+  contract.getProjectsByState = function* (state, chainId) {
+    return yield getProjectsByState(contract, state, chainId);
   }
   contract.handleEvent = function* (name, projectEvent) {
     return yield handleEvent(admin, contract, name, projectEvent);
@@ -83,8 +83,8 @@ function* compileSearch(contract) {
 
 // throws: ErrorCodes
 // returns: record from search
-function* createProject(admin, contract, args) {
-  rest.verbose('createProject', {admin, args});
+function* createProject(admin, contract, args, chainId) {
+  rest.verbose('createProject', {admin, args, chainId});
   // function createProject(
   //   string name,
   //   string buyer,
@@ -96,13 +96,13 @@ function* createProject(admin, contract, args) {
   // ) returns (ErrorCodes) {
   const method = 'createProject';
 
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
   // get the contract data from search
-  const project = yield getProject(admin, contract, args.name);
+  const project = yield getProject(admin, contract, args.name, chainId);
   return project;
 }
 
@@ -215,7 +215,7 @@ function* getBidsByName(name) {
   return yield rest.query(`Bid?name=eq.${encodeURIComponent(name)}`);
 }
 
-function* getBidsBySupplier(supplier) {
+function* getBidsBySupplier(supplier, chainId) {
   rest.verbose('getBidsBySupplier', supplier);
   return yield rest.query(`Bid?supplier=eq.${supplier}`);
 }
@@ -252,7 +252,7 @@ function* exists(admin, contract, name) {
   return exists;
 }
 
-function* getProject(admin, contract, name) {
+function* getProject(admin, contract, name, chainId) {
   rest.verbose('getProject', name);
   // function getProject(string name) returns (address) {
   const method = 'getProject';
@@ -261,7 +261,7 @@ function* getProject(admin, contract, name) {
   };
 
   // returns address
-  const address = (yield rest.callMethod(admin, contract, method, args))[0];
+  const address = (yield rest.callMethod(admin, contract, method, args, null, chainId))[0];
   // if not found - throw
   if (address == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
@@ -271,40 +271,40 @@ function* getProject(admin, contract, name) {
   return project;
 }
 
-function* getProjects(contract) {
-  rest.verbose('getProjects');
-  const state = yield rest.getState(contract);
+function* getProjects(contract, chainId) {
+  rest.verbose('getProjects', chainId);
+  const state = yield rest.getState(contract, chainId);
   const projects = state.projects.slice(1); // remove the first '0000' project
   const csv = util.toCsv(projects); // generate csv string
   const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
   return results;
 }
 
-function* getProjectsByBuyer(contract, buyer) {
+function* getProjectsByBuyer(contract, buyer, chainId) {
   rest.verbose('getProjectsByBuyer', buyer);
-  const projects = yield getProjects(contract);
+  const projects = yield getProjects(contract, chainId);
   const filtered = projects.filter(function(project) {
     return project.buyer === buyer;
   });
   return filtered;
 }
 
-function* getProjectsByState(contract, state) {
+function* getProjectsByState(contract, state, chainId) {
   rest.verbose('getProjectsByState', state);
-  const projects = yield getProjects(contract);
+  const projects = yield getProjects(contract, chainId);
   const filtered = projects.filter(function(project) {
     return parseInt(project.state) == state;
   });
   return filtered;
 }
 
-function* getProjectsBySupplier(contract, supplier) {
-  rest.verbose('getProjectsBySupplier', supplier);
-  const bids = yield getBidsBySupplier(supplier);
+function* getProjectsBySupplier(contract, supplier, chainId) {
+  rest.verbose('getProjectsBySupplier', supplier, chainId);
+  const bids = yield getBidsBySupplier(supplier, chainId);
   const names = bids.map(function(bid) {
     return bid.name;
   });
-  const projects = yield getProjectsByName(contract, names);
+  const projects = yield getProjectsByName(contract, names, chainId);
   return projects;
 }
 

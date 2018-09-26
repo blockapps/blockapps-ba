@@ -3,10 +3,11 @@ export const PROJECT_CREATE_SUCCESS = 'PROJECT_CREATE_SUCCESS';
 export const PROJECT_CREATE_FAILURE = 'PROJECT_CREATE_FAILURE';
 
 
-export const projectCreate = function (project) {
+export const projectCreate = function (project, chainId) {
   return {
     type: PROJECT_CREATE,
-    project: project
+    project: project,
+    chainId: chainId
   }
 };
 

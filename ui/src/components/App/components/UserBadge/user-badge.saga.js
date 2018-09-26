@@ -8,11 +8,11 @@ import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 
-const balanceUrl = API_URL + '/users/:username/balance';
+const balanceUrl = API_URL + '/users/:username/balance?chainId=:chainId';
 
-function balanceApiCall(username) {
-  if(API_MOCK) {
-    return new Promise(function(resolve, reject){
+function balanceApiCall(username, chainId) {
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({
         data: {
           balance: 1000
@@ -21,30 +21,29 @@ function balanceApiCall(username) {
     });
   }
   else {
-    return fetch(balanceUrl.replace(':username',username), {
+    return fetch(balanceUrl.replace(':username', username).replace(':chainId', chainId), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       }
     })
-    .then(handleApiError)
-    .then(function(response) {
-      return response.json();
-    })
-    .catch(function(error){
-      throw error;
-    });
+      .then(handleApiError)
+      .then(function (response) {
+        return response.json();
+      })
+      .catch(function (error) {
+        throw error;
+      });
   }
 }
 
 function* submitGetBalance(action) {
   try {
-    const response = yield call(balanceApiCall, action.username);
+    const response = yield call(balanceApiCall, action.username, action.chainId);
     yield put(userBalanceSuccess(response.data.balanceString));
   }
-  catch(err)
-  {
+  catch (err) {
     yield put(userBalanceFailure(err));
   }
   browserHistory.push('/projects');

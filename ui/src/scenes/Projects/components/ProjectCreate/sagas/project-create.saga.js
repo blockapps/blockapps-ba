@@ -12,14 +12,14 @@ import { setUserMessage } from '../../../../../components/UserMessage/user-messa
 
 const projectsUrl = API_URL + '/projects';
 
-function projectCreateApiCall(project) {
+function projectCreateApiCall(project, chainId) {
   return fetch(projectsUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
       'Accept': 'application/json'
     },
-    body: JSON.stringify(project)
+    body: JSON.stringify(project, chainId)
   })
     .then(handleApiError)
     .then(function(response) {
@@ -33,7 +33,7 @@ function projectCreateApiCall(project) {
 function* submitProjectCreate(action) {
   try {
     yield put(showLoading());
-    const response = yield call(projectCreateApiCall, action.project);
+    const response = yield call(projectCreateApiCall, action.project, action.chainId);
     yield put(hideLoading());
     if(response.data.project) {
       yield put(projectCreateSuccess(response.data.project));

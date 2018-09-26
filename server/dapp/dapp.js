@@ -61,15 +61,15 @@ function* setContract(admin, contract, chainId) {
   // set the managers
   const subContarcts = yield getSubContracts(contract, chainId);
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager'], chainId);
-  const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
+  const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager'], chainId);
 
-  contract.getBalance = function* (username) {
-    rest.verbose('dapp: getBalance', username);
-    return yield userManager.getBalance(username);
+  contract.getBalance = function* (username, chainId) {
+    rest.verbose('dapp: getBalance', username, chainId);
+    return yield userManager.getBalance(username, chainId);
   }
   // project - create
-  contract.createProject = function* (args) {
-    return yield createProject(projectManager, args);
+  contract.createProject = function* (args, chainId) {
+    return yield createProject(projectManager, args, chainId);
   }
   // project - by name
   contract.getProject = function* (name) {
@@ -77,19 +77,19 @@ function* setContract(admin, contract, chainId) {
     return yield projectManager.getProject(name);
   }
   // projects - by buyer
-  contract.getProjectsByBuyer = function* (buyer) {
-    rest.verbose('dapp: getProjectsByBuyer', buyer);
-    return yield projectManager.getProjectsByBuyer(buyer);
+  contract.getProjectsByBuyer = function* (buyer, chainId) {
+    rest.verbose('dapp: getProjectsByBuyer', buyer, chainId);
+    return yield projectManager.getProjectsByBuyer(buyer, chainId);
   }
   // projects - by state
-  contract.getProjectsByState = function* (state) {
-    rest.verbose('dapp: getProjectsByState', state);
-    return yield projectManager.getProjectsByState(state);
+  contract.getProjectsByState = function* (state, chainId) {
+    rest.verbose('dapp: getProjectsByState', state, chainId);
+    return yield projectManager.getProjectsByState(state, chainId);
   }
   // projects - by supplier
-  contract.getProjectsBySupplier = function* (supplier) {
-    rest.verbose('dapp: getProjectsBySupplier', supplier);
-    return yield projectManager.getProjectsBySupplier(supplier);
+  contract.getProjectsBySupplier = function* (supplier, chainId) {
+    rest.verbose('dapp: getProjectsBySupplier', supplier, chainId);
+    return yield projectManager.getProjectsBySupplier(supplier, chainId);
   }
   // create bid
   contract.createBid = function* (name, supplier, amount) {
@@ -132,10 +132,10 @@ function* login(userManager, username, password, chainId) {
   return { authenticate: true, user: baUser };
 }
 
-function* createProject(projectManager, args) {
+function* createProject(projectManager, args, chainId) {
   rest.verbose('dapp: createProject', { args });
   args.created = +new Date();
-  const project = yield projectManager.createProject(args);
+  const project = yield projectManager.createProject(args, chainId);
   return project;
 }
 

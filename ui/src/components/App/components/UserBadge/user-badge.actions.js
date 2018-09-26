@@ -3,10 +3,11 @@ export const USER_BALANCE_SUCCESS = 'USER_BALANCE_SUCCESS';
 export const USER_BALANCE_FAILURE = 'USER_BALANCE_FAILURE';
 
 
-export const userBalanceSubmit = function(username) {
+export const userBalanceSubmit = function(username, chainId) {
   return {
     type: USER_BALANCE_SUBMIT,
-    username
+    username,
+    chainId
   }
 };
 

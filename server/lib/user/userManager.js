@@ -36,8 +36,8 @@ function setContract(admin, contract, chainId) {
   contract.login = function* (args, chainId) {
     return yield login(admin, contract, args, chainId);
   }
-  contract.getBalance = function* (username, node, chainId) {
-    return yield getBalance(admin, contract, username, node, chainId);
+  contract.getBalance = function* (username, chainId, node) {
+    return yield getBalance(admin, contract, username, chainId, node);
   }
   return contract;
 }
@@ -53,9 +53,9 @@ function* compileSearch(contract) {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getBalance(admin, contract, username, node, chainId) {
+function* getBalance(admin, contract, username, chainId, node) {
   rest.verbose('getBalance', username);
-  const baUser = yield getUser(admin, contract, username);
+  const baUser = yield getUser(admin, contract, username, chainId);
   const accounts = yield rest.getAccount(baUser.account);
   const balance = new BigNumber(accounts[0].balance);
   return balance;
@@ -87,15 +87,15 @@ function* createUser(admin, contract, args, chainId) {
 }
 
 function* exists(admin, contract, username) {
-    rest.verbose('exists', username);
-    // function exists(string username) returns (bool) {
-    const method = 'exists';
-    const args = {
-      username: username,
-    };
-    const result = yield rest.callMethod(admin, contract, method, args);
-    const exist = (result[0] === true);
-    return exist;
+  rest.verbose('exists', username);
+  // function exists(string username) returns (bool) {
+  const method = 'exists';
+  const args = {
+    username: username,
+  };
+  const result = yield rest.callMethod(admin, contract, method, args);
+  const exist = (result[0] === true);
+  return exist;
 }
 
 function* getUser(admin, contract, username, chainId) {

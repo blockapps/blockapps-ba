@@ -19,7 +19,7 @@ class ProjectList extends Component {
 
   componentWillMount() {
     const listType = this.props['listType'];
-    this.props.fetchProjectList(listType, this.props.login['username']);
+    this.props.fetchProjectList(listType, this.props.login['username'], this.props.chainId);
   }
 
   handleProjectClick = function (e, projectName) {
@@ -123,6 +123,7 @@ class ProjectList extends Component {
 function mapStateToProps(state, ownProps) {
   return {
     projects: state.projects.projects[ownProps.listType],
+    chainId: state.chains.chainId,
     login: state.login,
   };
 }

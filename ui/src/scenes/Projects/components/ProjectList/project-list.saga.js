@@ -68,20 +68,20 @@ function getProjectsMock() {
   });
 }
 
-function getProjectList(listType, username) {
+function getProjectList(listType, username, chainId) {
   if (API_MOCK) {
     return getProjectsMock();
   }
   let query;
   switch (listType) {
     case 'buyer':
-      query = 'filter=buyer&buyer=' + username;
+      query = `filter=buyer&buyer=${username}&chainId=${chainId}`;
       break;
     case 'open':
-      query = 'filter=state&state=1'; // state 1 is 'OPEN'
+      query = `filter=state&state=1&chainId=${chainId}`; // state 1 is 'OPEN'
       break;
     case 'supplier':
-      query = 'filter=supplier&supplier=' + username;
+      query = `filter=supplier&supplier=${username}&chainId=${chainId}`;
       break;
     default:
       query = '';
@@ -107,7 +107,7 @@ function getProjectList(listType, username) {
 function* fetchProjectList(action) {
   try {
     yield put(showLoading());
-    let response = yield call(getProjectList, action.listType, action.username);
+    let response = yield call(getProjectList, action.listType, action.username, action.chainId);
     yield put(hideLoading());
     yield put(fetchProjectListSuccess(action.listType, response.data['projects']));
   }

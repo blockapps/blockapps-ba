@@ -2,6 +2,7 @@ const co = require('co');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
+const fsutil = ba.common.fsutil;
 const config = common.config;
 const util = common.util;
 const path = require('path');
@@ -12,12 +13,16 @@ const constants = common.constants
 
 const usersController = {
   getBalance: function(req, res) {
-    const deploy = req.app.get('deploy');
-    const username = decodeURI(req.params['username']);
+    // const deploy = req.app.get('deploy');
+    const chainId = req.query['chainId'];
 
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
+    const username = decodeURI(req.params['username']);
+    
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
-      const balance = yield dapp.getBalance(username);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
+      const balance = yield dapp.getBalance(username, chainId);
 
       util.response.status200(res, {
         // this is a bignumber

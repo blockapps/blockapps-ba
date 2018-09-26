@@ -2,6 +2,7 @@ const co = require('co');
 const ba = require('blockapps-rest');
 const rest = ba.rest;
 const common = ba.common;
+const fsutil = ba.common.fsutil;
 const config = common.config;
 const util = common.util;
 const path = require('path');
@@ -10,12 +11,16 @@ const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 
 const projectsController = {
   create: function(req, res) {
-    const deploy = req.app.get('deploy');
+    // const deploy = req.app.get('deploy');
+    const chainId = req.body.chainId;
+
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
     const projectArgs = req.body;
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
-      const result = yield dapp.createProject(projectArgs);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
+      const result = yield dapp.createProject(projectArgs, chainId);
       util.response.status200(res, {
         project: result,
       });
@@ -42,7 +47,11 @@ const projectsController = {
   },
 
   list: function(req, res) {
-    const deploy = req.app.get('deploy');
+    // const deploy = req.app.get('deploy');
+    const chainId = req.query['chainId'];
+
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
 
     let listCallback, listParam;
     switch (req.query['filter']) {
@@ -63,8 +72,8 @@ const projectsController = {
     }
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
-      const projects = yield dapp[listCallback](listParam);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
+      const projects = yield dapp[listCallback](listParam, chainId);
       util.response.status200(res, {
         projects: projects,
       });

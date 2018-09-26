@@ -12,7 +12,7 @@ import { ROLES } from '../../../../constants';
 class UserBadge extends Component {
 
   componentWillMount() {
-    this.props.userBalanceSubmit(this.props.username);
+    this.props.userBalanceSubmit(this.props.username, this.props.chainId);
   }
 
   handleLogoutClick = (e) => {
@@ -57,7 +57,8 @@ class UserBadge extends Component {
 
 function mapStateToProps(state) {
   return {
-    balance: state.balance.balance
+    balance: state.balance.balance,
+    chainId: state.chains.chainId
   };
 }
 
