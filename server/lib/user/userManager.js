@@ -17,27 +17,27 @@ function* uploadContract(admin, args) {
   return setContract(admin, contract);
 }
 
-function setContract(admin, contract) {
+function setContract(admin, contract, chainId) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
-  contract.createUser = function* (args) {
-    return yield createUser(admin, contract, args);
+  contract.createUser = function* (args, chainId) {
+    return yield createUser(admin, contract, args, chainId);
   }
   contract.exists = function* (username) {
     return yield exists(admin, contract, username);
   }
-  contract.getUser = function* (username) {
-    return yield getUser(admin, contract, username);
+  contract.getUser = function* (username, chainId) {
+    return yield getUser(admin, contract, username, chainId);
   }
   contract.getUsers = function* () {
     return yield getUsers(admin, contract);
   }
-  contract.login = function* (args) {
-    return yield login(admin, contract, args);
+  contract.login = function* (args, chainId) {
+    return yield login(admin, contract, args, chainId);
   }
-  contract.getBalance = function* (username, node) {
-    return yield getBalance(admin, contract, username, node);
+  contract.getBalance = function* (username, node, chainId) {
+    return yield getBalance(admin, contract, username, node, chainId);
   }
   return contract;
 }
@@ -53,7 +53,7 @@ function* compileSearch(contract) {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getBalance(admin, contract, username, node) {
+function* getBalance(admin, contract, username, node, chainId) {
   rest.verbose('getBalance', username);
   const baUser = yield getUser(admin, contract, username);
   const accounts = yield rest.getAccount(baUser.account);
@@ -63,8 +63,8 @@ function* getBalance(admin, contract, username, node) {
 
 // throws: ErrorCodes
 // returns: user record from search
-function* createUser(admin, contract, args) {
-  rest.verbose('createUser', args);
+function* createUser(admin, contract, args, chainId) {
+  rest.verbose('createUser', args, chainId);
 
   // create bloc user
   const blocUser = yield rest.createUser(args.username, args.password);
@@ -75,13 +75,13 @@ function* createUser(admin, contract, args) {
   const method = 'createUser';
 
   // create the user, with the eth account
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
   // block until the user shows up in search
-  const baUser = yield getUser(admin, contract, args.username);
+  const baUser = yield getUser(admin, contract, args.username, chainId);
   baUser.blocUser = blocUser;
   return baUser;
 }
@@ -98,8 +98,8 @@ function* exists(admin, contract, username) {
     return exist;
 }
 
-function* getUser(admin, contract, username) {
-  rest.verbose('getUser', username);
+function* getUser(admin, contract, username, chainId) {
+  rest.verbose('getUser', username, chainId);
   // function getUser(string username) returns (address) {
   const method = 'getUser';
   const args = {
@@ -107,7 +107,7 @@ function* getUser(admin, contract, username) {
   };
 
   // get the use address
-  const userAddress = (yield rest.callMethod(admin, contract, method, args))[0];
+  const userAddress = (yield rest.callMethod(admin, contract, method, args, null, chainId))[0];
   if (userAddress == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
@@ -126,13 +126,13 @@ function* getUsers(admin, contract) {
   return results;
 }
 
-function* login(admin, contract, args) {
+function* login(admin, contract, args, chainId) {
   rest.verbose('login', args);
 
   // function login(string username, bytes32 pwHash) returns (bool) {
   const method = 'login';
   args.pwHash = util.toBytes32(args.password);
-  const result = (yield rest.callMethod(admin, contract, method, args))[0];
+  const result = (yield rest.callMethod(admin, contract, method, args, null, chainId))[0];
   const isOK = (result == true);
   return isOK;
 }

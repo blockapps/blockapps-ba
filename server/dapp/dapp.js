@@ -16,11 +16,11 @@ const contractName = 'AdminInterface';
 const contractFilename = '/admin/AdminInterface.sol';
 const subContractsNames = ['userManager', 'projectManager'];
 
-function* uploadContract(admin, libPath) {
-  const contract = yield rest.uploadContract(admin, contractName, libPath + contractFilename);
+function* uploadContract(admin, libPath, chainId) {
+  const contract = yield rest.uploadContract(admin, contractName, libPath + contractFilename, {}, chainId);
   contract.src = 'removed';
   yield compileSearch();
-  return yield setContract(admin, contract);
+  return yield setContract(admin, contract, chainId);
 }
 
 function* compileSearch() {
@@ -41,9 +41,9 @@ function* compileSearch() {
   yield rest.compileSearch(searchable, contractName, config.libPath + contractFilename)
 }
 
-function* getSubContracts(contract) {
-  rest.verbose('getSubContracts', { contract, subContractsNames });
-  const state = yield rest.getState(contract);
+function* getSubContracts(contract, chainId) {
+  rest.verbose('getSubContracts', { contract, subContractsNames, chainId });
+  const state = yield rest.getState(contract, chainId);
   const subContracts = {}
   subContractsNames.map(name => {
     const address = state[name];
@@ -56,11 +56,11 @@ function* getSubContracts(contract) {
   return subContracts;
 }
 
-function* setContract(admin, contract) {
-  rest.verbose('setContract', { admin, contract });
+function* setContract(admin, contract, chainId) {
+  rest.verbose('setContract', { admin, contract, chainId });
   // set the managers
-  const subContarcts = yield getSubContracts(contract);
-  const userManager = userManagerJs.setContract(admin, subContarcts['userManager']);
+  const subContarcts = yield getSubContracts(contract, chainId);
+  const userManager = userManagerJs.setContract(admin, subContarcts['userManager'], chainId);
   const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager']);
 
   contract.getBalance = function* (username) {
@@ -106,8 +106,8 @@ function* setContract(admin, contract) {
     return yield handleEvent(userManager, projectManager, args);
   }
   // login
-  contract.login = function* (username, password) {
-    return yield login(userManager, username, password);
+  contract.login = function* (username, password, chainId) {
+    return yield login(userManager, username, password, chainId);
   }
   // deploy
   contract.deploy = function* (dataFilename, deployFilename, chainId) {
@@ -119,16 +119,16 @@ function* setContract(admin, contract) {
 
 // =========================== business functions ========================
 
-function* login(userManager, username, password) {
-  rest.verbose('dapp: login', { username, password });
+function* login(userManager, username, password, chainId) {
+  rest.verbose('dapp: login', { username, password, chainId });
   const args = { username: username, password: password };
-  const result = yield userManager.login(args);
+  const result = yield userManager.login(args, chainId);
   // auth failed
   if (!result) {
     return { authenticate: false };
   }
   // auth OK
-  const baUser = yield userManager.getUser(username);
+  const baUser = yield userManager.getUser(username, chainId);
   return { authenticate: true, user: baUser };
 }
 
@@ -177,7 +177,7 @@ function* handleEvent(userManager, projectManager, args) {
   }
 }
 
-function* createPresetUsers(userManager, presetUsers) {
+function* createPresetUsers(userManager, presetUsers, chainId) {
   const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
   const users = [];
   for (let presetUser of presetUsers) {
@@ -186,7 +186,7 @@ function* createPresetUsers(userManager, presetUsers) {
       password: presetUser.password,
       role: UserRole[presetUser.role],
     }
-    const user = yield userManager.createUser(args);
+    const user = yield userManager.createUser(args, chainId);
     users.push(user);
   }
   return users;
@@ -201,7 +201,7 @@ function* deploy(admin, contract, userManager, presetDataFilename, deployFilenam
   console.log('Preset data', JSON.stringify(presetData, null, 2));
 
   // create preset users
-  const users = yield createPresetUsers(userManager, presetData.users);   // TODO test the users are all in
+  const users = yield createPresetUsers(userManager, presetData.users, chainId);   // TODO test the users are all in
 
   // TODO: Add users in every chain
 

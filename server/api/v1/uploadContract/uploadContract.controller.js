@@ -13,13 +13,16 @@ const fs = require('fs');
 const uploadContractsController = {
   uploadContract: function (req, res) {
     const chainId = req.body.chainId;
+    const username = req.body.username;
+    const address = req.body.address;
+    const password = req.body.password;
     let isChainIdExists = false;
 
 
     co(function* () {
       // TODO: check chainId is exists in yaml or not (reason deploy of contracts)
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
-      const keys = Object.keys(deploy);
+      const keys = deploy ? Object.keys(deploy) : [];
 
       keys.forEach((value) => {
         if (value === chainId) {
@@ -29,16 +32,13 @@ const uploadContractsController = {
       })
 
       if (!isChainIdExists) {
-        const adminName = util.uid('Admin');
-        const adminPassword = '7890';
+        admin = {
+          "name": username,
+          "password": password,
+          "address": address
+        }
 
-        const admin = yield rest.createUser(adminName, adminPassword);
-
-        do {
-          yield new Promise(resolve => setTimeout(resolve, 1000))
-        } while ((yield rest.getBalance(admin.address)) < 1);
-
-        const dapp = yield dappJs.uploadContract(admin, config.libPath);
+        const dapp = yield dappJs.uploadContract(admin, config.libPath, chainId);
         const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename, chainId);
 
         util.response.status200(res, 'completed');
