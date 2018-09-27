@@ -21,7 +21,7 @@ class BidModal extends Component {
       name: this.props.name,
       supplier: this.props.supplier,
       amount: values.amount
-    });
+    }, this.props.chainId);
     this.props.closeBidModal();
   }
 
@@ -72,7 +72,8 @@ class BidModal extends Component {
 function mapStateToProps(state) {
   return {
     supplier: state.login.username,
-    isOpen: state.bidModal.isOpen
+    isOpen: state.bidModal.isOpen,
+    chainId: state.chains.chainId
   };
 }
 

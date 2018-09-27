@@ -50,17 +50,17 @@ function setContract(admin, contract, chainId) {
   contract.getProjectsByState = function* (state, chainId) {
     return yield getProjectsByState(contract, state, chainId);
   }
-  contract.handleEvent = function* (name, projectEvent) {
-    return yield handleEvent(admin, contract, name, projectEvent);
+  contract.handleEvent = function* (name, projectEvent, chainId) {
+    return yield handleEvent(admin, contract, name, projectEvent, chainId);
   }
-  contract.createBid = function* (name, supplier, amount) {
-    return yield createBid(admin, contract, name, supplier, amount);
+  contract.createBid = function* (name, supplier, amount, chainId) {
+    return yield createBid(admin, contract, name, supplier, amount, chainId);
   }
-  contract.acceptBid = function* (buyer, bidId, name) {
-    return yield acceptBid(admin, contract, buyer, bidId, name);
+  contract.acceptBid = function* (buyer, bidId, name, chainId) {
+    return yield acceptBid(admin, contract, buyer, bidId, name, chainId);
   }
-  contract.settleProject = function* (projectName, supplierAddress, bidAddress) {
-    return yield settleProject(admin, contract, projectName, supplierAddress, bidAddress);
+  contract.settleProject = function* (projectName, supplierAddress, bidAddress, chainId) {
+    return yield settleProject(admin, contract, projectName, supplierAddress, bidAddress, chainId);
   }
   contract.getAcceptedBid = getAcceptedBid;
 
@@ -84,7 +84,7 @@ function* compileSearch(contract) {
 // throws: ErrorCodes
 // returns: record from search
 function* createProject(admin, contract, args, chainId) {
-  rest.verbose('createProject', {admin, args, chainId});
+  rest.verbose('createProject', { admin, args, chainId });
   // function createProject(
   //   string name,
   //   string buyer,
@@ -108,8 +108,8 @@ function* createProject(admin, contract, args, chainId) {
 
 // throws: ErrorCodes
 // returns: record from search
-function* createBid(admin, contract, name, supplier, amount) {
-  rest.verbose('createBid', {name, supplier, amount});
+function* createBid(admin, contract, name, supplier, amount, chainId) {
+  rest.verbose('createBid', { name, supplier, amount, chainId });
   // function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
   const method = 'createBid';
   const args = {
@@ -118,7 +118,7 @@ function* createBid(admin, contract, name, supplier, amount) {
     amount: amount,
   };
 
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -130,8 +130,8 @@ function* createBid(admin, contract, name, supplier, amount) {
 }
 
 // throws: ErrorCodes
-function* acceptBid(admin, contract, buyer, bidId, name) {   // FIXME should go into the contract
-  rest.verbose('acceptBid', {admin, buyer, bidId, name});
+function* acceptBid(admin, contract, buyer, bidId, name, chainId) {   // FIXME should go into the contract
+  rest.verbose('acceptBid', { admin, buyer, bidId, name, chainId });
   const bids = yield getBidsByName(name);
   if (bids.length < 1) {
     throw new Error(ErrorCodes.NOT_FOUND);
@@ -142,8 +142,8 @@ function* acceptBid(admin, contract, buyer, bidId, name) {   // FIXME should go 
   })[0];
   // accept the bid (will transfer funds from buyer to bid contract)
   try {
-    yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount);
-  } catch(error) {
+    const temp = yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount, chainId);
+  } catch (error) {
     // check insufficient balance
     console.log(error.status);
     if (error.status == 400) {
@@ -154,15 +154,15 @@ function* acceptBid(admin, contract, buyer, bidId, name) {   // FIXME should go 
   // reject all other bids
   for (let bid of bids) {
     if (bid.id != bidId) {
-      yield setBidState(buyer, bid.address, BidState.REJECTED, 0); // REJECT
+      yield setBidState(buyer, bid.address, BidState.REJECTED, 0, chainId); // REJECT
     }
   }
-  const result = yield handleEvent(admin, contract, name, ProjectEvent.ACCEPT);
+  const result = yield handleEvent(admin, contract, name, ProjectEvent.ACCEPT, chainId);
   return result;
 }
 
-function* setBidState(buyer, bidAddress, state, valueEther) {
-  rest.verbose('setBidState', {buyer, bidAddress, state, valueEther});
+function* setBidState(buyer, bidAddress, state, valueEther, chainId) {
+  rest.verbose('setBidState', { buyer, bidAddress, state, valueEther, chainId });
   const contract = {
     name: 'Bid',
     address: bidAddress,
@@ -181,15 +181,15 @@ function* setBidState(buyer, bidAddress, state, valueEther) {
   };
 
   const valueWei = new BigNumber(valueEther).mul(constants.ETHER);
-  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueWei);
+  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueWei, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
 }
 
-function* settleProject(admin, contract, projectName, supplierAddress, bidAddress) {
-  rest.verbose('settleProject', {projectName, supplierAddress, bidAddress});
+function* settleProject(admin, contract, projectName, supplierAddress, bidAddress, chainId) {
+  rest.verbose('settleProject', { projectName, supplierAddress, bidAddress, chainId });
   // function settleProject(string name, address supplierAddress, address bidAddress) returns (ErrorCodes) {
   const method = 'settleProject';
   const args = {
@@ -198,7 +198,7 @@ function* settleProject(admin, contract, projectName, supplierAddress, bidAddres
     bidAddress: bidAddress,
   };
 
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -207,7 +207,7 @@ function* settleProject(admin, contract, projectName, supplierAddress, bidAddres
 
 function* getBid(bidId) {
   rest.verbose('getBid', bidId);
-  return (yield rest.waitQuery(`Bid?id=eq.${bidId}`,1))[0];
+  return (yield rest.waitQuery(`Bid?id=eq.${bidId}`, 1))[0];
 }
 
 function* getBidsByName(name) {
@@ -283,7 +283,7 @@ function* getProjects(contract, chainId) {
 function* getProjectsByBuyer(contract, buyer, chainId) {
   rest.verbose('getProjectsByBuyer', buyer);
   const projects = yield getProjects(contract, chainId);
-  const filtered = projects.filter(function(project) {
+  const filtered = projects.filter(function (project) {
     return project.buyer === buyer;
   });
   return filtered;
@@ -292,7 +292,7 @@ function* getProjectsByBuyer(contract, buyer, chainId) {
 function* getProjectsByState(contract, state, chainId) {
   rest.verbose('getProjectsByState', state);
   const projects = yield getProjects(contract, chainId);
-  const filtered = projects.filter(function(project) {
+  const filtered = projects.filter(function (project) {
     return parseInt(project.state) == state;
   });
   return filtered;
@@ -301,7 +301,7 @@ function* getProjectsByState(contract, state, chainId) {
 function* getProjectsBySupplier(contract, supplier, chainId) {
   rest.verbose('getProjectsBySupplier', supplier, chainId);
   const bids = yield getBidsBySupplier(supplier, chainId);
-  const names = bids.map(function(bid) {
+  const names = bids.map(function (bid) {
     return bid.name;
   });
   const projects = yield getProjectsByName(contract, names, chainId);
@@ -315,11 +315,11 @@ function* getProjectsByName(contract, names) {
   }
   // the url might get too long, so the query is broken to multipart
   const MAX = 50; // max names to list in one REST call
-  const parts = Math.ceil(names.length/MAX);
+  const parts = Math.ceil(names.length / MAX);
   let results = [];
   for (let i = 0; i < parts; i++) {
-    const start = i*MAX;
-    const end = (i<parts-1) ? (i+1)*MAX : names.length;
+    const start = i * MAX;
+    const end = (i < parts - 1) ? (i + 1) * MAX : names.length;
     const csv = util.toCsv(names.slice(start, end)); // generate csv string
     const partialResults = yield rest.query(`${projectContractName}?name=in.${encodeURIComponent(csv)}`); // get a part
     results = results.concat(partialResults); // add to the results
@@ -327,17 +327,17 @@ function* getProjectsByName(contract, names) {
   return results;
 }
 
-function* handleEvent(admin, contract, name, projectEvent) {
-  rest.verbose('handleEvent', {admin, name, projectEvent});
+function* handleEvent(admin, contract, name, projectEvent, chainId) {
+  rest.verbose('handleEvent', { admin, name, projectEvent, chainId });
 
-  const project = yield getProject(admin, contract, name);
+  const project = yield getProject(admin, contract, name, chainId);
   // function handleEvent(address projectAddress, ProjectEvent projectEvent) returns (ErrorCodes, ProjectState) {
   const method = 'handleEvent';
   const args = {
     projectAddress: project.address,
     projectEvent: projectEvent,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -347,7 +347,7 @@ function* handleEvent(admin, contract, name, projectEvent) {
 }
 
 module.exports = {
-  contractName:contractName,
+  contractName: contractName,
   compileSearch: compileSearch,
   uploadContract: uploadContract,
   setContract: setContract,

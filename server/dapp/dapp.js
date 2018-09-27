@@ -72,9 +72,9 @@ function* setContract(admin, contract, chainId) {
     return yield createProject(projectManager, args, chainId);
   }
   // project - by name
-  contract.getProject = function* (name) {
-    rest.verbose('dapp: getProject', name);
-    return yield projectManager.getProject(name);
+  contract.getProject = function* (name, chainId) {
+    rest.verbose('dapp: getProject', name, chainId);
+    return yield projectManager.getProject(name, chainId);
   }
   // projects - by buyer
   contract.getProjectsByBuyer = function* (buyer, chainId) {
@@ -92,18 +92,18 @@ function* setContract(admin, contract, chainId) {
     return yield projectManager.getProjectsBySupplier(supplier, chainId);
   }
   // create bid
-  contract.createBid = function* (name, supplier, amount) {
-    rest.verbose('dapp: createBid', { name, supplier, amount });
-    return yield projectManager.createBid(name, supplier, amount);
+  contract.createBid = function* (name, supplier, amount, chainId) {
+    rest.verbose('dapp: createBid', { name, supplier, amount, chainId });
+    return yield projectManager.createBid(name, supplier, amount, chainId);
   }
   // bids by name
-  contract.getBids = function* (name) {
-    rest.verbose('dapp: getBids', name);
-    return yield projectManagerJs.getBidsByName(name);
+  contract.getBids = function* (name, chainId) {
+    rest.verbose('dapp: getBids', name, chainId);
+    return yield projectManagerJs.getBidsByName(name, chainId);
   }
   // handle event
-  contract.handleEvent = function* (args) {
-    return yield handleEvent(userManager, projectManager, args);
+  contract.handleEvent = function* (args, chainId) {
+    return yield handleEvent(userManager, projectManager, args, chainId);
   }
   // login
   contract.login = function* (username, password, chainId) {
@@ -140,11 +140,11 @@ function* createProject(projectManager, args, chainId) {
 }
 
 // accept bid
-function* acceptBid(userManager, projectManager, buyerName, buyerPassword, bidId, projectName) {
-  rest.verbose('dapp: acceptBid', { buyerName, buyerPassword, bidId, projectName });
-  const buyer = yield userManager.getUser(buyerName);
+function* acceptBid(userManager, projectManager, buyerName, buyerPassword, bidId, projectName, chainId) {
+  rest.verbose('dapp: acceptBid', { buyerName, buyerPassword, bidId, projectName, chainId });
+  const buyer = yield userManager.getUser(buyerName, chainId);
   buyer.password = buyerPassword;
-  const result = yield projectManager.acceptBid(buyer, bidId, projectName);
+  const result = yield projectManager.acceptBid(buyer, bidId, projectName, chainId);
   return result;
 }
 
@@ -154,14 +154,14 @@ function* receiveProject(userManager, projectManager, projectName) {
   // get the accepted bid
   const bid = yield projectManager.getAcceptedBid(projectName);
   // get the supplier for the accepted bid
-  const supplier = yield userManager.getUser(bid.supplier);
+  const supplier = yield userManager.getUser(bid.supplier, chainId);
   // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-  const result = yield projectManager.settleProject(projectName, supplier.account, bid.address);
+  const result = yield projectManager.settleProject(projectName, supplier.account, bid.address, chainId);
   return result;
 }
 
 // handle project event
-function* handleEvent(userManager, projectManager, args) {
+function* handleEvent(userManager, projectManager, args, chainId) {
   const name = args.name;
   rest.verbose('dapp: project handleEvent', args);
 
@@ -170,10 +170,10 @@ function* handleEvent(userManager, projectManager, args) {
       return yield receiveProject(userManager, projectManager, args.projectName);
 
     case ProjectEvent.ACCEPT:
-      return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName);
+      return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName, chainId);
 
     default:
-      return yield projectManager.handleEvent(args.projectName, args.projectEvent);
+      return yield projectManager.handleEvent(args.projectName, args.projectEvent, chainId);
   }
 }
 
@@ -215,7 +215,7 @@ function* deploy(admin, contract, userManager, presetDataFilename, deployFilenam
       }
     }
   };
-  
+
   // write
   console.log('deploy filename:', deployFilename);
   console.log(fsutil.yamlSafeDumpSync(deployment));

@@ -23,7 +23,7 @@ class BidTable extends Component {
 
   handleBidAcceptClick = function (e, bid) {
     e.stopPropagation();
-    this.props.acceptBid(this.props.login.username, bid.name, bid.id);
+    this.props.acceptBid(this.props.login.username, bid.name, bid.id, this.props.chainId);
   };
 
   render() {
@@ -103,7 +103,8 @@ class BidTable extends Component {
 
 function mapStateToProps(state) {
   return {
-    login: state.login
+    login: state.login,
+    chainId: state.chains.chainId
   };
 }
 export default connect(mapStateToProps, { acceptBid })(BidTable);

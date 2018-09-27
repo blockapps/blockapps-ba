@@ -18,10 +18,10 @@ import {
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 // TODO: define API endpoint for projects
-const url = API_URL + '/projects/{0}';
+const url = API_URL + '/projects/{0}?chainId=:chainId';
 
 function getProjectMock(projectId) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     resolve({
       data: {
         project: {
@@ -47,21 +47,21 @@ function getProjectMock(projectId) {
   });
 }
 
-function getProject(projectId) {
+function getProject(projectId, chainId) {
   if (API_MOCK) {
     return getProjectMock(projectId);
   }
-  return fetch(url.replace('{0}', projectId), {
+  return fetch(url.replace('{0}', projectId).replace(':chainId', chainId), {
     method: 'GET',
     headers: {
       'Accept': 'application/json'
     }
   })
     .then(handleApiError)
-    .then(function(response) {
+    .then(function (response) {
       return response.json();
     })
-    .catch(function(error) {
+    .catch(function (error) {
       throw error;
     });
 }
@@ -69,7 +69,7 @@ function getProject(projectId) {
 function* fetchProject(action) {
   try {
     yield put(showLoading());
-    const response = yield call(getProject,action.projectId);
+    const response = yield call(getProject, action.projectId, action.chainId);
     yield put(hideLoading());
     yield put(fetchProjectSuccess(response.data['project']));
   }

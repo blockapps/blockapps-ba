@@ -31,12 +31,16 @@ const projectsController = {
   },
 
   get: function(req, res) {
-    const deploy = req.app.get('deploy');
+    // const deploy = req.app.get('deploy');
+    const chainId = req.query.chainId;
+
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
     const projectName = decodeURIComponent(req.params['name']);
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
-      const result = yield dapp.getProject(projectName);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
+      const result = yield dapp.getProject(projectName, chainId);
       util.response.status200(res, {
         project: result,
       });
@@ -84,14 +88,19 @@ const projectsController = {
   },
 
   bid: function(req, res) {
-    const deploy = req.app.get('deploy');
+    // const deploy = req.app.get('deploy');
+    const chainId = req.body.chainId;
+
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
       const bid = yield dapp.createBid(
         req.params.name,
         req.body.supplier,
-        req.body.amount);
+        req.body.amount,
+        chainId);
       util.response.status200(res, {
         bid: bid,
       });
@@ -102,10 +111,14 @@ const projectsController = {
   },
 
   getBids: function(req, res) {
-    const deploy = req.app.get('deploy');
+    // const deploy = req.app.get('deploy');
+    const chainId = req.query.chainId;
+
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
       const bids = yield dapp.getBids(req.params.name);
       util.response.status200(res, {
         bids: bids,
@@ -117,16 +130,23 @@ const projectsController = {
   },
 
   handleEvent: function(req, res) {
-    const deploy = req.app.get('deploy');
+    // const deploy = req.app.get('deploy');
     const username = req.body.username;
+    const chainId = req.body.chainId;
+
+    const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
+    const data = deploy[chainId];
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
+      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
       // this transaction requires transfer of funds from the buyer to the bid contract
       // IRL this will require to prompt the user for a password
-      const password = deploy.users.filter(function(user) {
-        return user.username === username;
-      })[0].password;
+      // const password = deploy.users.filter(function(user) {
+      //   return user.username === username;
+      // })[0].password;
+
+      // TODO: use textfield for this from UI side or store users in local.deploy.yaml
+      const password = '1234';
 
       const args = {
         projectEvent: req.body.projectEvent,
@@ -136,7 +156,7 @@ const projectsController = {
         bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
       };
 
-      const result = yield dapp.handleEvent(args);
+      const result = yield dapp.handleEvent(args, chainId);
       // got it
       util.response.status200(res, {
         bid: result,

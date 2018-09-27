@@ -2,12 +2,13 @@ export const ACCEPT_BID = 'ACCEPT_BID';
 export const ACCEPT_BID_SUCCESS = 'ACCEPT_BID_SUCCESS';
 export const ACCEPT_BID_FAILURE = 'ACCEPT_BID_FAILURE';
 
-export const acceptBid = function(username, projectName, bidId) {
+export const acceptBid = function(username, projectName, bidId, chainId) {
   return {
     type: ACCEPT_BID,
     username: username,
     projectName: projectName,
-    id: bidId
+    id: bidId,
+    chainId: chainId
   }
 };
 

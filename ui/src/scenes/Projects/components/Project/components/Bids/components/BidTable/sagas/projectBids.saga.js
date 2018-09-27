@@ -16,11 +16,11 @@ import {
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 // TODO: define API endpoint for projects
-const url = API_URL + '/projects/:name/bids';
+const url = API_URL + '/projects/:name/bids?chainId=:chainId';
 
-function getBids(name){
-  if(API_MOCK) {
-    return new Promise(function(resolve, reject){
+function getBids(name, chainId) {
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({
         data: {
           bids: [
@@ -41,7 +41,7 @@ function getBids(name){
   }
 
   return fetch(
-    url.replace(':name',name),
+    url.replace(':name', name).replace(':chainId', chainId),
     {
       method: 'GET',
       headers: {
@@ -50,24 +50,24 @@ function getBids(name){
       }
     })
     .then(handleApiError)
-    .then(function(response) {
+    .then(function (response) {
       return response.json();
     })
-    .catch(function(error){
+    .catch(function (error) {
       throw error;
     });
 
 }
 
 
-function* fetchProjectBids(action){
+function* fetchProjectBids(action) {
   try {
     yield put(showLoading());
-    let response = yield call(getBids, action.name);
+    let response = yield call(getBids, action.name, action.chainId);
     yield put(hideLoading());
     yield put(fetchProjectBidsSuccess(response.data.bids));
   }
-  catch(err) {
+  catch (err) {
     yield put(hideLoading());
     yield put(fetchProjectBidsFailure(err));
   }

@@ -15,48 +15,50 @@ const bidUrl = API_URL + '/projects/:name/bids';
 function submitBidApiCall(
   name,
   supplier,
-  amount
-){
+  amount,
+  chainId
+) {
 
-  if(API_MOCK) {
-    return new Promise(function(resolve,reject){
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({});
     });
   }
   else {
-    const apiUrl = bidUrl.replace(':name',name);
+    const apiUrl = bidUrl.replace(':name', name);
     return fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ supplier, amount })
+      body: JSON.stringify({ supplier, amount, chainId })
     })
-    .then(handleApiError)
-    .then(function(response) {
-      return response.json();
-    })
-    .catch(function(error){
-      throw error;
-    });
+      .then(handleApiError)
+      .then(function (response) {
+        return response.json();
+      })
+      .catch(function (error) {
+        throw error;
+      });
   }
 }
 
-function* submitBid(action){
+function* submitBid(action) {
   try {
     yield put(showLoading());
     yield call(
       submitBidApiCall,
       action.name,
       action.supplier,
-      action.amount);
+      action.amount,
+      action.chainId);
     yield put(hideLoading());
     yield put(bidSuccess());
     yield put(setUserMessage('Bid Success'));
     browserHistory.goBack();
   }
-  catch(err) {
+  catch (err) {
     yield put(hideLoading());
     yield put(bidFailure(err));
   }

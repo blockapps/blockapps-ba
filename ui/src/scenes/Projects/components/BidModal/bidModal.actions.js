@@ -4,12 +4,13 @@ export const BID_FAILURE = "BID_FAILURE";
 export const BID_OPEN_MODAL = "BID_OPEN_MODAL";
 export const BID_CLOSE_MODAL = "BID_CLOSE_MODAL";
 
-export const bidSubmit = function(bid) {
+export const bidSubmit = function(bid, chainId) {
   return {
     type: BID_SUBMIT,
     name: bid.name,
     supplier: bid.supplier,
-    amount: bid.amount
+    amount: bid.amount,
+    chainId: chainId
   }
 }
 

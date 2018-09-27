@@ -20,8 +20,8 @@ import './Project.css';
 class Project extends Component {
 
   componentWillMount() {
-    this.props.fetchProject(encodeURI(this.props.params['pname']));
-    this.props.fetchProjectBids(encodeURI(this.props.params['pname']));
+    this.props.fetchProject(encodeURI(this.props.params['pname']), this.props.chainId);
+    this.props.fetchProjectBids(encodeURI(this.props.params['pname']), this.props.chainId);
   }
 
   get isBuyer() {
@@ -157,6 +157,7 @@ function mapStateToProps(state) {
     project: state.project.project,
     login: state.login,
     bids: state.bids.bids,
+    chainId: state.chains.chainId
   };
 }
 

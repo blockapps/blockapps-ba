@@ -26,7 +26,7 @@ const uploadContractsController = {
       keys.forEach((value) => {
         if (value === chainId) {
           isChainIdExists = true;
-          util.response.status500(res, 'Contracts are already deployed');
+          util.response.status500(res, 'Contracts are already deployed! You can login using this chain');
         }
       })
 
@@ -48,9 +48,6 @@ const uploadContractsController = {
       util.response.status500(res, 'Unable to upload contracts');
     });
 
-    // TODO: create two users as well
-    // TODO: add chainId paramenter while uploading contracts
-    // TODO: add chainId parameter in blockapps-rest API's
   },
 };
 
