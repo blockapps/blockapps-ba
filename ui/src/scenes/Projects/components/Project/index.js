@@ -37,7 +37,7 @@ class Project extends Component {
     // project events enum: { NULL, ACCEPT, DELIVER, RECEIVE }
     const location = 'project_event_' + projectEvent;
     mixpanel.track(location);
-    this.props.projectEvent(projectName, projectEvent, this.props.login['username']);
+    this.props.projectEvent(projectName, projectEvent, this.props.login['username'], this.props.chainId);
   };
 
   render() {

@@ -44,8 +44,8 @@ function setContract(admin, contract, chainId) {
   contract.getProjectsBySupplier = function* (supplier, chainId) {
     return yield getProjectsBySupplier(contract, supplier, chainId);
   }
-  contract.getProjectsByName = function* (name) {
-    return yield getProjectsByName(contract, name);
+  contract.getProjectsByName = function* (name, chainId) {
+    return yield getProjectsByName(contract, name, chainId);
   }
   contract.getProjectsByState = function* (state, chainId) {
     return yield getProjectsByState(contract, state, chainId);
@@ -96,7 +96,7 @@ function* createProject(admin, contract, args, chainId) {
   // ) returns (ErrorCodes) {
   const method = 'createProject';
 
-  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -118,14 +118,14 @@ function* createBid(admin, contract, name, supplier, amount, chainId) {
     amount: amount,
   };
 
-  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
   const bidId = result[1];
   // block until the contract shows up in search
-  const bid = (yield rest.waitQuery(`Bid?id=eq.${bidId}`, 1))[0];
+  const bid = (yield rest.waitQuery(`Bid?id=eq.${bidId}&chainId=eq.${chainId}`, 1))[0];
   return bid;
 }
 
@@ -145,6 +145,8 @@ function* acceptBid(admin, contract, buyer, bidId, name, chainId) {   // FIXME s
     const temp = yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount, chainId);
   } catch (error) {
     // check insufficient balance
+    console.log("------------------------------------------------");
+    console.log(error);
     console.log(error.status);
     if (error.status == 400) {
       throw new Error(ErrorCodes.INSUFFICIENT_BALANCE);
@@ -198,7 +200,7 @@ function* settleProject(admin, contract, projectName, supplierAddress, bidAddres
     bidAddress: bidAddress,
   };
 
-  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -210,21 +212,21 @@ function* getBid(bidId) {
   return (yield rest.waitQuery(`Bid?id=eq.${bidId}`, 1))[0];
 }
 
-function* getBidsByName(name) {
+function* getBidsByName(name, chainId) {
   rest.verbose('getBidsByName', name);
   return yield rest.query(`Bid?name=eq.${encodeURIComponent(name)}`);
 }
 
 function* getBidsBySupplier(supplier, chainId) {
   rest.verbose('getBidsBySupplier', supplier);
-  return yield rest.query(`Bid?supplier=eq.${supplier}`);
+  return yield rest.query(`Bid?supplier=eq.${supplier}&chainId=eq.${chainId}`);
 }
 
 // throws: ErrorCodes
-function* getAcceptedBid(projectName) {
-  rest.verbose('getAcceptedBid', projectName);
+function* getAcceptedBid(projectName, chainId) {
+  rest.verbose('getAcceptedBid', projectName, chainId);
   // get project bids
-  const bids = yield getBidsByName(projectName);
+  const bids = yield getBidsByName(projectName, chainId);
   // extract the supplier out of the accepted bid
   const accepted = bids.filter(bid => {
     return parseInt(bid.state) === BidState.ACCEPTED;
@@ -261,13 +263,13 @@ function* getProject(admin, contract, name, chainId) {
   };
 
   // returns address
-  const address = (yield rest.callMethod(admin, contract, method, args, null, chainId))[0];
+  const address = (yield rest.callMethod(admin, contract, method, args, undefined, chainId))[0];
   // if not found - throw
   if (address == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
   // found - query for the full record
-  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${address}`, 1))[0];
+  const project = (yield rest.waitQuery(`${projectContractName}?address=eq.${address}&chainId=eq.${chainId}`, 1))[0];
   return project;
 }
 
@@ -276,7 +278,7 @@ function* getProjects(contract, chainId) {
   const state = yield rest.getState(contract, chainId);
   const projects = state.projects.slice(1); // remove the first '0000' project
   const csv = util.toCsv(projects); // generate csv string
-  const results = yield rest.query(`${projectContractName}?address=in.${csv}`);
+  const results = yield rest.query(`${projectContractName}?address=in.${csv}&chainId=eq.${chainId}`);
   return results;
 }
 
@@ -308,7 +310,7 @@ function* getProjectsBySupplier(contract, supplier, chainId) {
   return projects;
 }
 
-function* getProjectsByName(contract, names) {
+function* getProjectsByName(contract, names, chainId) {
   rest.verbose('getProjectsByName', names);
   if (names.length == 0) {
     return [];
@@ -321,7 +323,7 @@ function* getProjectsByName(contract, names) {
     const start = i * MAX;
     const end = (i < parts - 1) ? (i + 1) * MAX : names.length;
     const csv = util.toCsv(names.slice(start, end)); // generate csv string
-    const partialResults = yield rest.query(`${projectContractName}?name=in.${encodeURIComponent(csv)}`); // get a part
+    const partialResults = yield rest.query(`${projectContractName}?chainId=eq.${chainId}&name=in.${encodeURIComponent(csv)}`); // get a part
     results = results.concat(partialResults); // add to the results
   }
   return results;
@@ -337,7 +339,7 @@ function* handleEvent(admin, contract, name, projectEvent, chainId) {
     projectAddress: project.address,
     projectEvent: projectEvent,
   };
-  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);

@@ -29,6 +29,10 @@ class DeployContracts extends Component {
     browserHistory.push('/login');
   }
 
+  navigateToCreateUser = () => {
+    browserHistory.push('/create-user');
+  }
+
   submit = (values) => {
     mixpanel.track('deploy_click');
     this.props.uploadContracts(values);
@@ -101,6 +105,7 @@ class DeployContracts extends Component {
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--10-phone md-text-right login-cell">
+                    <Button flat secondary label="Create User" type="button" onClick={this.navigateToCreateUser} style={{ marginLeft: '10px' }} />
                     <Button flat secondary label="Login" type="button" onClick={this.navigateToLogin} style={{ marginLeft: '10px' }} />
                   </div>
                   <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--10-phone login-cell">

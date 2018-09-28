@@ -49,7 +49,7 @@ function* projectEvent(action){
     yield put(showLoading());
     yield call(projectEventCall, action.projectName, action.projectEvent, action.username);
     yield put(projectEventSuccess());
-    yield put(userBalanceSubmit(action.username));
+    yield put(userBalanceSubmit(action.username, action.chainId));
     yield put(hideLoading());
     yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent]));
     browserHistory.goBack(); // todo: update current project data on the page instead?

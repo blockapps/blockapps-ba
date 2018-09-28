@@ -153,10 +153,10 @@ function* acceptBid(userManager, projectManager, buyerName, buyerPassword, bidId
 }
 
 // receive project
-function* receiveProject(userManager, projectManager, projectName) {
-  rest.verbose('dapp: receiveProject', projectName);
+function* receiveProject(userManager, projectManager, projectName, chainId) {
+  rest.verbose('dapp: receiveProject', projectName, chainId);
   // get the accepted bid
-  const bid = yield projectManager.getAcceptedBid(projectName);
+  const bid = yield projectManager.getAcceptedBid(projectName, chainId);
   // get the supplier for the accepted bid
   const supplier = yield userManager.getUser(bid.supplier, chainId);
   // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
@@ -171,7 +171,7 @@ function* handleEvent(userManager, projectManager, args, chainId) {
 
   switch (args.projectEvent) {
     case ProjectEvent.RECEIVE:
-      return yield receiveProject(userManager, projectManager, args.projectName);
+      return yield receiveProject(userManager, projectManager, args.projectName, chainId);
 
     case ProjectEvent.ACCEPT:
       return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName, chainId);

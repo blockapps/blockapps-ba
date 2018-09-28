@@ -146,7 +146,7 @@ const projectsController = {
       // })[0].password;
 
       // TODO: use textfield for this from UI side or store users in local.deploy.yaml
-      const password = '1234';
+      const password = 'password';
 
       const args = {
         projectEvent: req.body.projectEvent,

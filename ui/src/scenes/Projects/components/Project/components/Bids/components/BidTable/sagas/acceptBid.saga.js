@@ -15,8 +15,8 @@ import { userBalanceSubmit } from '../../../../../../../../../components/App/com
 const url = API_URL + '/projects/:projectName/events';
 
 function acceptBidCall(username, projectName, id, chainId) {
-  if(API_MOCK) {
-    return new Promise(function(resolve,reject){
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({});
     });
   }
@@ -29,29 +29,29 @@ function acceptBidCall(username, projectName, id, chainId) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ username, projectEvent: 1, bidId: id, chainId: chainId})
+      body: JSON.stringify({ username, projectEvent: 1, bidId: id, chainId: chainId })
     })
-    .then(handleApiError)
-    .then(function(response) {
-      return response.json();
-    })
-    .catch(function(error){
-      throw error;
-    });
+      .then(handleApiError)
+      .then(function (response) {
+        return response.json();
+      })
+      .catch(function (error) {
+        throw error;
+      });
   }
 }
 
-function* acceptBid(action){
+function* acceptBid(action) {
   try {
     yield put(showLoading());
     yield call(acceptBidCall, action.username, action.projectName, action.id, action.chainId);
     yield put(hideLoading());
     yield put(acceptBidSuccess());
-    yield put(userBalanceSubmit(action.username));
+    yield put(userBalanceSubmit(action.username, action.chainId));
     yield put(setUserMessage('Bid Accepted'));
     browserHistory.goBack(); // todo: update current project data on the page instead?
   }
-  catch(err) {
+  catch (err) {
     yield put(acceptBidFailure(err));
   }
 }

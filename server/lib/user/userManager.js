@@ -81,7 +81,7 @@ function* createUser(admin, contract, args, chainId, address) {
     const method = 'createUser';
 
     // create the user, with the eth account
-    const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+    const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
     const errorCode = parseInt(result[0]);
     if (errorCode != ErrorCodes.SUCCESS) {
       throw new Error(errorCode);
@@ -100,7 +100,7 @@ function* exists(admin, contract, username, chainId) {
   const args = {
     username: username,
   };
-  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const exist = (result[0] === true);
   return exist;
 }
@@ -114,7 +114,7 @@ function* getUser(admin, contract, username, chainId) {
   };
 
   // get the use address
-  const userAddress = (yield rest.callMethod(admin, contract, method, args, null, chainId))[0];
+  const userAddress = (yield rest.callMethod(admin, contract, method, args, undefined, chainId))[0];
   if (userAddress == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
@@ -139,7 +139,7 @@ function* login(admin, contract, args, chainId) {
   // function login(string username, bytes32 pwHash) returns (bool) {
   const method = 'login';
   args.pwHash = util.toBytes32(args.password);
-  const result = (yield rest.callMethod(admin, contract, method, args, null, chainId))[0];
+  const result = (yield rest.callMethod(admin, contract, method, args, undefined, chainId))[0];
   const isOK = (result == true);
   return isOK;
 }
