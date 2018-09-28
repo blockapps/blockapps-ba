@@ -40,7 +40,7 @@ const uploadContractsController = {
         const dapp = yield dappJs.uploadContract(admin, config.libPath, chainId);
         const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename, chainId);
 
-        util.response.status200(res, 'completed');
+        util.response.status200(res, 'Contracts deployed successfully');
       }
 
     }).catch(err => {

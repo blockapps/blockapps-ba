@@ -39,6 +39,7 @@ export function* uploadContracts(action) {
       yield put(setUserMessage(response.error));
       yield put(uploadContractsFailure(response.error));
     } else {
+      yield put(setUserMessage(response.data));
       yield put(uploadContractsSuccess(response));
     }
   }

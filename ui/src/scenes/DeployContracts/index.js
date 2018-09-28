@@ -9,12 +9,12 @@ import ReduxedTextField from '../../components/ReduxedTextField';
 import ReduxedSelectField from '../../components/ReduxedSelectField';
 import Media, { MediaOverlay } from 'react-md/lib/Media';
 import mixpanel from 'mixpanel-browser';
-import { fetchChains, setChainID } from '../../components/Chains/chains.actions';
+import { fetchChains } from '../../components/Chains/chains.actions';
 import { uploadContracts } from '../../components/UploadContracts/uploadContracts.actions';
 import { fetchAccounts, fetchUserAddresses } from '../../components/Accounts/accounts.actions';
 import { browserHistory } from 'react-router';
 
-class SelectChain extends Component {
+class DeployContracts extends Component {
 
   componentDidMount() {
     this.props.fetchChains();
@@ -31,7 +31,6 @@ class SelectChain extends Component {
 
   submit = (values) => {
     mixpanel.track('deploy_click');
-    this.props.setChainID(values.chainId);
     this.props.uploadContracts(values);
   }
 
@@ -101,9 +100,11 @@ class SelectChain extends Component {
                   />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <div className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">
+                  <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--10-phone md-text-right login-cell">
+                    <Button flat secondary label="Login" type="button" onClick={this.navigateToLogin} style={{ marginLeft: '10px' }} />
+                  </div>
+                  <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--10-phone login-cell">
                     <Button raised primary label="Deploy" type="submit" disabled={this.props.isUploading} />
-                    <Button raised primary label="Login" type="button" onClick={this.navigateToLogin} style={{ marginLeft: '10px' }} />
                   </div>
                 </div>
               </form>
@@ -146,7 +147,7 @@ function mapStateToProps(state) {
   };
 }
 
-const connected = connect(mapStateToProps, { fetchChains, uploadContracts, fetchAccounts, fetchUserAddresses, setChainID })(SelectChain);
+const connected = connect(mapStateToProps, { fetchChains, uploadContracts, fetchAccounts, fetchUserAddresses })(DeployContracts);
 
 const formedComponent = reduxForm({ form: 'select-chain', validate })(connected);
 

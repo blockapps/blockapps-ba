@@ -113,6 +113,10 @@ function* setContract(admin, contract, chainId) {
   contract.deploy = function* (dataFilename, deployFilename, chainId) {
     return yield deploy(admin, contract, userManager, dataFilename, deployFilename, chainId);
   }
+  // create user
+  contract.createUser = function* (payload, chainId) {
+    return yield createUser(userManager, chainId, payload);
+  }
 
   return contract;
 }
@@ -177,6 +181,20 @@ function* handleEvent(userManager, projectManager, args, chainId) {
   }
 }
 
+function* createUser(userManager, chainId, payload) {
+  const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
+  const args = {
+    username: payload.username,
+    password: payload.password,
+    role: UserRole[payload.role],
+  }
+
+  const user = yield userManager.createUser(args, chainId, payload.address);
+
+  return user;
+}
+
 function* createPresetUsers(userManager, presetUsers, chainId) {
   const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
   const users = [];
@@ -196,14 +214,12 @@ function* deploy(admin, contract, userManager, presetDataFilename, deployFilenam
   rest.verbose('dapp: deploy', { presetDataFilename, deployFilename });
   const fsutil = ba.common.fsutil;
 
-  const presetData = fsutil.yamlSafeLoadSync(presetDataFilename);
-  if (presetData === undefined) throw new Error('Preset data read failed ' + presetDataFilename);
-  console.log('Preset data', JSON.stringify(presetData, null, 2));
-
-  // create preset users
-  const users = yield createPresetUsers(userManager, presetData.users, chainId);   // TODO test the users are all in
-
-  // TODO: Add users in every chain
+  // const presetData = fsutil.yamlSafeLoadSync(presetDataFilename);
+  // if (presetData === undefined) throw new Error('Preset data read failed ' + presetDataFilename);
+  // console.log('Preset data', JSON.stringify(presetData, null, 2));
+  
+  // // create preset users
+  // const users = yield createPresetUsers(userManager, presetData.users, chainId);   // TODO test the users are all in
 
   const deployment = {
     [chainId]: {

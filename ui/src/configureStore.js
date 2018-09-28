@@ -22,6 +22,7 @@ import userBalanceReducer from './components/App/components/UserBadge/user-badge
 import chainsReducer from './components/Chains/chains.reducer';
 import uploadContractsReducer from './components/UploadContracts/uploadContracts.reducer';
 import accountsReducer from './components/Accounts/accounts.reducer';
+import userReducer from './scenes/User/user.reducer';
 
 import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
 import watchLoginSubmit from './scenes/Login/login.saga';
@@ -36,6 +37,7 @@ import watchBalanceSubmit from './components/App/components/UserBadge/user-badge
 import watchFetchChains from './components/Chains/chains.saga';
 import watchUploadContracts from './components/UploadContracts/uploadContracts.saga';
 import watcAccounts from './components/Accounts/accounts.saga';
+import watchCreateUser from './scenes/User/user.saga';
 
 const rootReducer = combineReducers({
   form: formReducer,
@@ -52,7 +54,8 @@ const rootReducer = combineReducers({
   balance: userBalanceReducer,
   chains: chainsReducer,
   uploadContract: uploadContractsReducer,
-  account: accountsReducer
+  account: accountsReducer,
+  user: userReducer
 });
 
 const rootSaga = function* startForeman() {
@@ -70,6 +73,7 @@ const rootSaga = function* startForeman() {
     fork(watchFetchChains),
     fork(watchUploadContracts),
     fork(watcAccounts),
+    fork(watchCreateUser),
   ]
 };
 

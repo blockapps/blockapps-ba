@@ -20,13 +20,18 @@ const loginController = {
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const data = deploy[chainId];
 
-      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
-      const result = yield dapp.login(username, password, chainId);
-      if (!result.authenticate) {
-        util.response.status(401, res, 'Login failed');
-        return;
+      if (!data) {
+        util.response.status(401, res, 'Contracts are not deployed on this chain! please deploy contracts first');
+      } else {
+        const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
+        const result = yield dapp.login(username, password, chainId);
+        if (!result.authenticate) {
+          util.response.status(401, res, 'Login failed');
+          return;
+        }
+        util.response.status200(res, result);
       }
-      util.response.status200(res, result);
+
     }).catch(err => {
       console.log('Login Error:', err);
       util.response.status(401, res, 'Login failed');

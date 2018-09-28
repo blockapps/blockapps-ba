@@ -21,11 +21,11 @@ function setContract(admin, contract, chainId) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
-  contract.createUser = function* (args, chainId) {
-    return yield createUser(admin, contract, args, chainId);
+  contract.createUser = function* (args, chainId, address) {
+    return yield createUser(admin, contract, args, chainId, address);
   }
-  contract.exists = function* (username) {
-    return yield exists(admin, contract, username);
+  contract.exists = function* (username, chainId) {
+    return yield exists(admin, contract, username, chainId);
   }
   contract.getUser = function* (username, chainId) {
     return yield getUser(admin, contract, username, chainId);
@@ -63,37 +63,44 @@ function* getBalance(admin, contract, username, chainId, node) {
 
 // throws: ErrorCodes
 // returns: user record from search
-function* createUser(admin, contract, args, chainId) {
+function* createUser(admin, contract, args, chainId, address) {
   rest.verbose('createUser', args, chainId);
 
   // create bloc user
-  const blocUser = yield rest.createUser(args.username, args.password);
-  args.account = blocUser.address;
+  // const blocUser = yield rest.createUser(args.username, args.password);
+  args.account = address;
   args.pwHash = util.toBytes32(args.password); // FIXME this is not a hash
 
-  // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
-  const method = 'createUser';
+  // FIX: uncomment if you need wheather username exists or not
+  const isExists = yield exists(admin, contract, args.username, chainId);
 
-  // create the user, with the eth account
-  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
-  const errorCode = parseInt(result[0]);
-  if (errorCode != ErrorCodes.SUCCESS) {
-    throw new Error(errorCode);
+  if (isExists) {
+    throw new Error('Account already exists');
+  } else {
+    // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+    const method = 'createUser';
+
+    // create the user, with the eth account
+    const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
+    const errorCode = parseInt(result[0]);
+    if (errorCode != ErrorCodes.SUCCESS) {
+      throw new Error(errorCode);
+    }
+    // block until the user shows up in search
+    const baUser = yield getUser(admin, contract, args.username, chainId);
+    // baUser.blocUser = blocUser;
+    return baUser;
   }
-  // block until the user shows up in search
-  const baUser = yield getUser(admin, contract, args.username, chainId);
-  baUser.blocUser = blocUser;
-  return baUser;
 }
 
-function* exists(admin, contract, username) {
+function* exists(admin, contract, username, chainId) {
   rest.verbose('exists', username);
   // function exists(string username) returns (bool) {
   const method = 'exists';
   const args = {
     username: username,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, null, chainId);
   const exist = (result[0] === true);
   return exist;
 }
