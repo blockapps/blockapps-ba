@@ -29,8 +29,9 @@ function* createUser(action) {
     const response = yield call(createUserApiCall, action.payload);
     if (response.error) {
       yield put(setUserMessage(response.error));
-      yield put(createUserFailure(response.error));  
+      yield put(createUserFailure(response.error));
     } else {
+      yield put(setUserMessage('User created successfully'));
       yield put(createUserSuccess(response));
     }
   }

@@ -31,7 +31,8 @@ class CreateUser extends Component {
 
   submit = (values) => {
     mixpanel.track('create_user_click');
-    this.props.createUserRequest(values);
+    this.props.createUserRequest(values)
+    this.props.reset();
   }
 
   render() {
@@ -114,7 +115,7 @@ class CreateUser extends Component {
                     <Button flat secondary label="Login" type="button" onClick={this.navigateToLogin} style={{ marginLeft: '10px' }} />
                   </div>
                   <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--10-phone login-cell">
-                    <Button raised primary label="Create User" type="submit" disabled={this.props.isUploading} />
+                    <Button raised primary label="Create User" type="submit" disabled={this.props.isLoading} />
                   </div>
                 </div>
               </form>
@@ -157,7 +158,7 @@ function mapStateToProps(state) {
     chains: state.chains.chainIds,
     accounts: state.account.accounts,
     accountAddresses: state.account.accountAddresses,
-    isUploading: state.uploadContract.isLoading
+    isLoading: state.user.isLoading
   };
 }
 
