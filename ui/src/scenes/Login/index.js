@@ -1,38 +1,25 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Button from 'react-md/lib/Buttons/Button';
+import React, { Component } from 'react';
 import Paper from 'react-md/lib/Papers';
 import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
-import { reduxForm, Field } from 'redux-form';
-import { userLoginSubmit } from './login.actions';
-import ReduxedTextField from '../../components/ReduxedTextField';
 import Media, { MediaOverlay } from 'react-md/lib/Media';
-import mixpanel from 'mixpanel-browser';
 import './Login.css';
-import { fetchChains, setChainID } from '../../components/Chains/chains.actions';
-import { uploadContracts } from '../../components/UploadContracts/uploadContracts.actions';
-import ReduxedSelectField from '../../components/ReduxedSelectField';
-import { Link } from 'react-router';
+import { TabsContainer, Tabs, Tab } from 'react-md';
+import DeployContracts from '../DeployContracts';
+import CreateUser from '../User/CreateUser';
+import LoginForm from './LoginForm';
+import { fetchChains } from '../../components/Chains/chains.actions';
+import { fetchAccounts } from '../../components/Accounts/accounts.actions';
 
 class Login extends Component {
 
   componentDidMount() {
     this.props.fetchChains();
-  }
-
-  submit = (values) => {
-    mixpanel.track('login_click');
-    this.props.setChainID(values.chainId);
-    this.props.userLoginSubmit(values.username, values.password, values.chainId);
+    this.props.fetchAccounts();
   }
 
   render() {
-    const {
-      // login,
-      handleSubmit
-    } = this.props;
-
     return (
       <div className="md-grid md-toolbar--relative login-margin-top">
         <div className="md-cell md-cell--3-desktop md-cell--2-tablet md-cell--phone-hidden" />
@@ -46,49 +33,19 @@ class Login extends Component {
               </MediaOverlay>
             </Media>
             <Paper className="login-paper" zDepth={3}>
-              <form onSubmit={handleSubmit(this.submit)}>
-                <div className="md-grid">
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <Field
-                    id="chainId"
-                    name="chainId"
-                    type="select"
-                    label="Select Chain"
-                    menuItems={this.props.chains}
-                    className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                    component={ReduxedSelectField}
-                  />
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <Field
-                    id="username"
-                    name="username"
-                    type="text"
-                    label="Enter Username"
-                    className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                    component={ReduxedTextField} />
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <Field
-                    id="password"
-                    name="password"
-                    type="password"
-                    label="Enter Password"
-                    className="md-cell md-cell--8-desktop md-cell--10-tablet md-cell--10-phone"
-                    component={ReduxedTextField} />
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <div className="md-cell md-cell--4-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">
-                    <Link to={'/deploy'}>
-                      <Button flat secondary label="Deploy Contracts" />
-                    </Link>
-                  </div>
-                  <div className="md-cell md-cell--4-desktop md-cell--10-tablet md-cell--10-phone login-cell">
-                    <Button raised primary label="Login" type="submit" />
-                  </div>
-                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                </div>
-              </form>
+              <TabsContainer panelClassName="md-grid" colored>
+                <Tabs tabId="simple-tab">
+                  <Tab label="Login">
+                    <LoginForm />
+                  </Tab>
+                  <Tab label="Deploy Contracts">
+                    <DeployContracts />
+                  </Tab>
+                  <Tab label="Create User">
+                    <CreateUser />
+                  </Tab>
+                </Tabs>
+              </TabsContainer>
             </Paper>
           </Card>
         </div>
@@ -98,16 +55,9 @@ class Login extends Component {
 }
 
 function mapStateToProps(state) {
-  return {
-    login: state.login,
-    chains: state.chains.chainIds,
-    chainId: state.chains.chainId,
-    isUploading: state.uploadContract.isLoading
-  };
+  return {  };
 }
 
-const connected = connect(mapStateToProps, { userLoginSubmit, fetchChains, uploadContracts, setChainID })(Login);
+const loginComponent = connect(mapStateToProps, { fetchChains, fetchAccounts })(Login);
 
-const formedComponent = reduxForm({ form: 'login' })(connected);
-
-export default formedComponent;
+export default loginComponent;
