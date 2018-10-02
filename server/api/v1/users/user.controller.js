@@ -59,6 +59,15 @@ const usersController = {
         }
 
         if (isMemberExists) {
+          // Remove when we have actual password checking API
+          const fromandToUser = {
+            name: req.body.username,
+            address: req.body.address,
+            password: req.body.password
+          }
+          const send = yield rest.send(fromandToUser, fromandToUser, 0);
+          // ---------------------------------------------------
+
           const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
           const user = yield dapp.createUser(payload, chainId);
 
@@ -72,6 +81,9 @@ const usersController = {
       }
     }).catch(err => {
       console.log('Create User Error:', err);
+      if (err.data === '"incorrect password"') {
+        util.response.status(401, res, 'Incorrect password');
+      }
       util.response.status(401, res, 'Failed to create user');
     });
   }

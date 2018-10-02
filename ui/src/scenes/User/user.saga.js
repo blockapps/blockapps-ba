@@ -2,6 +2,7 @@ import { takeLatest, put, call } from 'redux-saga/effects';
 import { API_URL } from '../../environment';
 import { setUserMessage } from '../../components/UserMessage/user-message.action';
 import { CREATE_USER_REQUEST, createUserSuccess, createUserFailure } from './user.actions';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const createUserUrl = API_URL + '/users/create';
 
@@ -26,7 +27,9 @@ function createUserApiCall(payload) {
 
 function* createUser(action) {
   try {
+    yield put(showLoading());
     const response = yield call(createUserApiCall, action.payload);
+    yield put(hideLoading());
     if (response.error) {
       yield put(setUserMessage(response.error));
       yield put(createUserFailure(response.error));

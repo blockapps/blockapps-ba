@@ -10,6 +10,7 @@ import {
 } from './uploadContracts.actions';
 import { API_URL } from '../../environment';
 import { setUserMessage } from '../UserMessage/user-message.action';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const uploadContractsUrl = API_URL + "/uploadContracts";
 
@@ -34,7 +35,9 @@ export function uploadContractsApi(username, address, password, chainId) {
 
 export function* uploadContracts(action) {
   try {
+    yield put(showLoading());
     const response = yield call(uploadContractsApi, action.data.admin_username, action.data.admin_address, action.data.password, action.data.chainId);
+    yield put(hideLoading());
     if (response.error) {
       yield put(setUserMessage(response.error));
       yield put(uploadContractsFailure(response.error));

@@ -24,8 +24,7 @@ class LoginForm extends Component {
     } = this.props;
 
     return (
-
-      <form onSubmit={handleSubmit(this.submit)}>
+      <form onSubmit={handleSubmit(this.submit)} className="form-width">
         <div className="md-grid">
           <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
           <Field
