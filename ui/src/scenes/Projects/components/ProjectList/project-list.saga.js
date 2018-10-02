@@ -91,6 +91,7 @@ function getProjectList(listType, username) {
     url.replace('{0}', query),
     {
       method: 'GET',
+      credentials: 'same-origin',
       headers: {
         'Accept': 'application/json'
     },

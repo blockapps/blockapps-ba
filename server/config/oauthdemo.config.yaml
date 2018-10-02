@@ -1,0 +1,28 @@
+apiDebug: true
+password: '1234'
+timeout: 600000
+libPath: ./server/lib
+contractsPath: ./contracts/
+dataFilename: ./server/dapp/dapp.presets.yaml
+deployFilename: ./server/config/<server-name>.deploy.yaml
+
+# WARNING - extra strict syntax
+# DO NOT change the nodes order
+# node 0 is the default url for all single node api calls
+nodes:
+- id: 0
+  explorerUrl: 'https://oauthdemo.blockapps.net:9000'
+  stratoUrl: 'https://oauthdemo.blockapps.net/strato-api'
+  blocUrl: 'https://oauthdemo.blockapps.net/bloc/v2.2'
+  searchUrl: 'https://oauthdemo.blockapps.net/cirrus'
+
+oauth:
+  appTokenCookieName: "strato_oauth_demo_session"
+  stratoUrl: "https://oauthdemo.blockapps.net"
+  clientId: "c1cc5161-178a-4e0c-a0cc-9a420a87859f"
+  clientSecret: "8OeB2UaWcDJYsUHraonEhXBJNEt/VS+nLo0ZougR4LE="
+  paths:
+    tokenHost: "https://login.microsoftonline.com"
+    tokenPath: "/2ec6965f-17c7-47c0-80c8-98e1a0c7b66a/oauth2/token"
+    authorizePath: "/2ec6965f-17c7-47c0-80c8-98e1a0c7b66a/oauth2/authorize"
+  redirectUri: "http://localhost/server/api/v1/oauth/callback"

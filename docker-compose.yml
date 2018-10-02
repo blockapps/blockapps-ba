@@ -1,0 +1,31 @@
+version: "2.1"
+volumes:
+  pgdata:
+    driver: local
+services:
+  ui:
+    depends_on:
+    - server
+    image: blockappsba-ui:latest
+    volumes:
+    - ./ui:/usr/src/app/ui
+    build: ./ui
+    restart: always
+  server:
+    build: ./server
+    image: blockappsba-server:latest
+    volumes:
+      - ./server:/usr/src/app/server
+    ports:
+      - 9229:9229
+    restart: always
+  nginx:
+    depends_on:
+    - ui
+    - server
+    build: ./nginx
+    image: monitor-nginx:latest
+    ports:
+    - 80:80
+    - 443:443
+    restart: always

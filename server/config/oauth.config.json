@@ -1,0 +1,12 @@
+{
+  "APP_TOKEN_COOKIE_NAME": "strato_oauth_demo_session",
+  "STRATO_URL": "https://oauthdemo.blockapps.net",
+  "CLIENT_ID": "c1cc5161-178a-4e0c-a0cc-9a420a87859f",
+  "CLIENT_SECRET": "8OeB2UaWcDJYsUHraonEhXBJNEt/VS+nLo0ZougR4LE=",
+  "OAUTH_PATHS": {
+    "TOKEN_HOST": "https://login.microsoftonline.com",
+    "TOKEN_PATH": "/2ec6965f-17c7-47c0-80c8-98e1a0c7b66a/oauth2/token",
+    "AUTHORIZE_PATH": "/2ec6965f-17c7-47c0-80c8-98e1a0c7b66a/oauth2/authorize"
+  },
+  "OAUTH_REDIRECT_URI": "http://localhost/server/api/v1/oauth/callback"
+}

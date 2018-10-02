@@ -1,19 +1,23 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
+import Cookies from 'universal-cookie';
+const cookies = new Cookies();
 
 class EnsureAuthenticated extends Component {
-  componentDidMount() {
-    if(!this.props.authenticated) {
-      browserHistory.replace('/login');
+  componentWillMount() {
+    console.log(this.props.login);
+    if (cookies.get('strato_oauth_demo_session')) {
+      //TODO: get email id from jwt if it's not expired
+    } else {
+      browserHistory.replace('/oauth');
     }
   }
 
   render() {
-    if(this.props.authenticated) {
+    if (cookies.get('strato_oauth_demo_session')) {
       return this.props.children;
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -21,7 +25,7 @@ class EnsureAuthenticated extends Component {
 
 function mapStateToProps(state) {
   return {
-    authenticated: state.login.authenticated
+    login: state.login
   }
 }
 

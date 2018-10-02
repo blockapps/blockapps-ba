@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "PORT=${PORT:-3031} node server/index.js",
+    "debug": "PORT=${PORT:-3031} nodemon --inspect=0.0.0.0:9229 server/index.js",
     "start:back": "PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "deploy": "cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml; mocha server/dapp/dapp.deploy.js $NODE_DEBUG_OPTION --config server/config/${SERVER:-localhost}.config.yaml -b",
     "deploy-windows": "mocha server/dapp/dapp.deploy.js --config server/config/%SERVER%.config.yaml -b",
@@ -17,15 +18,17 @@
     "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
   },
   "dependencies": {
-    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git",
+    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git#oauth",
     "body-parser": "^1.15.2",
     "chai": "^4.0.2",
     "co": "^4.6.0",
     "co-mocha": "^1.2.0",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.1",
     "expect": "latest",
     "express": "^4.14.0",
-    "mocha": "^3.4.2"
+    "mocha": "^3.4.2",
+    "simple-oauth2": "^2.2.1"
   },
   "repository": {
     "type": "git",
@@ -38,6 +41,7 @@
   },
   "homepage": "https://github.com/blockapps/blockapps-ba#readme",
   "devDependencies": {
+    "nodemon": "^1.18.4",
     "chai-http": "^3.0.0",
     "mocha": "^3.3.0"
   }

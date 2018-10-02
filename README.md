@@ -2,6 +2,10 @@ Blockapps BA
 ------------
 [![BlockApps logo](http://blockapps.net/img/logo_cropped.png)](http://blockapps.net)
 
+### TODO
+- add Dev mode in readme
+- add IP in docker-compose
+
 ### Supply Chain Demo App
 This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate a solution for a basic 2-party Supply Chain Workflow.
 
