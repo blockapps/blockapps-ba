@@ -10,7 +10,7 @@ class Oauth extends Component {
 
   render() {
     return (
-      <h1 style={{textAlign: "center"}}>Redirecting to Authentication Server</h1>
+      <h1 style={{ textAlign: "center" }}>Redirecting to Authentication Server</h1>
     );
   }
 
@@ -22,4 +22,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, {oauthRedirectRequest})(Oauth);
+export default connect(mapStateToProps, { oauthRedirectRequest })(Oauth);

@@ -1,21 +1,27 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
-import Cookies from 'universal-cookie';
-const cookies = new Cookies();
+import jwtDecode from 'jwt-decode';
+import { userLoginSuccess } from '../../scenes/Login/login.actions';
+import { getOauthCookie } from '../../lib/cookie';
+import { ROLES } from '../../constants';
 
 class EnsureAuthenticated extends Component {
+
   componentWillMount() {
-    console.log(this.props.login);
-    if (cookies.get('strato_oauth_demo_session')) {
-      //TODO: get email id from jwt if it's not expired
+    const oauthCookie = getOauthCookie();
+
+    if (oauthCookie) {
+      let decode = jwtDecode(oauthCookie);
+      // TODO: change ROLES.BUYER when you manage user as per the roles (create user)
+      this.props.userLoginSuccess(decode['email'], ROLES.BUYER);
     } else {
       browserHistory.replace('/oauth');
     }
   }
 
   render() {
-    if (cookies.get('strato_oauth_demo_session')) {
+    if (getOauthCookie()) {
       return this.props.children;
     } else {
       return null;
@@ -29,4 +35,4 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps)(EnsureAuthenticated);
+export default connect(mapStateToProps, { userLoginSuccess })(EnsureAuthenticated);

@@ -36,6 +36,7 @@ function validateCookie(req, res, next) {
     } else {
       // TODO: validate JWT with signature
       // TODO: check if token is outdated and refresh from OAUTH Provider if needed
+      // TODO: check the token expiry and redirect to azure login
       return next();
     }
   }
