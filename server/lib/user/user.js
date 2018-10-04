@@ -42,13 +42,13 @@ function* getUsers(addresses) {
   return results;
 }
 
-function* getUserById(id) {
-  const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}`, 1))[0];
+function* getUserById(id, chainId) {
+  const baUser = (yield rest.waitQuery(`${contractName}?chainId=eq.${chainId}&id=eq.${id}`, 1))[0];
   return baUser;
 }
 
-function* getUserByAddress(address) {
-  const baUser = (yield rest.waitQuery(`${contractName}?address=eq.${address}`, 1))[0];
+function* getUserByAddress(address, chainId) {
+  const baUser = (yield rest.waitQuery(`${contractName}?chainId=eq.${chainId}&address=eq.${address}`, 1))[0];
   return baUser;
 }
 

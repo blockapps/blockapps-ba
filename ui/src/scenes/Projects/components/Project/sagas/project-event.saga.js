@@ -11,15 +11,15 @@ import { API_URL, API_MOCK } from '../../../../../environment';
 import { handleApiError } from '../../../../../lib/apiErrorHandler';
 import { PROJECT_EVENTS } from '../../../../../constants';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
-import { setUserMessage } from '../../../../../components/UserMessage/user-message.action'
+import { setUserMessage, resetUserMessage } from '../../../../../components/UserMessage/user-message.action'
 import { userBalanceSubmit } from '../../../../../components/App/components/UserBadge/user-badge.actions';
 
 const url = API_URL + '/projects/:projectName/events';
 
-function projectEventCall(projectName, projectEvent, username) {
+function projectEventCall(projectName, projectEvent, username, chainId) {
 
-  if(API_MOCK) {
-    return new Promise(function(resolve,reject){
+  if (API_MOCK) {
+    return new Promise(function (resolve, reject) {
       resolve({});
     });
   }
@@ -32,29 +32,30 @@ function projectEventCall(projectName, projectEvent, username) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({projectEvent: projectEvent, username: username})
+      body: JSON.stringify({ projectEvent: projectEvent, username: username, chainId: chainId })
     })
       .then(handleApiError)
-      .then(function(response) {
+      .then(function (response) {
         return response.json();
       })
-      .catch(function(error){
+      .catch(function (error) {
         throw error;
       });
   }
 }
 
-function* projectEvent(action){
+function* projectEvent(action) {
   try {
     yield put(showLoading());
-    yield call(projectEventCall, action.projectName, action.projectEvent, action.username);
+    yield call(projectEventCall, action.projectName, action.projectEvent, action.username, action.chainId);
     yield put(projectEventSuccess());
     yield put(userBalanceSubmit(action.username, action.chainId));
     yield put(hideLoading());
     yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent]));
+    yield put(resetUserMessage());
     browserHistory.goBack(); // todo: update current project data on the page instead?
   }
-  catch(err) {
+  catch (err) {
     yield put(projectEventFailure(err));
   }
 }

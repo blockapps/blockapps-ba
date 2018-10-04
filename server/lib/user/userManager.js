@@ -120,7 +120,7 @@ function* getUser(admin, contract, username, chainId) {
   }
   // found - query for the full user record
   const userJs = require('./user');
-  const baUser = yield userJs.getUserByAddress(userAddress);
+  const baUser = yield userJs.getUserByAddress(userAddress, chainId);
   return baUser;
 }
 
