@@ -10,7 +10,6 @@ const serverPath = './server';
 
 const loginController = {
   login: function (req, res) {
-    // const deploy = req.app.get('deploy');
     const username = req.body.username;
     const password = req.body.password;
     const chainId = req.body.chainId;

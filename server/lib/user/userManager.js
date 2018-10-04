@@ -66,8 +66,6 @@ function* getBalance(admin, contract, username, chainId, node) {
 function* createUser(admin, contract, args, chainId, address) {
   rest.verbose('createUser', args, chainId);
 
-  // create bloc user
-  // const blocUser = yield rest.createUser(args.username, args.password);
   args.account = address;
   args.pwHash = util.toBytes32(args.password); // FIXME this is not a hash
 

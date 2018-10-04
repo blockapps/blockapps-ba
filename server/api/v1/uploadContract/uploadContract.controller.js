@@ -18,7 +18,6 @@ const uploadContractsController = {
     const password = req.body.password;
     let isChainIdExists = false;
 
-
     co(function* () {
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const keys = deploy ? Object.keys(deploy) : [];

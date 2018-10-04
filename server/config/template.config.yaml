@@ -4,7 +4,7 @@ timeout: 600000
 libPath: ./server/lib
 contractsPath: ./contracts/
 dataFilename: ./server/dapp/dapp.presets.yaml
-deployFilename: ./server/config/generated.deploy.yaml
+deployFilename: ./server/config/chains.deploy.yaml
 
 # WARNING - extra strict syntax
 # DO NOT change the nodes order
