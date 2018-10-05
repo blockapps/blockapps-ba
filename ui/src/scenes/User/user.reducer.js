@@ -1,8 +1,9 @@
-import { CREATE_USER_SUCCESS, CREATE_USER_FAILURE, CREATE_USER_REQUEST } from "./user.actions";
+import { CREATE_USER_SUCCESS, CREATE_USER_FAILURE, CREATE_USER_REQUEST, RESET_USER_SUCCESS } from "./user.actions";
 
 const initialState = {
   data: null,
   error: null,
+  success: false,
   isLoading: false
 };
 
@@ -18,6 +19,7 @@ const reducer = (state = initialState, action) => {
         ...state,
         data: action.response,
         isLoading: false,
+        success: true,
         error: null
       };
     case CREATE_USER_FAILURE:
@@ -25,7 +27,13 @@ const reducer = (state = initialState, action) => {
         ...state,
         data: null,
         isLoading: false,
+        success: false,
         error: action.error
+      };
+    case RESET_USER_SUCCESS:
+      return {
+        ...state,
+        success: false
       };
     default:
       return state;

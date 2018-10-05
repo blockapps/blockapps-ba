@@ -1,6 +1,7 @@
 export const CREATE_USER_REQUEST = 'CREATE_USER_REQUEST';
 export const CREATE_USER_SUCCESS = 'CREATE_USER_SUCCESS';
 export const CREATE_USER_FAILURE = 'CREATE_USER_FAILURE';
+export const RESET_USER_SUCCESS = 'RESET_USER_SUCCESS';
 
 export const createUserRequest = function (payload) {
   return {
@@ -20,5 +21,11 @@ export const createUserFailure = function (error) {
   return {
     type: CREATE_USER_FAILURE,
     error: error
+  }
+};
+
+export const resetUserSuccess = function () {
+  return {
+    type: RESET_USER_SUCCESS
   }
 };

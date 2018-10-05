@@ -1,7 +1,8 @@
 import {
   UPLOAD_CONTRACTS_SUCCESS,
   UPLOAD_CONTRACTS_FAILURE,
-  UPLOAD_CONTRACTS_REQUEST
+  UPLOAD_CONTRACTS_REQUEST,
+  RESET_UPLOAD_CONTRACTS_DATA
 } from "./uploadContracts.actions";
 
 const initialState = {
@@ -27,7 +28,12 @@ const reducer = function (state = initialState, action) {
       return {
         ...state,
         isLoading: false,
-        // error: action.error
+        error: action.error
+      };
+    case RESET_UPLOAD_CONTRACTS_DATA:
+      return {
+        ...state,
+        uploadContractData: null
       };
     default:
       return state;

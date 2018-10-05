@@ -7,7 +7,7 @@ import ReduxedSelectField from '../../../components/ReduxedSelectField';
 import mixpanel from 'mixpanel-browser';
 import { fetchChains } from '../../../components/Chains/chains.actions';
 import { fetchAccounts, fetchUserAddresses } from '../../../components/Accounts/accounts.actions';
-import { createUserRequest } from '../user.actions';
+import { createUserRequest, resetUserSuccess } from '../user.actions';
 
 class CreateUser extends Component {
 
@@ -15,10 +15,16 @@ class CreateUser extends Component {
     this.props.fetchUserAddresses(value);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.userSuccess) {
+      this.props.reset();
+      this.props.resetUserSuccess();
+    }
+  }
+
   submit = (values) => {
     mixpanel.track('create_user_click');
-    this.props.createUserRequest(values)
-    this.props.reset();
+    this.props.createUserRequest(values);
   }
 
   render() {
@@ -125,11 +131,12 @@ function mapStateToProps(state) {
     chains: state.chains.chainIds,
     accounts: state.account.accounts,
     accountAddresses: state.account.accountAddresses,
-    isLoading: state.user.isLoading
+    isLoading: state.user.isLoading,
+    userSuccess: state.user.success
   };
 }
 
-const connected = connect(mapStateToProps, { fetchChains, fetchAccounts, fetchUserAddresses, createUserRequest })(CreateUser);
+const connected = connect(mapStateToProps, { fetchChains, fetchAccounts, fetchUserAddresses, createUserRequest, resetUserSuccess })(CreateUser);
 
 const formedComponent = reduxForm({ form: 'create-user', validate })(connected);
 

@@ -6,7 +6,7 @@ import ReduxedTextField from '../../components/ReduxedTextField';
 import ReduxedSelectField from '../../components/ReduxedSelectField';
 import mixpanel from 'mixpanel-browser';
 import { fetchChains } from '../../components/Chains/chains.actions';
-import { uploadContracts } from '../../components/UploadContracts/uploadContracts.actions';
+import { uploadContracts, resetUploadContractsData } from '../../components/UploadContracts/uploadContracts.actions';
 import { fetchAccounts, fetchUserAddresses } from '../../components/Accounts/accounts.actions';
 
 class DeployContracts extends Component {
@@ -20,9 +20,15 @@ class DeployContracts extends Component {
     this.props.uploadContracts(values);
   }
 
+  componentWillReceiveProps(props) {
+    if (props.uploadContractData) {
+      this.props.reset();
+      this.props.resetUploadContractsData();
+    }
+  }
+
   render() {
     const {
-      // login,
       handleSubmit
     } = this.props;
 
@@ -110,11 +116,12 @@ function mapStateToProps(state) {
     chains: state.chains.chainIds,
     accounts: state.account.accounts,
     accountAddresses: state.account.accountAddresses,
-    isUploading: state.uploadContract.isLoading
+    isUploading: state.uploadContract.isLoading,
+    uploadContractData: state.uploadContract.uploadContractData
   };
 }
 
-const connected = connect(mapStateToProps, { fetchChains, uploadContracts, fetchAccounts, fetchUserAddresses })(DeployContracts);
+const connected = connect(mapStateToProps, { fetchChains, uploadContracts, fetchAccounts, fetchUserAddresses, resetUploadContractsData })(DeployContracts);
 
 const formedComponent = reduxForm({ form: 'deploy-contracts', validate })(connected);
 
