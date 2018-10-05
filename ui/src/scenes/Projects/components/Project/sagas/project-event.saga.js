@@ -16,7 +16,7 @@ import { userBalanceSubmit } from '../../../../../components/App/components/User
 
 const url = API_URL + '/projects/:projectName/events';
 
-function projectEventCall(projectName, projectEvent, username, chainId) {
+function projectEventCall(projectName, projectEvent, username, chainId, account) {
 
   if (API_MOCK) {
     return new Promise(function (resolve, reject) {
@@ -32,7 +32,7 @@ function projectEventCall(projectName, projectEvent, username, chainId) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ projectEvent: projectEvent, username: username, chainId: chainId })
+      body: JSON.stringify({ projectEvent: projectEvent, username: username, chainId: chainId, account: account })
     })
       .then(handleApiError)
       .then(function (response) {
@@ -47,7 +47,7 @@ function projectEventCall(projectName, projectEvent, username, chainId) {
 function* projectEvent(action) {
   try {
     yield put(showLoading());
-    yield call(projectEventCall, action.projectName, action.projectEvent, action.username, action.chainId);
+    yield call(projectEventCall, action.projectName, action.projectEvent, action.username, action.chainId, action.account);
     yield put(projectEventSuccess());
     yield put(userBalanceSubmit(action.username, action.chainId));
     yield put(hideLoading());

@@ -5,7 +5,7 @@ import {
 } from "./uploadContracts.actions";
 
 const initialState = {
-  uploadContractData: {},
+  uploadContractData: null,
   error: null,
   isLoading: false
 };

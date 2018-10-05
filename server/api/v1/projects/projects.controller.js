@@ -10,7 +10,7 @@ const serverPath = './server';
 const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 
 const projectsController = {
-  create: function(req, res) {
+  create: function (req, res) {
     // const deploy = req.app.get('deploy');
     const chainId = req.body.chainId;
 
@@ -30,7 +30,7 @@ const projectsController = {
     });
   },
 
-  get: function(req, res) {
+  get: function (req, res) {
     // const deploy = req.app.get('deploy');
     const chainId = req.query.chainId;
 
@@ -50,7 +50,7 @@ const projectsController = {
     });
   },
 
-  list: function(req, res) {
+  list: function (req, res) {
     // const deploy = req.app.get('deploy');
     const chainId = req.query['chainId'];
 
@@ -87,7 +87,7 @@ const projectsController = {
     });
   },
 
-  bid: function(req, res) {
+  bid: function (req, res) {
     // const deploy = req.app.get('deploy');
     const chainId = req.body.chainId;
 
@@ -110,7 +110,7 @@ const projectsController = {
     });
   },
 
-  getBids: function(req, res) {
+  getBids: function (req, res) {
     // const deploy = req.app.get('deploy');
     const chainId = req.query.chainId;
 
@@ -129,29 +129,25 @@ const projectsController = {
     });
   },
 
-  handleEvent: function(req, res) {
-    // const deploy = req.app.get('deploy');
+  handleEvent: function (req, res) {
     const username = req.body.username;
+    const account = req.body.account;
     const chainId = req.body.chainId;
 
     const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
     const data = deploy[chainId];
 
+    const user = fsutil.yamlSafeLoadSync(config.usersFilename, config.apiDebug);
+    const userInfo = user[account];
+
     co(function* () {
       const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
-      // this transaction requires transfer of funds from the buyer to the bid contract
-      // IRL this will require to prompt the user for a password
-      // const password = deploy.users.filter(function(user) {
-      //   return user.username === username;
-      // })[0].password;
-
-      // TODO: use textfield for this from UI side or store users in local.deploy.yaml
-      const password = 'password';
+      const password = userInfo.password;
 
       const args = {
         projectEvent: req.body.projectEvent,
         projectName: req.params.name,
-        username : username,
+        username: username,
         password: password,
         bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
       };

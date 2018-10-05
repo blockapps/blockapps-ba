@@ -8,6 +8,7 @@ import {
 const initialState = {
   username: null,
   role: null,
+  account: null,
   error: null,
   authenticated: false,
   loginFailed: false
@@ -21,6 +22,7 @@ const reducer = function loginReducer (state = initialState, action) {
       return {
         username: action.username,
         role: action.role,
+        account: action.account,
         error: null,
         authenticated: true,
         loginFailed: false
@@ -29,6 +31,7 @@ const reducer = function loginReducer (state = initialState, action) {
       return {
         username: null,
         role: null,
+        account: null,
         error: action.error,
         authenticated: false,
         loginFailed: true

@@ -51,7 +51,7 @@ function* submitLogin(action) {
     const response = yield call(loginApiCall, action.username, action.password, action.chainId);
     yield put(hideLoading());
     if (response.data.authenticate) {
-      yield put(userLoginSuccess(response.data.user.username, response.data.user.role));
+      yield put(userLoginSuccess(response.data.user.username, response.data.user.role, response.data.user.account));
     }
   }
   catch (err) {

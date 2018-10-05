@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "touch ./server/config/chains.deploy.yaml && PORT=${PORT:-3031} node server/index.js",
-    "start:back": "touch ./server/config/chains.deploy.yaml && PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
+    "start": "touch ./server/config/chains.deploy.yaml ./server/config/users.deploy.yaml && PORT=${PORT:-3031} node server/index.js",
+    "start:back": "touch ./server/config/chains.deploy.yaml ./server/config/users.deploy.yaml && PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "test": "npm run test:user && npm run test:project && npm run test:routes",
     "test:project": "mocha server/lib/project/test/ --config server/config/${SERVER:-localhost}.config.yaml -b",
     "test:user": "mocha server/lib/user/test/ --config server/config/${SERVER:-localhost}.config.yaml -b",

@@ -23,7 +23,7 @@ class BidTable extends Component {
 
   handleBidAcceptClick = function (e, bid) {
     e.stopPropagation();
-    this.props.acceptBid(this.props.login.username, bid.name, bid.id, this.props.chainId);
+    this.props.acceptBid(this.props.login.username, bid.name, bid.id, this.props.chainId, this.props.login.account);
   };
 
   render() {

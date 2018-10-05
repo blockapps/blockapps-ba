@@ -86,7 +86,7 @@ function* createUser(admin, contract, args, chainId, address) {
     }
     // block until the user shows up in search
     const baUser = yield getUser(admin, contract, args.username, chainId);
-    // baUser.blocUser = blocUser;
+    baUser.password = args.password;
     return baUser;
   }
 }

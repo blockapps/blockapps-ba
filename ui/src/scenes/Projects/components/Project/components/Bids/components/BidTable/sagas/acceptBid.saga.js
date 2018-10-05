@@ -14,7 +14,7 @@ import { setUserMessage } from '../../../../../../../../../components/UserMessag
 import { userBalanceSubmit } from '../../../../../../../../../components/App/components/UserBadge/user-badge.actions';
 const url = API_URL + '/projects/:projectName/events';
 
-function acceptBidCall(username, projectName, id, chainId) {
+function acceptBidCall(username, projectName, id, chainId, account) {
   if (API_MOCK) {
     return new Promise(function (resolve, reject) {
       resolve({});
@@ -29,7 +29,7 @@ function acceptBidCall(username, projectName, id, chainId) {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ username, projectEvent: 1, bidId: id, chainId: chainId })
+      body: JSON.stringify({ username, projectEvent: 1, bidId: id, chainId: chainId, account: account })
     })
       .then(handleApiError)
       .then(function (response) {
@@ -44,7 +44,7 @@ function acceptBidCall(username, projectName, id, chainId) {
 function* acceptBid(action) {
   try {
     yield put(showLoading());
-    yield call(acceptBidCall, action.username, action.projectName, action.id, action.chainId);
+    yield call(acceptBidCall, action.username, action.projectName, action.id, action.chainId, action.account);
     yield put(hideLoading());
     yield put(acceptBidSuccess());
     yield put(userBalanceSubmit(action.username, action.chainId));

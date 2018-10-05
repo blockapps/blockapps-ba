@@ -10,10 +10,11 @@ const serverPath = './server';
 const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 const BigNumber = common.BigNumber
 const constants = common.constants
+const yaml = require('js-yaml');
+const fs = require('fs');
 
 const usersController = {
   getBalance: function (req, res) {
-    // const deploy = req.app.get('deploy');
     const chainId = req.query['chainId'];
 
     const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
@@ -48,6 +49,8 @@ const usersController = {
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const data = deploy[chainId];
 
+      const deployedAddress = fsutil.yamlSafeLoadSync(config.usersFilename, config.apiDebug);
+
       if (data) {
         const chain = yield rest.getChainInfo(chainId);
         let isMemberExists = false;
@@ -69,9 +72,30 @@ const usersController = {
           // ---------------------------------------------------
 
           const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
-          const user = yield dapp.createUser(payload, chainId);
+          const userData = yield dapp.createUser(payload, chainId);
 
-          util.response.status(200, res, user);
+          // TODO: remove this if it is not needed in future
+          const user = {
+            [userData.account]: {
+              password: userData.password,
+              role: userData.role
+            }
+          };
+
+          if (deployedAddress) {
+            const isAddressExists = deployedAddress[userData.account];
+            if (!isAddressExists) {
+              console.log('deploy user:', config.usersFilename);
+              console.log(fsutil.yamlSafeDumpSync(user));
+              fs.appendFileSync(config.usersFilename, yaml.safeDump(user));
+            }
+          } else {
+            console.log('deploy user:', config.usersFilename);
+            console.log(fsutil.yamlSafeDumpSync(user));
+            fs.appendFileSync(config.usersFilename, yaml.safeDump(user));
+          }
+
+          util.response.status(200, res, 'User created successfully');
         } else {
           util.response.status(401, res, 'this account is not a part of the chain');
         }

@@ -12,11 +12,12 @@ export const userLoginSubmit = function(username, password, chainId) {
   }
 };
 
-export const userLoginSuccess = function(username, role) {
+export const userLoginSuccess = function(username, role, account) {
   return {
     type: USER_LOGIN_SUCCESS,
     username: username,
-    role: role
+    role: role,
+    account: account
   }
 };
 
