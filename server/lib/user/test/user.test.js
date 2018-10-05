@@ -17,10 +17,26 @@ const adminPassword = '1234';
 describe('User tests', function() {
   this.timeout(config.timeout);
 
-  let admin;
+  let admin, chainID;
 
   before(function*() {
     admin = yield rest.createUser(adminName, adminPassword);
+
+    const chain = {
+      label: 'test airline',
+      src: 'contract Governance { }',
+      args: {},
+      members: [{
+        address: admin.address,
+        enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
+      }],
+      balances: [{
+        address: admin.address,
+        balance: 1000000000000000000000
+      }]
+    }
+
+    chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
   });
 
   it('Create Contract', function* () {
@@ -40,8 +56,8 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(admin, args);
-    const user = yield contract.getState();
+    const contract = yield userJs.uploadContract(admin, args, chainID);
+    const user = yield contract.getState(chainID);
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
     assert.equal(user.pwHash, pwHash, 'pwHash');
@@ -66,9 +82,9 @@ describe('User tests', function() {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(admin, args);
+    const contract = yield userJs.uploadContract(admin, args, chainID);
     // search
-    const user = yield userJs.getUserById(id);
+    const user = yield userJs.getUserById(id, chainID);
 
     assert.equal(user.account, account, 'account');
     assert.equal(user.username, username, 'username');
@@ -95,10 +111,10 @@ describe('User tests', function() {
 
     // create the user with constructor args
     let isAuthenticated;
-    const contract = yield userJs.uploadContract(admin, args);
-    isAuthenticated = yield contract.authenticate(pwHash);
+    const contract = yield userJs.uploadContract(admin, args, chainID);
+    isAuthenticated = yield contract.authenticate(pwHash, chainID);
     assert.isOk(isAuthenticated, 'authenticated');
-    isAuthenticated = yield contract.authenticate(util.toBytes32('666'));
+    isAuthenticated = yield contract.authenticate(util.toBytes32('666'), chainID);
     assert.isNotOk(isAuthenticated, 'not authenticated');
  });
 

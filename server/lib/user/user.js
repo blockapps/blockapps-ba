@@ -9,19 +9,19 @@ const contractFilename = `${config.libPath}/user/contracts/User.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+function* uploadContract(admin, args, chainId) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
   yield compileSearch(contract);
   contract.src = 'removed';
-  return setContract(admin, contract);
+  return setContract(admin, contract, chainId);
 }
 
-function setContract(admin, contract) {
-  contract.getState = function* () {
-    return yield rest.getState(contract);
+function setContract(admin, contract, chainId) {
+  contract.getState = function* (chainId) {
+    return yield rest.getState(contract, chainId);
   }
-  contract.authenticate = function* (pwHash) {
-    return yield authenticate(admin, contract, pwHash);
+  contract.authenticate = function* (pwHash, chainId) {
+    return yield authenticate(admin, contract, pwHash, chainId);
   }
   return contract;
 }
@@ -43,7 +43,7 @@ function* getUsers(addresses) {
 }
 
 function* getUserById(id, chainId) {
-  const baUser = (yield rest.waitQuery(`${contractName}?chainId=eq.${chainId}&id=eq.${id}`, 1))[0];
+  const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}&chainId=eq.${chainId}`, 1))[0];
   return baUser;
 }
 
@@ -52,14 +52,14 @@ function* getUserByAddress(address, chainId) {
   return baUser;
 }
 
-function* authenticate(admin, contract, pwHash) {
-  rest.verbose('authenticate', pwHash);
+function* authenticate(admin, contract, pwHash, chainId) {
+  rest.verbose('authenticate', pwHash, chainId);
   // function authenticate(bytes32 _pwHash) return (bool) {
   const method = 'authenticate';
   const args = {
     _pwHash: pwHash,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const isAuthenticated = (result[0] === true);
   return isAuthenticated;
 }
