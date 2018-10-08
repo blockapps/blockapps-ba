@@ -10,11 +10,11 @@ const contractFilename = `${config.libPath}/user/contracts/UserManager.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+function* uploadContract(admin, args, chainId) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
   yield compileSearch(contract);
   contract.src = 'removed';
-  return setContract(admin, contract);
+  return setContract(admin, contract, chainId);
 }
 
 function setContract(admin, contract, chainId) {
@@ -30,8 +30,8 @@ function setContract(admin, contract, chainId) {
   contract.getUser = function* (username, chainId) {
     return yield getUser(admin, contract, username, chainId);
   }
-  contract.getUsers = function* () {
-    return yield getUsers(admin, contract);
+  contract.getUsers = function* (chainId) {
+    return yield getUsers(admin, contract, chainId);
   }
   contract.login = function* (args, chainId) {
     return yield login(admin, contract, args, chainId);
@@ -122,12 +122,12 @@ function* getUser(admin, contract, username, chainId) {
   return baUser;
 }
 
-function* getUsers(admin, contract) {
+function* getUsers(admin, contract, chainId) {
   rest.verbose('getUsers');
-  const state = yield rest.getState(contract);
+  const state = yield rest.getState(contract, chainId);
   const users = state.users;
   const userJs = require('./user');
-  const results = yield userJs.getUsers(users);
+  const results = yield userJs.getUsers(users, chainId);
   return results;
 }
 
