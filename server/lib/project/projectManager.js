@@ -15,16 +15,16 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const projectContractName = require('./project').contractName;
 
-function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+function* uploadContract(admin, args, chainId) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
   yield compileSearch(contract);
   contract.src = 'removed';
-  return setContract(admin, contract);
+  return setContract(admin, contract, chainId);
 }
 
 function setContract(admin, contract, chainId) {
-  contract.getState = function* () {
-    return yield rest.getState(contract);
+  contract.getState = function* (chainId) {
+    return yield rest.getState(contract, chainId);
   }
   contract.createProject = function* (args, chainId) {
     return yield createProject(admin, contract, args, chainId);
@@ -35,8 +35,8 @@ function setContract(admin, contract, chainId) {
   contract.getProjects = function* (chainId, name) {
     return yield getProjects(contract, chainId);
   }
-  contract.exists = function* (name) {
-    return yield exists(admin, contract, name);
+  contract.exists = function* (name, chainId) {
+    return yield exists(admin, contract, name, chainId);
   }
   contract.getProjectsByBuyer = function* (buyer, chainId) {
     return yield getProjectsByBuyer(contract, buyer, chainId);
@@ -145,9 +145,6 @@ function* acceptBid(admin, contract, buyer, bidId, name, chainId) {   // FIXME s
     const temp = yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount, chainId);
   } catch (error) {
     // check insufficient balance
-    console.log("------------------------------------------------");
-    console.log(error);
-    console.log(error.status);
     if (error.status == 400) {
       throw new Error(ErrorCodes.INSUFFICIENT_BALANCE);
     }
@@ -242,14 +239,14 @@ function* getAcceptedBid(projectName, chainId) {
   return accepted[0];
 }
 
-function* exists(admin, contract, name) {
+function* exists(admin, contract, name, chainId) {
   rest.verbose('exists', name);
   // function exists(string name) returns (bool) {
   const method = 'exists';
   const args = {
     name: name,
   };
-  const result = yield rest.callMethod(admin, contract, method, args);
+  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
   const exists = (result[0] === true);
   return exists;
 }

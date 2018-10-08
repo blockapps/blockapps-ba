@@ -8,13 +8,13 @@ const contractFilename = `${config.libPath}/project/contracts/Project.sol`;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
-function* uploadContract(admin, args) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args);
+function* uploadContract(admin, args, chainId) {
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
   yield compileSearch(contract);
   contract.src = 'removed';
 
-  contract.getState = function* () {
-    return yield rest.getState(contract);
+  contract.getState = function* (chainId) {
+    return yield rest.getState(contract, chainId);
   }
 
   return contract;
@@ -29,8 +29,8 @@ function* compileSearch(contract) {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getProjectByName(name) {
-  return (yield rest.waitQuery(`${contractName}?name=eq.${encodeURIComponent(name)}`, 1))[0];
+function* getProjectByName(name, chainId) {
+  return (yield rest.waitQuery(`${contractName}?chainId=eq.${chainId}&name=eq.${encodeURIComponent(name)}`, 1))[0];
 }
 
 function* getProjectByAddress(address) {

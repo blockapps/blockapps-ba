@@ -22,24 +22,46 @@ const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).
 const adminName = util.uid('Admin');
 const adminPassword = '1234';
 
-describe('ProjectManager tests', function() {
+describe('ProjectManager tests', function () {
   this.timeout(config.timeout);
 
   let admin;
   let contract;
   let userManagerContract;
+  let chainID;
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    contract = yield projectManagerJs.uploadContract(admin);
-    userManagerContract = yield userManagerJs.uploadContract(admin);
+
+    const chain = {
+      label: 'test airline',
+      src: 'contract Governance { }',
+      args: {},
+      members: [
+        {
+          address: admin.address,
+          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
+        }
+      ],
+      balances: [
+        {
+          address: admin.address,
+          balance: 1000000000000000000000
+        }
+      ]
+    }
+
+    chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
+
+    contract = yield projectManagerJs.uploadContract(admin, {}, chainID);
+    userManagerContract = yield userManagerJs.uploadContract(admin, {}, chainID);
   });
 
   it('Create Project', function* () {
     const projectArgs = createProjectArgs();
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     assert.equal(project.name, projectArgs.name, 'name');
     assert.equal(project.buyer, projectArgs.buyer, 'buyer');
   });
@@ -50,11 +72,11 @@ describe('ProjectManager tests', function() {
     let project;
     try {
       // create with illegal name - should fail
-      project = yield contract.createProject(projectArgs);
-    } catch(error) {
+      project = yield contract.createProject(projectArgs, chainID);
+    } catch (error) {
       // error should be ERROR
       const errorCode = error.message;
-      assert.equal(errorCode, ErrorCodes.ERROR, `Unexpected error ${JSON.stringify(error,null,2)}`);
+      assert.equal(errorCode, ErrorCodes.ERROR, `Unexpected error ${JSON.stringify(error, null, 2)}`);
     }
     // did not FAIL - that is an error
     assert.isUndefined(project, `Illegal project name was not detected: ${projectArgs.username}`);
@@ -63,13 +85,13 @@ describe('ProjectManager tests', function() {
   it('Test exists()', function* () {
     const projectArgs = createProjectArgs();
     // should not exists
-    const doesNotExist = yield contract.exists(projectArgs.name);
+    const doesNotExist = yield contract.exists(projectArgs.name, chainID);
     assert.isDefined(doesNotExist, 'should be defined');
     assert.isNotOk(doesNotExist, 'should not exist');
     // create project
-    const project = yield contract.createProject(projectArgs);
-    // // should exist
-    const exists = yield contract.exists(projectArgs.name);
+    const project = yield contract.createProject(projectArgs, chainID);
+    // should exist
+    const exists = yield contract.exists(projectArgs.name, chainID);
     assert.equal(exists, true, 'should exist');
   });
 
@@ -77,29 +99,29 @@ describe('ProjectManager tests', function() {
     const projectArgs = createProjectArgs();
     projectArgs.name += ' ? # % ! * ';
     // should not exists
-    const doesNotExist = yield contract.exists(projectArgs.name);
+    const doesNotExist = yield contract.exists(projectArgs.name, chainID);
     assert.isDefined(doesNotExist, 'should be defined');
     assert.isNotOk(doesNotExist, 'should not exist');
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // // should exist
-    const exists = yield contract.exists(projectArgs.name);
+    const exists = yield contract.exists(projectArgs.name, chainID);
     assert.equal(exists, true, 'should exist');
   });
 
   it('Create Duplicate Project', function* () {
     const projectArgs = createProjectArgs();
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create a duplicate - should FAIL
     let dupProject;
     try {
-      dupProject = yield contract.createProject(projectArgs);
-    } catch(error) {
+      dupProject = yield contract.createProject(projectArgs, chainID);
+    } catch (error) {
       const errorCode = parseInt(error.message);
       // error should be EXISTS
       assert.equal(errorCode, ErrorCodes.EXISTS, 'error should be EXISTS' + JSON.stringify(error));
-      }
+    }
     // did not FAIL - that is an error
     assert.isUndefined(dupProject, 'creating duplicate project should fail');
   });
@@ -107,8 +129,8 @@ describe('ProjectManager tests', function() {
   it('Get Project', function* () {
     const projectArgs = createProjectArgs();
     // create project
-    yield contract.createProject(projectArgs);
-    const project = yield contract.getProject(projectArgs.name);
+    yield contract.createProject(projectArgs, chainID);
+    const project = yield contract.getProject(projectArgs.name, chainID);
     assert.equal(project.name, projectArgs.name, 'should have a name');
   });
 
@@ -116,8 +138,8 @@ describe('ProjectManager tests', function() {
     const projectArgs = createProjectArgs();
     let nonExistingProject;
     try {
-      nonExistingProject = yield contract.getProject(projectArgs.name);
-    } catch(error) {
+      nonExistingProject = yield contract.getProject(projectArgs.name, chainID);
+    } catch (error) {
       const errorCode = error.message;
       // error should be NOT_FOUND
       assert.equal(errorCode, ErrorCodes.NOT_FOUND, 'error should be NOT_FOUND' + JSON.stringify(error));
@@ -130,41 +152,41 @@ describe('ProjectManager tests', function() {
     const projectArgs = createProjectArgs();
     // get projects - should not exist yet
     {
-      const projects = yield contract.getProjects();
-      const found = projects.filter(function(project) {
+      const projects = yield contract.getProjects(chainID);
+      const found = projects.filter(function (project) {
         return project.name === projectArgs.name;
       });
       assert.equal(found.length, 0, 'project list should NOT contain ' + projectArgs.name);
     }
     // create project
-    yield contract.createProject(projectArgs);
+    yield contract.createProject(projectArgs, chainID);
     {
       // get projects - should exist
-      const projects = yield contract.getProjects();
-      const found = projects.filter(function(project) {
+      const projects = yield contract.getProjects(chainID);
+      const found = projects.filter(function (project) {
         return project.name === projectArgs.name;
       });
       assert.equal(found.length, 1, 'project list should contain ' + projectArgs.name);
     }
   });
 
-  it.skip('get project leading zeros - load test - skipped', function *() {
-    this.timeout(60*60*1000);
+  it.skip('get project leading zeros - load test - skipped', function* () {
+    this.timeout(60 * 60 * 1000);
 
-    const count = 16*4; // leading 0 once every 16
+    const count = 16 * 4; // leading 0 once every 16
     const uid = util.uid();
     // create projects
     const projects = [];
     for (let i = 0; i < count; i++) {
       const projectArgs = createProjectArgs(uid);
       projectArgs.name += '_' + i;
-      const project = yield contract.createProject(projectArgs);
+      const project = yield contract.createProject(projectArgs, chainID);
       projects.push(project);
     }
 
     // get all projects
-    const resultProjects = yield contract.getProjects();
-    const comparator = function(projectA, projectB) { return projectA.name == projectB.name; };
+    const resultProjects = yield contract.getProjects(chainID);
+    const comparator = function (projectA, projectB) { return projectA.name == projectB.name; };
     const notFound = util.filter.isContained(projects, resultProjects, comparator, true);
     assert.equal(notFound.length, 0, JSON.stringify(notFound));
   });
@@ -177,21 +199,21 @@ describe('ProjectManager tests', function() {
     const count = 2 * mod;
     const projectsArgs = Array.apply(null, {
       length: count
-    }).map(function(item, index) {
+    }).map(function (item, index) {
       const projectArgs = createProjectArgs(uid);
       projectArgs.name += index;
-      projectArgs.buyer += index%mod;
+      projectArgs.buyer += index % mod;
       return projectArgs;
     });
 
     // all create project
     for (let projectArgs of projectsArgs) {
-      const project = yield contract.createProject(projectArgs);
+      const project = yield contract.createProject(projectArgs, chainID);
     }
     // get projects by buyer - should find that name in there
     const buyerName = projectsArgs[0].buyer;
-    const projects = yield contract.getProjectsByBuyer(buyerName);
-    assert.equal(projects.length, count/mod, '# of found projects');
+    const projects = yield contract.getProjectsByBuyer(buyerName, chainID);
+    assert.equal(projects.length, count / mod, '# of found projects');
   });
 
   it('Get Projects by name', function* () {
@@ -200,7 +222,7 @@ describe('ProjectManager tests', function() {
     const count = 3
     const projectsArgs = Array.apply(null, {
       length: count
-    }).map(function(item, index) {
+    }).map(function (item, index) {
       const projectArgs = createProjectArgs(uid);
       projectArgs.name += index;
       return projectArgs;
@@ -208,7 +230,7 @@ describe('ProjectManager tests', function() {
 
     // all create project
     for (let projectArgs of projectsArgs) {
-      const project = yield contract.createProject(projectArgs);
+      const project = yield contract.createProject(projectArgs, chainID);
     }
     // get projects by buyer - should find that name in there
     const names = projectsArgs.map(projectArgs => {
@@ -218,7 +240,7 @@ describe('ProjectManager tests', function() {
       names.push(projectsArgs[0].name + i);
     }
 
-    const projects = yield contract.getProjectsByName(names);
+    const projects = yield contract.getProjectsByName(names, chainID);
     assert.equal(projects.length, projectsArgs.length, '# of found projects');
   });
 
@@ -226,10 +248,10 @@ describe('ProjectManager tests', function() {
     const uid = util.uid();
 
     const count = 8;
-    const changed = Math.floor(count/2);
+    const changed = Math.floor(count / 2);
     const projectsArgs = Array.apply(null, {
       length: count
-    }).map(function(item, index) {
+    }).map(function (item, index) {
       const projectArgs = createProjectArgs(uid);
       projectArgs.name += index;
       return projectArgs;
@@ -237,17 +259,17 @@ describe('ProjectManager tests', function() {
 
     // all create project
     for (let projectArgs of projectsArgs) {
-      yield contract.createProject(projectArgs);
+      yield contract.createProject(projectArgs, chainID);
     }
     // change state for the first half
-    const changedProjectsArgs = projectsArgs.slice(0,changed);
+    const changedProjectsArgs = projectsArgs.slice(0, changed);
     for (let projectArgs of changedProjectsArgs) {
-      const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
+      const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT, chainID);
       assert.equal(newState, ProjectState.PRODUCTION, 'should be in PRODUCTION');
     }
 
     // get projects by state - should find that name in there
-    const projects = yield contract.getProjectsByState(ProjectState.PRODUCTION);
+    const projects = yield contract.getProjectsByState(ProjectState.PRODUCTION, chainID);
     const comparator = function (memberA, memberB) {
       return memberA.name == memberB.name;
     };
@@ -259,9 +281,9 @@ describe('ProjectManager tests', function() {
   it('ACCEPT an OPEN project - change to PRODUCTION', function* () {
     const projectArgs = createProjectArgs(util.uid());
     // create project
-    yield contract.createProject(projectArgs);
+    yield contract.createProject(projectArgs, chainID);
     // set the state
-    const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT);
+    const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT, chainID);
     assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
     // check the new state
     const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}`, 1))[0];
@@ -269,39 +291,40 @@ describe('ProjectManager tests', function() {
   });
 });
 
-function createProjectArgs(_uid) {
-  const uid = _uid || util.uid();
-  const projectArgs = {
-    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length-5),
-    buyer: 'Buyer_ ?%#@!:* ' + uid,
-    description: 'description_ ?%#@!:* ' + uid,
-    spec: 'spec_ ?%#@!:* ' + uid,
-    price: 234,
-
-    created: new Date().getTime(),
-    targetDelivery: new Date().getTime() + 3 * 24*60*60*1000, // 3 days
-
-    addressStreet: 'addressStreet_ ? ' + uid,
-    addressCity: 'addressCity_ ? ' + uid,
-    addressState: 'addressState_ ? ' + uid,
-    addressZip: 'addressZip_ ? ' + uid,
-  };
-
-  return projectArgs;
-}
-
-describe('ProjectManager Life Cycle tests', function() {
+describe('ProjectManager Life Cycle tests', function () {
   this.timeout(config.timeout);
 
   let admin;
   let contract;
   let userManagerContract;
+  let chainID;
 
   // get ready:  admin-user and manager-contract
   before(function* () {
     admin = yield rest.createUser(adminName, adminPassword);
-    contract = yield projectManagerJs.uploadContract(admin);
-    userManagerContract = yield userManagerJs.uploadContract(admin);
+
+    const chain = {
+      label: 'test airline',
+      src: 'contract Governance { }',
+      args: {},
+      members: [
+        {
+          address: admin.address,
+          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
+        }
+      ],
+      balances: [
+        {
+          address: admin.address,
+          balance: 1000000000000000000000
+        }
+      ]
+    }
+
+    chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
+
+    contract = yield projectManagerJs.uploadContract(admin, {}, chainID);
+    userManagerContract = yield userManagerJs.uploadContract(admin, {}, chainID);
   });
 
   it('Create new Bid', function* () {
@@ -310,9 +333,9 @@ describe('ProjectManager Life Cycle tests', function() {
     const projectArgs = createProjectArgs();
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount);
+    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
     assert.equal(bid.name, project.name, 'name');
     assert.equal(bid.supplier, supplier, 'supplier');
     assert.equal(bid.amount, amount, 'amount');
@@ -329,10 +352,10 @@ describe('ProjectManager Life Cycle tests', function() {
     const bids = yield projectManagerJs.getBidsByName(project.name);
     assert.equal(bids.length, 1, 'one and only one');
 
-    const projects = yield contract.getProjectsBySupplier(supplier);
+    const projects = yield contract.getProjectsBySupplier(supplier, chainID);
     assert.equal(projects.length, 1, 'one and only one');
 
-    const notFound = yield contract.getProjectsBySupplier(supplier+'z');
+    const notFound = yield contract.getProjectsBySupplier(supplier + 'z', chainID);
     assert.equal(notFound.length, 0, 'should not find any');
   });
 
@@ -342,9 +365,9 @@ describe('ProjectManager Life Cycle tests', function() {
     const amount = 67;
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount);
+    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
     // check that state is OPEN
     assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
     // accept the bid
@@ -353,13 +376,13 @@ describe('ProjectManager Life Cycle tests', function() {
       password: admin.password,
       account: admin.address,
     }
-    const results = yield contract.acceptBid(buyer, bid.id, project.name);
+    const results = yield contract.acceptBid(buyer, bid.id, project.name, chainID);
     // get the bid again
     const newBid = yield projectManagerJs.getBid(bid.id);
     // check that state is ACCEPTED
     assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
     // check that query gets it
-    const queryBid = yield projectManagerJs.getAcceptedBid(project.name);
+    const queryBid = yield projectManagerJs.getAcceptedBid(project.name, chainID);
     assert.equal(parseInt(queryBid.state), BidState.ACCEPTED, 'state ACCEPTED');
   });
 
@@ -369,9 +392,9 @@ describe('ProjectManager Life Cycle tests', function() {
     const amount = 1000 + 67; // faucet allowance + more
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount);
+    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
     // check that state is OPEN
     assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
     // accept the bid
@@ -382,8 +405,8 @@ describe('ProjectManager Life Cycle tests', function() {
     }
     let errorCode;
     try {
-      yield contract.acceptBid(buyer, bid.id, project.name);
-    } catch(error) {
+      yield contract.acceptBid(buyer, bid.id, project.name, chainID);
+    } catch (error) {
       errorCode = parseInt(error.message);
     }
     // did not FAIL - that is an error
@@ -404,7 +427,7 @@ describe('ProjectManager Life Cycle tests', function() {
     const amount = 32;
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create suppliers
     const suppliers = yield createSuppliers(3, password, uid);
     // create bids
@@ -416,7 +439,7 @@ describe('ProjectManager Life Cycle tests', function() {
       account: admin.address,
     }
     const acceptedBidId = bids[0].id;
-    const result = yield contract.acceptBid(buyer, acceptedBidId, projectArgs.name);
+    const result = yield contract.acceptBid(buyer, acceptedBidId, projectArgs.name, chainID);
     // get the bids
     bids = yield projectManagerJs.getBidsByName(projectArgs.name);
     assert.equal(bids.length, suppliers.length, 'should have created all bids');
@@ -430,28 +453,19 @@ describe('ProjectManager Life Cycle tests', function() {
     });
   });
 
-  function* createMultipleBids(projectName, suppliers, amount) {
-    const bids = [];
-    for (let supplier of suppliers) {
-      const bid = yield contract.createBid(projectName, supplier.username, amount);
-      bids.push(bid);
-    }
-    return bids;
-  }
-
   it('Get bids by supplier', function* () {
     const projectArgs = createProjectArgs(util.uid());
     const supplier = 'Supplier1';
     const amount = 5678;
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount);
+    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
     // get bids by supplier
-    const bids = yield projectManagerJs.getBidsBySupplier(supplier);
-    const filtered = bids.filter(function(bid) {
-      return bid.supplier === supplier  &&  bid.name == projectArgs.name;
+    const bids = yield projectManagerJs.getBidsBySupplier(supplier, chainID);
+    const filtered = bids.filter(function (bid) {
+      return bid.supplier === supplier && bid.name == projectArgs.name;
     });
     assert.equal(filtered.length, 1, 'one and only one');
   });
@@ -462,7 +476,7 @@ describe('ProjectManager Life Cycle tests', function() {
     const password = '1234';
     const amount = 23;
     const amountWei = new BigNumber(amount).times(constants.ETHER);
-    const FAUCET_AWARD = new BigNumber(1000).times(constants.ETHER) ;
+    const FAUCET_AWARD = new BigNumber(1000).times(constants.ETHER);
     const GAS_LIMIT = new BigNumber(100000000); // default in bockapps-rest
 
     // create buyer and suppliers
@@ -473,7 +487,7 @@ describe('ProjectManager Life Cycle tests', function() {
     const suppliers = yield createSuppliers(3, password, uid);
 
     // create project
-    const project = yield contract.createProject(projectArgs);
+    const project = yield contract.createProject(projectArgs, chainID);
     // create bids
     const createdBids = yield createMultipleBids(projectArgs.name, suppliers, amount);
     { // test
@@ -481,13 +495,13 @@ describe('ProjectManager Life Cycle tests', function() {
       assert.equal(createdBids.length, bids.length, 'should find all the created bids');
     }
     // get the buyers balance before accepting a bid
-    buyer.initialBalance = yield userManagerContract.getBalance(buyer.username);
+    buyer.initialBalance = yield userManagerContract.getBalance(buyer.username, chainID);
     buyer.initialBalance.should.be.bignumber.eq(FAUCET_AWARD);
     // accept one bid (the first)
     const acceptedBid = createdBids[0];
     yield contract.acceptBid(buyer, acceptedBid.id, projectArgs.name);
     // get the buyers balance after accepting a bid
-    buyer.balance = yield userManagerContract.getBalance(buyer.username);
+    buyer.balance = yield userManagerContract.getBalance(buyer.username, chainID);
     const delta = buyer.initialBalance.minus(buyer.balance);
     delta.should.be.bignumber.gte(amountWei); // amount + fee
     delta.should.be.bignumber.lte(amountWei.plus(GAS_LIMIT)); // amount + max fee (gas-limit)
@@ -502,14 +516,14 @@ describe('ProjectManager Life Cycle tests', function() {
       };
     });
     // deliver the project
-    const projectState = yield contract.handleEvent(projectArgs.name, ProjectEvent.DELIVER);
+    const projectState = yield contract.handleEvent(projectArgs.name, ProjectEvent.DELIVER, chainID);
     assert.equal(projectState, ProjectState.INTRANSIT, 'delivered project should be INTRANSIT ');
     // receive the project
     yield receiveProject(projectArgs.name);
 
     // get the suppliers balances
     for (let supplier of suppliers) {
-      supplier.balance = yield userManagerContract.getBalance(supplier.username);
+      supplier.balance = yield userManagerContract.getBalance(supplier.username, chainID);
       if (supplier.username == acceptedBid.supplier) {
         // the winning supplier should have the bid amount minus the tx fee
         const delta = supplier.balance.minus(FAUCET_AWARD);
@@ -522,29 +536,59 @@ describe('ProjectManager Life Cycle tests', function() {
     }
   });
 
+  // throws: ErrorCodes
+  function* receiveProject(projectName) {
+    rest.verbose('receiveProject', projectName);
+    // get the accepted bid
+    const bid = yield projectManagerJs.getAcceptedBid(projectName, chainID);
+    // get the supplier for the accepted bid
+    const supplier = yield userManagerContract.getUser(bid.supplier, chainID);
+    // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
+    yield contract.settleProject(projectName, supplier.account, bid.address, chainID);
+  }
+
   function* createSuppliers(count, password, uid) {
     const suppliers = [];
-    for (let i = 0 ; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       const name = `Supplier${i}_${uid}`;
       const supplierArgs = createUserArgs(name, password, UserRole.SUPPLIER);
-      const supplier = yield userManagerContract.createUser(supplierArgs);
+      const supplier = yield userManagerContract.createUser(supplierArgs, chainID, 'fe7880e5ca54f5abef32fb600a6bd2fda6b66ce8');
       suppliers.push(supplier);
     }
     return suppliers;
   }
 
-  // throws: ErrorCodes
-  function* receiveProject(projectName) {
-    rest.verbose('receiveProject', projectName);
-    // get the accepted bid
-    const bid = yield projectManagerJs.getAcceptedBid(projectName);
-    // get the supplier for the accepted bid
-    const supplier = yield userManagerContract.getUser(bid.supplier);
-    // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-    yield contract.settleProject(projectName, supplier.account, bid.address);
+  function* createMultipleBids(projectName, suppliers, amount) {
+    const bids = [];
+    for (let supplier of suppliers) {
+      const bid = yield contract.createBid(projectName, supplier.username, amount, chainID);
+      bids.push(bid);
+    }
+    return bids;
   }
 
 });
+
+function createProjectArgs(_uid) {
+  const uid = _uid || util.uid();
+  const projectArgs = {
+    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length - 5),
+    buyer: 'Buyer_ ?%#@!:* ' + uid,
+    description: 'description_ ?%#@!:* ' + uid,
+    spec: 'spec_ ?%#@!:* ' + uid,
+    price: 234,
+
+    created: new Date().getTime(),
+    targetDelivery: new Date().getTime() + 3 * 24 * 60 * 60 * 1000, // 3 days
+
+    addressStreet: 'addressStreet_ ? ' + uid,
+    addressCity: 'addressCity_ ? ' + uid,
+    addressState: 'addressState_ ? ' + uid,
+    addressZip: 'addressZip_ ? ' + uid,
+  };
+
+  return projectArgs;
+}
 
 // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
 function createUserArgs(name, password, role) {
