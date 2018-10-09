@@ -44,17 +44,16 @@ const usersController = {
       password: req.body.password,
       role: req.body.role
     }
-
     co(function* () {
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const data = deploy[chainId];
-
+      
       const deployedAddress = fsutil.yamlSafeLoadSync(config.usersFilename, config.apiDebug);
-
+      
       if (data) {
         const chain = yield rest.getChainInfo(chainId);
         let isMemberExists = false;
-
+        
         for (let member of chain.members) {
           if (payload.address === member.address) {
             isMemberExists = true;

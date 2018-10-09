@@ -5,6 +5,7 @@ libPath: ./server/lib
 contractsPath: ./contracts/
 dataFilename: ./server/dapp/dapp.presets.yaml
 deployFilename: ./server/config/chains.deploy.yaml
+usersFilename: ./server/config/users.deploy.yaml
 
 # WARNING - extra strict syntax
 # DO NOT change the nodes order

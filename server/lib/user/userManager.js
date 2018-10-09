@@ -65,7 +65,6 @@ function* getBalance(admin, contract, username, chainId, node) {
 // returns: user record from search
 function* createUser(admin, contract, args, chainId, address) {
   rest.verbose('createUser', args, chainId);
-
   args.account = address;
   args.pwHash = util.toBytes32(args.password); // FIXME this is not a hash
 

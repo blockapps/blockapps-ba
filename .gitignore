@@ -40,3 +40,6 @@ jspm_packages
 server/config/*.deploy.yaml
 
 .idea
+
+# mock
+tests/mock/*
