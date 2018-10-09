@@ -166,7 +166,6 @@ function* receiveProject(accessToken, userManager, projectManager, projectName) 
 
 // handle project event
 function* handleEvent(accessToken, userManager, projectManager, args) {
-  const name = args.name;
   rest.verbose('dapp: project handleEvent', args);
 
   switch (args.projectEvent) {

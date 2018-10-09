@@ -1,6 +1,5 @@
 const co = require('co');
 const ba = require('blockapps-rest');
-const jwtDecode = require('jwt-decode');
 const common = ba.common;
 const util = common.util;
 const oauthConfig = common.config.oauth;
@@ -104,21 +103,8 @@ const projectsController = {
     const accessToken = req.cookies[APP_TOKEN_COOKIE_NAME];
 
     co(function* () {
-      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
-      // this transaction requires transfer of funds from the buyer to the bid contract
-      // IRL this will require to prompt the user for a password
-      // const password = deploy.users.filter(function(user) {
-      //   return user.username === username;
-      // })[0].password;
-      //
-      // const args = {
-      //   projectEvent: req.body.projectEvent,
-      //   projectName: req.params.name,
-      //   username : username,
-      //   password: password,
-      //   bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
-      // };
 
+      const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
       const args = {
         projectEvent: req.body.projectEvent,
         projectName: req.params.name,
