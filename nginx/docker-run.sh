@@ -2,7 +2,6 @@
 
 set -ex
 
-
 echo 'Waiting for backend server to be available...'
 until curl --silent --output /dev/null --fail --location http://server:3031/api/v1/heartbeat
 do

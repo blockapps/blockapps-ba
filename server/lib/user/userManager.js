@@ -36,8 +36,8 @@ function setContract(admin, contract) {
   contract.login = function* (args) {
     return yield login(admin, contract, args);
   }
-  contract.getBalance = function* (username, node) {
-    return yield getBalance(admin, contract, username, node);
+  contract.getBalance = function* (accessToken, node) {
+    return yield getBalance(admin, contract, accessToken, node);
   }
   return contract;
 }
@@ -53,10 +53,11 @@ function* compileSearch(contract) {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getBalance(admin, contract, username, node) {
-  rest.verbose('getBalance', username);
-  const baUser = yield getUser(admin, contract, username);
-  const accounts = yield rest.getAccount(baUser.account);
+function* getBalance(admin, contract, accessToken, node) {
+  rest.verbose('getBalance', accessToken);
+  // const baUser = yield getUser(admin, contract, username);
+  const baUser = yield rest.getKey(accessToken);
+  const accounts = yield rest.getAccount(baUser.address);
   const balance = new BigNumber(accounts[0].balance);
   return balance;
 }

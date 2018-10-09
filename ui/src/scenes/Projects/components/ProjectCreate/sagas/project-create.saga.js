@@ -15,6 +15,7 @@ const projectsUrl = API_URL + '/projects';
 function projectCreateApiCall(project) {
   return fetch(projectsUrl, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
       'Accept': 'application/json'

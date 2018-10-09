@@ -3,18 +3,19 @@ import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
 import jwtDecode from 'jwt-decode';
 import { userLoginSuccess } from '../../scenes/Login/login.actions';
-import { getOauthCookie } from '../../lib/cookie';
+import { getOauthCookie, getRoleCookie } from '../../lib/cookie';
 import { ROLES } from '../../constants';
 
 class EnsureAuthenticated extends Component {
 
   componentWillMount() {
     const oauthCookie = getOauthCookie();
+    const userRoleCookie = getRoleCookie();
 
     if (oauthCookie) {
       let decode = jwtDecode(oauthCookie);
       // TODO: change ROLES.BUYER when you manage user as per the roles (create user)
-      this.props.userLoginSuccess(decode['email'], ROLES.BUYER);
+      this.props.userLoginSuccess(decode['email'], parseInt(userRoleCookie));
     } else {
       browserHistory.replace('/oauth');
     }

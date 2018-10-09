@@ -27,6 +27,7 @@
     "cors": "^2.8.1",
     "expect": "latest",
     "express": "^4.14.0",
+    "jwt-decode": "^2.2.0",
     "mocha": "^3.4.2",
     "simple-oauth2": "^2.2.1"
   },

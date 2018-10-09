@@ -1,23 +1,24 @@
 const co = require('co');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
 const common = ba.common;
-const config = common.config;
 const util = common.util;
+const oauthConfig = common.config.oauth;
 const path = require('path');
 const serverPath = './server';
 const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 const BigNumber = common.BigNumber
 const constants = common.constants
+const APP_TOKEN_COOKIE_NAME = oauthConfig.appTokenCookieName;
 
 const usersController = {
   getBalance: function(req, res) {
     const deploy = req.app.get('deploy');
-    const username = decodeURI(req.params['username']);
+    // const username = decodeURI(req.params['username']);
+    const accessToken = req.cookies[APP_TOKEN_COOKIE_NAME];
 
     co(function* () {
       const dapp = yield dappJs.setContract(deploy.admin, deploy.contract);
-      const balance = yield dapp.getBalance(username);
+      const balance = yield dapp.getBalance(accessToken);
 
       util.response.status200(res, {
         // this is a bignumber

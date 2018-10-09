@@ -19,10 +19,10 @@ import projectBidsReducer from './scenes/Projects/components/Project/components/
 import projectCreateReducer from './scenes/Projects/components/ProjectCreate/reducers/project-create.reducer';
 import bidModalReducer from './scenes/Projects/components/BidModal/bidModal.reducer';
 import userBalanceReducer from './components/App/components/UserBadge/user-badge.reducer';
-
 import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
 import watchLoginSubmit from './scenes/Login/login.saga';
 import watchOauthRedirect from './scenes/Oauth/oauth.saga';
+import watchLogoutRequest from './scenes/Logout/logout.saga';
 import watchFetchProjectList from './scenes/Projects/components/ProjectList/project-list.saga';
 import watchFetchProject from './scenes/Projects/components/Project/sagas/project.saga';
 import watchProjectCreate from './scenes/Projects/components/ProjectCreate/sagas/project-create.saga';
@@ -52,6 +52,7 @@ const rootSaga = function* startForeman() {
   yield [
     fork(watchOauthRedirect),
     fork(watchLoginSubmit),
+    fork(watchLogoutRequest),
     fork(watchExplorerUrl),
     fork(watchFetchProjectList),
     fork(watchFetchProject),

@@ -4,7 +4,7 @@ import FontIcon from 'react-md/lib/FontIcons';
 import Avatar from 'react-md/lib/Avatars';
 import mixpanel from 'mixpanel-browser';
 
-import { userLogout } from '../../../../scenes/Login/login.actions';
+import { logoutRequest } from '../../../../scenes/Logout/logout.actions';
 import { setUserMessage } from '../../../UserMessage/user-message.action';
 import { userBalanceSubmit } from './user-badge.actions';
 import { ROLES } from '../../../../constants';
@@ -18,8 +18,8 @@ class UserBadge extends Component {
   handleLogoutClick = (e) => {
     e.stopPropagation();
     mixpanel.track('logout click');
-    this.props.userLogout();
-    this.props.setUserMessage('You logged out');
+    this.props.logoutRequest();
+    // this.props.setUserMessage('You logged out');
   };
 
   render() {
@@ -61,4 +61,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, { setUserMessage, userLogout, userBalanceSubmit })(UserBadge);
+export default connect(mapStateToProps, { setUserMessage, logoutRequest, userBalanceSubmit })(UserBadge);

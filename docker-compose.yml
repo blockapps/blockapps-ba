@@ -6,14 +6,14 @@ services:
   ui:
     depends_on:
     - server
-    image: blockappsba-ui:latest
+    image: ba-ui:latest
     volumes:
     - ./ui:/usr/src/app/ui
     build: ./ui
     restart: always
   server:
     build: ./server
-    image: blockappsba-server:latest
+    image: ba-server:latest
     volumes:
       - ./server:/usr/src/app/server
     ports:
@@ -24,7 +24,7 @@ services:
     - ui
     - server
     build: ./nginx
-    image: monitor-nginx:latest
+    image: ba-nginx:latest
     ports:
     - 80:80
     - 443:443

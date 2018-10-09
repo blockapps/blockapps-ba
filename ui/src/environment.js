@@ -4,3 +4,4 @@ export const API_URL =
     : '/server/api/v1';
 
 export const APP_TOKEN_COOKIE_NAME = 'strato_oauth_demo_session';
+export const USER_ROLE_COOKIE_NAME = 'user-role';
