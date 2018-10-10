@@ -87,9 +87,8 @@ function* createProject(accessToken, admin, contract, args) {
   rest.verbose('createProject', {admin, args});
 
   const methodName = 'createProject';
-  const callType = 'FUNCTION';
 
-  const result = yield callMethod(accessToken, contract, methodName, args, 0, callType, false);
+  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -111,9 +110,8 @@ function* createBid(accessToken, admin, contract, name, supplier, amount) {
     supplier: supplier,
     amount: amount,
   };
-  const callType = 'FUNCTION';
 
-  const result = yield callMethod(accessToken, contract, methodName, args, 0, callType, false);
+  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -170,9 +168,8 @@ function* setBidState(accessToken, buyer, bidAddress, state, valueEther) {
     newState: state
   };
   const valueWei = new BigNumber(valueEther).mul(constants.ETHER).toFixed();
-  const callType = 'FUNCTION';
 
-  const result = yield callMethod(accessToken, contract, methodName, args, valueWei, callType, false);
+  const result = yield callMethodOauth(accessToken, contract, methodName, args, valueWei, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -189,8 +186,8 @@ function* settleProject(accessToken, admin, contract, projectName, supplierAddre
     supplierAddress: supplierAddress,
     bidAddress: bidAddress,
   };
-  const callType = 'FUNCTION';
-  const result = yield callMethod(accessToken, contract, methodName, args, 0, callType, false);
+
+  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
 
   const errorCode = parseInt(result[0]);
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -252,9 +249,8 @@ function* getProject(accessToken, admin, contract, name) {
   const args = {
     name: name,
   };
-  const callType = 'FUNCTION';
 
-  const address = (yield callMethod(accessToken, contract, methodName, args, 0, callType, false))[0];
+  const address = (yield callMethodOauth(accessToken, contract, methodName, args, 0, false))[0];
 
   // if not found - throw
   if (address == 0) {
@@ -331,9 +327,8 @@ function* handleEvent(accessToken, admin, contract, name, projectEvent) {
     projectAddress: project.address,
     projectEvent: projectEvent,
   };
-  const callType = 'FUNCTION';
 
-  const result = yield callMethod(accessToken, contract, methodName, args, 0, callType, false);
+  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -343,8 +338,9 @@ function* handleEvent(accessToken, admin, contract, name, projectEvent) {
   return newState;
 }
 
-function* callMethod(accessToken, contract, methodName, args, value, callType, doNotResolve, txParams, chainId, node) {
+function* callMethodOauth(accessToken, contract, methodName, args, value, doNotResolve, txParams, chainId, node) {
   const fromAddress = yield rest.getKey(accessToken);
+  const callType = 'FUNCTION';
   const txs = [{
     payload: {
       contractName: contract['name'],
