@@ -15,8 +15,6 @@ const BigNumber = common.BigNumber;
 const fs = require('fs');
 
 const dappJs = require('../../server/dapp/dapp');
-const userManagerJs = require('../../server/lib/user/userManager');
-const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 chai.use(chaiHttp);
 
@@ -58,6 +56,7 @@ describe("User Test", function () {
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
+    // NOTE: This will carry mockdata of chains and user
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
     config.usersFilename = `./tests/mock/usersMock.deploy.yaml`;
 
@@ -67,10 +66,8 @@ describe("User Test", function () {
     });
 
     const dapp = yield dappJs.uploadContract(admin, config.libPath, chainID);
-    const deployment1 = yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
-
+    yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
     yield dapp.createUser({ username: admin.name, password: admin.password, role: 'SUPPLIER', address: admin.address }, chainID);
-
   });
 
   it('should return user balance', function (done) {

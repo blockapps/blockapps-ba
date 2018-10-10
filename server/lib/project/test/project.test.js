@@ -35,7 +35,7 @@ describe('Project tests', function() {
       balances: [
         {
           address: admin.address,
-          balance: 1000000000000000000000
+          balance: 1000000000000000000000000
         }
       ]
     }

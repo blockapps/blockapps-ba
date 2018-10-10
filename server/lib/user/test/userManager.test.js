@@ -55,21 +55,20 @@ describe('UserManager tests', function () {
       balances: [
         {
           address: admin.address,
-          balance: 1000000000000000000000
+          balance: 1000000000000000000000000
         },
         {
           address: buyer.address,
-          balance: 1000000000000000000000
+          balance: 1000000000000000000000000
         },
         {
           address: supplier.address,
-          balance: 1000000000000000000000
+          balance: 1000000000000000000000000
         }
       ]
     }
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
-
     contract = yield userManagerJs.uploadContract(admin, {}, chainID);
   });
 
