@@ -19,6 +19,8 @@ services:
     ports:
       - 9229:9229
     restart: always
+    environment:
+    - DEPLOY_ACCESS_TOKEN=${DEPLOY_ACCESS_TOKEN}
   nginx:
     depends_on:
     - ui
