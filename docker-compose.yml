@@ -18,6 +18,8 @@ services:
     environment:
       - DEPLOY_ACCESS_TOKEN=${DEPLOY_ACCESS_TOKEN}
     restart: always
+    environment:
+    - DEPLOY_ACCESS_TOKEN=${DEPLOY_ACCESS_TOKEN}
   nginx:
     depends_on:
       - ui
