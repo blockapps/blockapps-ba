@@ -87,8 +87,7 @@ function* createProject(accessToken, admin, contract, args) {
   rest.verbose('createProject', {admin, args});
 
   const methodName = 'createProject';
-
-  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
+  const result = yield rest.callMethod(accessToken, contract, methodName , args, 0, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -104,20 +103,23 @@ function* createProject(accessToken, admin, contract, args) {
 function* createBid(accessToken, admin, contract, name, supplier, amount) {
   rest.verbose('createBid', {name, supplier, amount});
 
+  const supplierAddress = yield rest.getKey(accessToken);
+
   const methodName = 'createBid';
   const args = {
     name: name,
     supplier: supplier,
+    supplierAddressTemp: supplierAddress.address,
     amount: amount,
   };
 
-  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
+  const result = yield rest.callMethod(accessToken, contract, methodName, args, 0, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
-  const bidId = result[0][1];
+  const bidId = result[1];
   // block until the contract shows up in search
   const bid = (yield rest.waitQuery(`Bid?id=eq.${bidId}`, 1))[0];
   return bid;
@@ -169,7 +171,7 @@ function* setBidState(accessToken, buyer, bidAddress, state, valueEther) {
   };
   const valueWei = new BigNumber(valueEther).mul(constants.ETHER).toFixed();
 
-  const result = yield callMethodOauth(accessToken, contract, methodName, args, valueWei, false);
+  const result = yield rest.callMethod(accessToken, contract, methodName, args, valueWei, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -187,9 +189,9 @@ function* settleProject(accessToken, admin, contract, projectName, supplierAddre
     bidAddress: bidAddress,
   };
 
-  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
-
+  const result = yield rest.callMethod(accessToken, contract, methodName, args, 0, false);
   const errorCode = parseInt(result[0]);
+
   if (errorCode !== ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
@@ -250,7 +252,7 @@ function* getProject(accessToken, admin, contract, name) {
     name: name,
   };
 
-  const address = (yield callMethodOauth(accessToken, contract, methodName, args, 0, false))[0];
+  const address = (yield rest.callMethod(accessToken, contract, methodName, args, 0, false))[0];
 
   // if not found - throw
   if (address == 0) {
@@ -328,7 +330,7 @@ function* handleEvent(accessToken, admin, contract, name, projectEvent) {
     projectEvent: projectEvent,
   };
 
-  const result = yield callMethodOauth(accessToken, contract, methodName, args, 0, false);
+  const result = yield rest.callMethod(accessToken, contract, methodName, args, 0, false);
   const errorCode = parseInt(result[0]);
 
   if (errorCode !== ErrorCodes.SUCCESS) {
@@ -336,22 +338,6 @@ function* handleEvent(accessToken, admin, contract, name, projectEvent) {
   }
   const newState = parseInt(result[1]);
   return newState;
-}
-
-function* callMethodOauth(accessToken, contract, methodName, args, value, doNotResolve, txParams, chainId, node) {
-  const fromAddress = yield rest.getKey(accessToken);
-  const callType = 'FUNCTION';
-  const txs = [{
-    payload: {
-      contractName: contract['name'],
-      contractAddress: contract['address'],
-      value: value,
-      method: methodName,
-      args: args
-    },
-    type: callType
-  }];
-  return yield rest.sendTransactions(accessToken, fromAddress.address, txs, doNotResolve);
 }
 
 module.exports = {

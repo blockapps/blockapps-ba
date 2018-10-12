@@ -9,13 +9,15 @@ contract Bid is ErrorCodes, BidState {
   uint public id;
   string public name;
   string public supplier;
+  address public supplierAddressTemp;
   uint public amount;
   BidState public state;
 
-  function Bid(uint _id, string _name, string _supplier, uint _amount) {
+  function Bid(uint _id, string _name, string _supplier, address _supplierAddressTemp, uint _amount) {
     id = _id;
     name = _name;
     supplier = _supplier;
+    supplierAddressTemp = _supplierAddressTemp;
     amount = _amount;
     state = BidState.OPEN;
   }

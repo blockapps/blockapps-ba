@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "PORT=${PORT:-3031} node server/index.js",
+    "startdeploy": "cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml; PORT=${PORT:-3031} node server/dapp/index.js",
     "debug": "PORT=${PORT:-3031} nodemon --inspect=0.0.0.0:9229 server/index.js",
     "start:back": "PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "deploy": "cp server/config/${SERVER:-localhost}.config.yaml ./config.yaml; mocha server/dapp/dapp.deploy.js $NODE_DEBUG_OPTION --config server/config/${SERVER:-localhost}.config.yaml -b",

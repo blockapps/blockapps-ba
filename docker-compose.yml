@@ -1,14 +1,11 @@
 version: "2.1"
-volumes:
-  pgdata:
-    driver: local
 services:
   ui:
     depends_on:
-    - server
+      - server
     image: ba-ui:latest
     volumes:
-    - ./ui:/usr/src/app/ui
+      - ./ui:/usr/src/app/ui
     build: ./ui
     restart: always
   server:
@@ -18,14 +15,16 @@ services:
       - ./server:/usr/src/app/server
     ports:
       - 9229:9229
+    environment:
+      - DEPLOY_ACCESS_TOKEN=${DEPLOY_ACCESS_TOKEN}
     restart: always
   nginx:
     depends_on:
-    - ui
-    - server
+      - ui
+      - server
     build: ./nginx
     image: ba-nginx:latest
     ports:
-    - 80:80
-    - 443:443
+      - 80:80
+      - 443:443
     restart: always

@@ -156,11 +156,12 @@ function* receiveProject(accessToken, userManager, projectManager, projectName) 
   rest.verbose('dapp: receiveProject', projectName);
   // get the accepted bid
   const bid = yield projectManager.getAcceptedBid(projectName);
+
   // get the supplier for the accepted bid
   // const supplier = yield userManager.getUser(bid.supplier);
-  const supplier = yield rest.getKey(accessToken);
+
   // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-  const result = yield projectManager.settleProject(accessToken, projectName, supplier.address, bid.address);
+  const result = yield projectManager.settleProject(accessToken, projectName, bid.supplierAddressTemp, bid.address);
   return result;
 }
 

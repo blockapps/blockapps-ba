@@ -77,12 +77,12 @@ contract ProjectManager is ErrorCodes, Util, ProjectState, ProjectEvent, BidStat
     return ErrorCodes.SUCCESS;
   }
 
-  function createBid(string name, string supplier, uint amount) returns (ErrorCodes, uint) {
+  function createBid(string name, string supplier, address supplierAddressTemp, uint amount) returns (ErrorCodes, uint) {
     // fail if project name not found
     if (!exists(name)) return (ErrorCodes.NOT_FOUND, 0);
     // create bid
     bidId++; // increment the unique id
-    Bid bid = new Bid(bidId, name, supplier, amount);
+    Bid bid = new Bid(bidId, name, supplier, supplierAddressTemp, amount);
     return (ErrorCodes.SUCCESS, bidId);
   }
 
