@@ -24,7 +24,7 @@ describe("User Test", function(){
         const data = assert.apiData(err, res);
         const balance = data.balance;
         const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-        balance.should.be.bignumber.equal(faucetBalance);
+        balance.should.be.bignumber.at.least(faucetBalance);
         done();
       });
   });
