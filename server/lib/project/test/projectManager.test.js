@@ -368,7 +368,7 @@ describe('ProjectManager Life Cycle tests', function() {
   it('Accept a Bid - insufficient balance', function* () {
     const projectArgs = createProjectArgs();
     const supplier = 'Supplier1';
-    const amount = 1000 + 67; // faucet allowance + more
+    const amount = 2 * 1000 + 67; // twice faucet allowance + more
 
     // create project
     const project = yield contract.createProject(projectArgs);

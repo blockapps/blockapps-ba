@@ -201,7 +201,7 @@ describe('UserManager tests', function() {
     const account = (yield rest.getAccount(user.account))[0];
     const balance = new BigNumber(account.balance);
     const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-    balance.should.be.bignumber.equal(faucetBalance);
+    balance.should.be.bignumber.at.least(faucetBalance);
   });
 
   it('Get balance', function* () {
@@ -210,7 +210,7 @@ describe('UserManager tests', function() {
     const user = yield contract.createUser(args);
     const balance = yield contract.getBalance(user.username);
     const faucetBalance = new BigNumber(1000).times(constants.ETHER);
-    balance.should.be.bignumber.equal(faucetBalance);
+    balance.should.be.bignumber.at.least(faucetBalance);
   });
 
   it('Send funds wei', function* () {
