@@ -1,15 +1,13 @@
 'use strict'
 const express = require('express');
-const path = require('path');
 const app = express();
 const bodyParser = require('body-parser');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
 const common = ba.common;
-const config = common.config;
-const util = common.util;
-const fsutil = common.fsutil;
+const oauth = common.oauth;
+const oauthConfig = common.config.oauth;
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 // read the app deployment file
 // const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
@@ -23,6 +21,7 @@ const cors = require('cors');
  */
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(cors());
 
 /**
@@ -49,4 +48,18 @@ const server = app.listen(port, (err) => {
   }
 });
 
-module.exports = server;
+/**
+ * initialize blockapps-rest oauth library
+ */
+const initialize = () => {
+  try {
+    // Initialize STRATO OAUTH
+    app.oauth = oauth.init(oauthConfig);
+    return server;
+  } catch (e) {
+    console.error('Error initializing blockapps-rest library', e);
+    process.exit(1);
+  }
+}
+
+module.exports = initialize();

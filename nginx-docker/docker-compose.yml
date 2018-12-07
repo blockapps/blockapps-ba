@@ -1,0 +1,14 @@
+version: "2.1"
+services:
+  nginx:
+    environment:
+    - HOST_IP=${HOST_IP}
+    - ssl=${ssl:-false}
+    - sslCertFileType=${sslCertFileType:-crt}
+    build: .
+    image: blockapps-ba-nginx
+    ports:
+    - 80:80
+    volumes:
+    - ./ssl:/tmp/ssl:ro
+    restart: always

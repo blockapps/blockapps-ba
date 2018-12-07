@@ -2,7 +2,8 @@ import { takeLatest, put, call } from 'redux-saga/effects';
 import {
   USER_LOGIN_SUBMIT,
   userLoginSuccess,
-  userLoginFailure
+  userLoginFailure,
+  ME
 } from './login.actions';
 import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../environment';
@@ -11,6 +12,7 @@ import { showLoading, hideLoading } from 'react-redux-loading-bar';
 import { setUserMessage } from '../../components/UserMessage/user-message.action';
 
 const loginUrl = API_URL + '/login';
+const meUrl = API_URL + '/me';
 
 function loginApiCall(username, password, chainId) {
   if (API_MOCK) {
@@ -45,6 +47,23 @@ function loginApiCall(username, password, chainId) {
   }
 }
 
+function meCall() {
+  return fetch(meUrl, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  })
+    .then(function (response) {
+      return response.json();
+    })
+    .catch(function (error) {
+      return error.json();
+    });
+}
+
 function* submitLogin(action) {
   try {
     yield put(showLoading());
@@ -62,6 +81,17 @@ function* submitLogin(action) {
   browserHistory.push('/projects');
 }
 
+function* me() {
+  try {
+    const response = yield call(meCall);
+    if (!response.success) {
+      window.location = response.error.loginUrl
+    }
+  }
+  catch (err) { }
+}
+
 export default function* watchLoginSubmit() {
   yield takeLatest(USER_LOGIN_SUBMIT, submitLogin);
+  yield takeLatest(ME, me);
 }

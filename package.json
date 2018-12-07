@@ -15,7 +15,7 @@
     "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
   },
   "dependencies": {
-    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git#private-chain",
+    "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git#v6.2.0",
     "body-parser": "^1.15.2",
     "chai": "^4.0.2",
     "co": "^4.6.0",
@@ -23,7 +23,9 @@
     "cors": "^2.8.1",
     "expect": "latest",
     "express": "^4.14.0",
-    "mocha": "^3.4.2"
+    "mocha": "^3.4.2",
+    "jwt-decode": "^2.2.0",
+    "cookie-parser": "^1.4.3"
   },
   "repository": {
     "type": "git",

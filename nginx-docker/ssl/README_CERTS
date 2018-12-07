@@ -1,0 +1,3 @@
+These are the dummy SSL certificates.
+Place the real ones here to use with SSL enabled.
+The certificate can be a .crt or .pem file. Set which one should be used with `sslCertFileType` variable when running nginx (e.g. `sslCertFileType=pem docker-compose up -d`)

@@ -2,9 +2,11 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
 import { resetChainID } from '../Chains/chains.actions';
+import { me } from '../../scenes/Login/login.actions';
 
 class EnsureAuthenticated extends Component {
   componentDidMount() {
+    this.props.me();
     if (!this.props.authenticated) {
       browserHistory.replace('/login');
     }
@@ -28,5 +30,6 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps, {
-  resetChainID
+  resetChainID,
+  me
 })(EnsureAuthenticated);
