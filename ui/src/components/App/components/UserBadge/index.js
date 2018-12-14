@@ -32,7 +32,7 @@ class UserBadge extends Component {
         <div className="md-grid user-balance userbadge-desk-view">
           {userIcon}
           <div className="md-cell md-cell--8 md-cell--middle">
-            <span className="md-font-bold">{this.props.username}</span>
+            <span className="md-font-bold">{this.props.address}</span>
             <br />
             <span className="md-font-light">Balance: {this.props.balance}</span>
           </div>
@@ -42,7 +42,7 @@ class UserBadge extends Component {
         </div>
         <div className="md-grid userbadge-mobile-view">
           <div className="md-cell md-cell--12 md-cell--right">
-            <span className="md-font-bold" style={{ float: 'right' }}>{this.props.username}</span>
+            <span className="md-font-bold" style={{ float: 'right' }}>{this.props.address}</span>
             <br />
             <span className="md-font-light" style={{ float: 'right' }}>
               Bal: {this.props.balance}

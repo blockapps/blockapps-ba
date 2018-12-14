@@ -71,7 +71,7 @@ class BidModal extends Component {
 
 function mapStateToProps(state) {
   return {
-    supplier: state.login.username,
+    supplier: state.login.address,
     isOpen: state.bidModal.isOpen,
     chainId: state.chains.chainId
   };

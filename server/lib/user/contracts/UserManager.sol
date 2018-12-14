@@ -13,7 +13,7 @@ contract UserManager is ErrorCodes, Util, UserRole {
     a non existing mapping will return 0, so 0 should not be a valid value in a map,
     otherwise exists() will not work
   */
-  mapping (bytes32 => uint) usernameToIdMap;
+  mapping (address => uint) accountToIdMap;
 
   /**
   * Constructor
@@ -22,24 +22,22 @@ contract UserManager is ErrorCodes, Util, UserRole {
     users.length = 1; // see above note
   }
 
-  function exists(string username) returns (bool) {
-    return usernameToIdMap[b32(username)] != 0;
+  function exists(address account) returns (bool) {
+    return accountToIdMap[account] != 0;
   }
 
-  function getUser(string username) returns (address) {
-    uint userId = usernameToIdMap[b32(username)];
+  function getUser(address account) returns (address) {
+    uint userId = accountToIdMap[account];
     return users[userId];
   }
 
-  function createUser(address account, string username, UserRole role) returns (ErrorCodes) {
-    // name must be < 32 bytes
-    if (bytes(username).length > 32) return ErrorCodes.ERROR;
-    // fail if username exists
-    if (exists(username)) return ErrorCodes.EXISTS;
+  function createUser(address account, UserRole role) returns (ErrorCodes) {
+    // fail if account exists
+    if (exists(account)) return ErrorCodes.EXISTS;
     // add user
     uint userId = users.length;
-    usernameToIdMap[b32(username)] = userId;
-    users.push(new User(account, username, userId, role));
+    accountToIdMap[account] = userId;
+    users.push(new User(account, userId, role));
     return ErrorCodes.SUCCESS;
   }
 

@@ -98,7 +98,6 @@ function* createProject(admin, contract, args, chainId) {
 
   const result = yield rest.callMethod(admin, contract, method, args, { chainId });
   const errorCode = parseInt(result[0]);
-  console.log("---------------------------------------- result", result)
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
@@ -174,11 +173,6 @@ function* setBidState(admin, buyer, bidAddress, state, valueEther, chainId) {
     newState: state,
     address: buyer.account
   };
-  // the api is expecting the buyers bloc-account address (not the app-user address)
-  // const buyerAccount = {
-  //   name: buyer.username,
-  //   address: buyer.account,
-  // };
 
   const value = new BigNumber(valueEther).mul(constants.ETHER);
   const result = yield rest.callMethod(admin, contract, method, args, { chainId, value });
@@ -335,7 +329,7 @@ function* handleEvent(admin, contract, name, projectEvent, chainId) {
   const method = 'handleEvent';
   const args = {
     projectAddress: project.address,
-    projectEvent: projectEvent,
+    projectEvent: projectEvent
   };
 
   const result = yield rest.callMethod(admin, contract, method, args, { chainId });

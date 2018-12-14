@@ -78,7 +78,7 @@ function* createUser(admin, contract, args, chainId) {
       throw new Error(errorCode);
     }
     // block until the user shows up in search
-    const baUser = yield getUser(admin, contract, args.username, chainId);
+    const baUser = yield getUser(admin, contract, args.account, chainId);
     return baUser;
 }
 
@@ -94,12 +94,12 @@ function* exists(admin, contract, username, chainId) {
   return exist;
 }
 
-function* getUser(admin, contract, username, chainId) {
-  rest.verbose('getUser', username, chainId);
-  // function getUser(string username) returns (address) {
+function* getUser(admin, contract, account, chainId) {
+  rest.verbose('getUser', account, chainId);
+  // function getUser(string account) returns (address) {
   const method = 'getUser';
   const args = {
-    username: username,
+    account: account,
   };
 
   // get the use address

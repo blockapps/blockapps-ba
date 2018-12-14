@@ -25,7 +25,7 @@ class ProjectCreate extends Component {
     this.props.projectCreate(
       {
         name: values['name'],
-        buyer: this.props.login['username'],
+        buyer: this.props.login['address'],
         description: values['description'],
         spec: values['spec'],
         price: values['price'], // todo: allow cents and send x100 int to API

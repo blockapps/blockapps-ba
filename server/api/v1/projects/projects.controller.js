@@ -139,18 +139,13 @@ const projectsController = {
     const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
     const data = deploy[chainId];
 
-    // TODO: remove this
-    const user = fsutil.yamlSafeLoadSync(config.usersFilename, config.apiDebug);
-    const userInfo = user[account];
-    // ----------------------
-
     co(function* () {
       const dapp = yield dappJs.setContract(accessToken, data.contract, chainId);
 
       const args = {
         projectEvent: req.body.projectEvent,
         projectName: req.params.name,
-        username: username,
+        account: account,
         bidId: req.body.bidId, // required for ProjectEvent.ACCEPT
       };
 

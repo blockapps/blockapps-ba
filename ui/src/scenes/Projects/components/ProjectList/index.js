@@ -19,7 +19,7 @@ class ProjectList extends Component {
 
   componentWillMount() {
     const listType = this.props['listType'];
-    this.props.fetchProjectList(listType, this.props.login['username'], this.props.chainId);
+    this.props.fetchProjectList(listType, this.props.login['address'], this.props.chainId);
   }
 
   handleProjectClick = function (e, projectName) {

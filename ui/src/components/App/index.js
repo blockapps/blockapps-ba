@@ -31,8 +31,8 @@ class App extends Component {
   // get type of app bar based on login state
   getAppBar(title, navItems) {
     if (this.props.login.authenticated) {
-      mixpanel.alias(this.props.login.username); // FIXME Should only make this call once on user signup
-      mixpanel.identify(this.props.login.username);
+      mixpanel.alias(this.props.login.account); // FIXME Should only make this call once on user signup
+      mixpanel.identify(this.props.login.account);
       return (
         <NavigationDrawer
           defaultVisible={false}
@@ -42,7 +42,7 @@ class App extends Component {
           tabletDrawerType={NavigationDrawer.DrawerTypes.PERSISTENT}
           desktopDrawerType={NavigationDrawer.DrawerTypes.PERSISTENT}
           toolbarTitle={<span id="app-title"> {title} </span>}
-          toolbarActions={<UserBadge username={this.props.login.username} role={this.props.login.role} />}
+          toolbarActions={<UserBadge account={this.props.login.account} role={this.props.login.role} />}
         >
           <LoadingBar style={{ position: 'fixed', zIndex: 15 }} />
           {this.props.children}

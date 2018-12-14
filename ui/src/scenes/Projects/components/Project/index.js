@@ -76,7 +76,7 @@ class Project extends Component {
         if (parseInt(project.state, 10) === STATES.PRODUCTION) {
           const myBidAccepted = this.props.bids.some(
             bid =>
-              BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED' && bid.supplier === this.props.login.username
+              BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED' && bid.supplier === this.props.login.address
           );
           if (myBidAccepted) {
             actions.push(

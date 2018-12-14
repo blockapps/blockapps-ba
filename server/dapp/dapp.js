@@ -154,10 +154,9 @@ function* createProject(projectManager, args, chainId) {
 }
 
 // accept bid
-function* acceptBid(userManager, projectManager, buyerName, bidId, projectName, chainId) {
-  rest.verbose('dapp: acceptBid', { buyerName, bidId, projectName, chainId });
-  const buyer = yield userManager.getUser(buyerName, chainId);
-  console.log("buyer -------------------------------------------", buyer)
+function* acceptBid(userManager, projectManager, buyerAccount, bidId, projectName, chainId) {
+  rest.verbose('dapp: acceptBid', { buyerAccount, bidId, projectName, chainId });
+  const buyer = yield userManager.getUser(buyerAccount, chainId);
   const result = yield projectManager.acceptBid(buyer, bidId, projectName, chainId);
   return result;
 }
@@ -183,7 +182,7 @@ function* handleEvent(admin, userManager, projectManager, args, chainId) {
       return yield receiveProject(userManager, projectManager, args.projectName, chainId);
 
     case ProjectEvent.ACCEPT:
-      return yield acceptBid(userManager, projectManager, args.username, args.bidId, args.projectName, chainId);
+      return yield acceptBid(userManager, projectManager, args.account, args.bidId, args.projectName, chainId);
 
     default:
       return yield projectManager.handleEvent(args.projectName, args.projectEvent, chainId);
@@ -195,8 +194,7 @@ function* createUser(userManager, chainId, payload) {
 
   const args = {
     account: payload.address,
-    username: payload.username,
-    role: UserRole[payload.role],
+    role: UserRole[payload.role]
   }
 
   const user = yield userManager.createUser(args, chainId);

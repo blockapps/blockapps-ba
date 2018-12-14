@@ -77,7 +77,7 @@ const uploadContractsController = {
         const deployment = yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
 
         for (user of users) {
-          const userData = yield dapp.createUser({username: `email_${user.role}`, role: user.role, address: user.address}, chainID);
+          const userData = yield dapp.createUser({role: user.role, address: user.address}, chainID);
         }
         
         util.response.status200(res, 'Chain Created Successfully');
