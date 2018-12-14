@@ -1,5 +1,5 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
@@ -17,7 +17,7 @@ const contractFilename = '/admin/AdminInterface.sol';
 const subContractsNames = ['userManager', 'projectManager'];
 
 function* uploadContract(admin, libPath, chainId) {
-  const contract = yield rest.uploadContract(admin, contractName, libPath + contractFilename, {}, chainId);
+  const contract = yield rest.uploadContract(admin, contractName, libPath + contractFilename, {}, { chainId });
   contract.src = 'removed';
   yield compileSearch();
   return yield setContract(admin, contract, chainId);
@@ -43,7 +43,7 @@ function* compileSearch() {
 
 function* getSubContracts(contract, chainId) {
   rest.verbose('getSubContracts', { contract, subContractsNames, chainId });
-  const state = yield rest.getState(contract, chainId);
+  const state = yield rest.getState(contract, { chainId });
   const subContracts = {}
   subContractsNames.map(name => {
     const address = state[name];
@@ -63,9 +63,9 @@ function* setContract(admin, contract, chainId) {
   const userManager = userManagerJs.setContract(admin, subContarcts['userManager'], chainId);
   const projectManager = projectManagerJs.setContract(admin, subContarcts['projectManager'], chainId);
 
-  contract.getBalance = function* (username, chainId) {
-    rest.verbose('dapp: getBalance', username, chainId);
-    return yield userManager.getBalance(username, chainId);
+  contract.getBalance = function* (address, chainId) {
+    rest.verbose('dapp: getBalance', address, chainId);
+    return yield userManager.getBalance(address, chainId);
   }
   // project - create
   contract.createProject = function* (args, chainId) {
@@ -103,9 +103,9 @@ function* setContract(admin, contract, chainId) {
   }
   // handle event
   contract.handleEvent = function* (args, chainId) {
-    return yield handleEvent(userManager, projectManager, args, chainId);
+    return yield handleEvent(admin, userManager, projectManager, args, chainId);
   }
-  // login
+  // login TODO: remove it is not in use
   contract.login = function* (username, password, chainId) {
     return yield login(userManager, username, password, chainId);
   }
@@ -117,11 +117,21 @@ function* setContract(admin, contract, chainId) {
   contract.createUser = function* (payload, chainId) {
     return yield createUser(userManager, chainId, payload);
   }
+  // get user by address
+  contract.getUserByAccount = function* (address, chainId) {
+    return yield getUserByAccount(userManager, address, chainId);
+  }
 
   return contract;
 }
 
 // =========================== business functions ========================
+
+function* getUserByAccount(userManager, address, chainId) {
+  rest.verbose('dapp: getUserByAccount', { address, chainId });
+  const { id, role, username, account } = yield userManager.getUserByAccount(address, chainId);
+  return { user: { id, role, username, account } };
+}
 
 function* login(userManager, username, password, chainId) {
   rest.verbose('dapp: login', { username, password, chainId });
@@ -144,10 +154,10 @@ function* createProject(projectManager, args, chainId) {
 }
 
 // accept bid
-function* acceptBid(userManager, projectManager, buyerName, buyerPassword, bidId, projectName, chainId) {
-  rest.verbose('dapp: acceptBid', { buyerName, buyerPassword, bidId, projectName, chainId });
+function* acceptBid(userManager, projectManager, buyerName, bidId, projectName, chainId) {
+  rest.verbose('dapp: acceptBid', { buyerName, bidId, projectName, chainId });
   const buyer = yield userManager.getUser(buyerName, chainId);
-  buyer.password = buyerPassword;
+  console.log("buyer -------------------------------------------", buyer)
   const result = yield projectManager.acceptBid(buyer, bidId, projectName, chainId);
   return result;
 }
@@ -165,8 +175,7 @@ function* receiveProject(userManager, projectManager, projectName, chainId) {
 }
 
 // handle project event
-function* handleEvent(userManager, projectManager, args, chainId) {
-  const name = args.name;
+function* handleEvent(admin, userManager, projectManager, args, chainId) {
   rest.verbose('dapp: project handleEvent', args);
 
   switch (args.projectEvent) {
@@ -174,7 +183,7 @@ function* handleEvent(userManager, projectManager, args, chainId) {
       return yield receiveProject(userManager, projectManager, args.projectName, chainId);
 
     case ProjectEvent.ACCEPT:
-      return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName, chainId);
+      return yield acceptBid(userManager, projectManager, args.username, args.bidId, args.projectName, chainId);
 
     default:
       return yield projectManager.handleEvent(args.projectName, args.projectEvent, chainId);
@@ -185,12 +194,12 @@ function* createUser(userManager, chainId, payload) {
   const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
   const args = {
+    account: payload.address,
     username: payload.username,
-    password: payload.password,
     role: UserRole[payload.role],
   }
 
-  const user = yield userManager.createUser(args, chainId, payload.address);
+  const user = yield userManager.createUser(args, chainId);
 
   return user;
 }
@@ -224,7 +233,6 @@ function* deploy(admin, contract, userManager, presetDataFilename, deployFilenam
   const deployment = {
     [chainId]: {
       url: config.getBlocUrl(),
-      admin: admin,
       contract: {
         name: contract.name,
         address: contract.address,

@@ -20,9 +20,6 @@ function setContract(admin, contract, chainId) {
   contract.getState = function* (chainId) {
     return yield rest.getState(contract, chainId);
   }
-  contract.authenticate = function* (pwHash, chainId) {
-    return yield authenticate(admin, contract, pwHash, chainId);
-  }
   return contract;
 }
 
@@ -52,18 +49,10 @@ function* getUserByAddress(address, chainId) {
   return baUser;
 }
 
-function* authenticate(admin, contract, pwHash, chainId) {
-  rest.verbose('authenticate', pwHash, chainId);
-  // function authenticate(bytes32 _pwHash) return (bool) {
-  const method = 'authenticate';
-  const args = {
-    _pwHash: pwHash,
-  };
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
-  const isAuthenticated = (result[0] === true);
-  return isAuthenticated;
+function* getUserByAccount(address, chainId) {
+  const baUser = (yield rest.waitQuery(`${contractName}?chainId=eq.${chainId}&account=eq.${address}`, 1))[0];
+  return baUser;
 }
-
 
 module.exports = {
   uploadContract: uploadContract,
@@ -75,8 +64,8 @@ module.exports = {
   UserRole: UserRole,
 
   // business logic
-  authenticate: authenticate,
   getUserByAddress: getUserByAddress,
+  getUserByAccount: getUserByAccount,
   getUsers: getUsers,
   getUserById: getUserById,
   contractName: contractName,

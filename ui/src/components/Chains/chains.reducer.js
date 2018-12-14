@@ -2,14 +2,19 @@ import {
   FETCH_CHAINS_SUCCESS,
   FETCH_CHAINS_FAILURE,
   SET_CHAIN_ID,
-  RESET_CHAIN_ID
+  RESET_CHAIN_ID,
+  CREATE_CHAIN_REQUEST,
+  CREATE_CHAIN_FAILURE,
+  CREATE_CHAIN_SUCCESS
 } from './chains.actions';
 
 const initialState = {
   chains: {},
   chainIds: [],
   error: null,
-  chainId: null
+  chainId: null,
+  spinning: false,
+  key: null
 };
 
 const reducer = function (state = initialState, action) {
@@ -31,7 +36,7 @@ const reducer = function (state = initialState, action) {
       return {
         ...state,
         chains: chainLabelIds,
-        chainIds: action.chains.map((chain) => {return {value: chain.id, label: chain.info.label}} ),
+        chainIds: action.chains.map((chain) => { return { value: chain.id, label: chain.info.label } }),
         error: null
       };
     case FETCH_CHAINS_FAILURE:
@@ -50,6 +55,20 @@ const reducer = function (state = initialState, action) {
         ...state,
         chainId: null
       }
+    case CREATE_CHAIN_REQUEST:
+      return {
+        spinning: true
+      };
+    case CREATE_CHAIN_FAILURE:
+      return {
+        spinning: false,
+        error: action.error
+      };
+    case CREATE_CHAIN_SUCCESS:
+      return {
+        spinning: false,
+        key: action.key,
+      };
     default:
       return state;
   }

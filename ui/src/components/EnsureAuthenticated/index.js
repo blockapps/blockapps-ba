@@ -1,14 +1,14 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
 import { resetChainID } from '../Chains/chains.actions';
 import { me } from '../../scenes/Login/login.actions';
+import { browserHistory } from 'react-router';
 
 class EnsureAuthenticated extends Component {
   componentDidMount() {
     this.props.me();
     if (!this.props.authenticated) {
-      browserHistory.replace('/login');
+      browserHistory.replace('/welcome');
     }
   }
 

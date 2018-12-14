@@ -1,51 +1,17 @@
-import { takeLatest, put, call } from 'redux-saga/effects';
+import { takeLatest, put, call, wait } from 'redux-saga/effects';
 import {
-  USER_LOGIN_SUBMIT,
-  userLoginSuccess,
-  userLoginFailure,
-  ME
+  ME,
+  authenticatedSuccess,
+  authenticatedFailure,
+  GET_USER,
+  getUserFailure,
+  getUserSuccess
 } from './login.actions';
-import { browserHistory } from 'react-router';
-import { API_URL, API_MOCK } from '../../environment';
-import { handleApiError } from '../../lib/apiErrorHandler';
-import { showLoading, hideLoading } from 'react-redux-loading-bar';
-import { setUserMessage } from '../../components/UserMessage/user-message.action';
+import { API_URL } from '../../environment';
+import { setChainID } from '../../components/Chains/chains.actions';
 
-const loginUrl = API_URL + '/login';
 const meUrl = API_URL + '/me';
-
-function loginApiCall(username, password, chainId) {
-  if (API_MOCK) {
-    return new Promise(function (resolve, reject) {
-      resolve({
-        data: {
-          authenticate: true,
-          user: {
-            username: 'Supplier1',
-            role: 'Supplier'
-          }
-        }
-      });
-    });
-  }
-  else {
-    return fetch(loginUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ username, password, chainId })
-    })
-      .then(handleApiError)
-      .then(function (response) {
-        return response.json();
-      })
-      .catch(function (error) {
-        throw error;
-      });
-  }
-}
+const getUserUrl = API_URL + '/login/getUser';
 
 function meCall() {
   return fetch(meUrl, {
@@ -64,34 +30,51 @@ function meCall() {
     });
 }
 
-function* submitLogin(action) {
-  try {
-    yield put(showLoading());
-    const response = yield call(loginApiCall, action.username, action.password, action.chainId);
-    yield put(hideLoading());
-    if (response.data.authenticate) {
-      yield put(userLoginSuccess(response.data.user.username, response.data.user.role, response.data.user.account));
+function getUserApiCall(data) {
+  const url = `${getUserUrl}?chainId=${data.chainId}&address=${data.address}`;
+  return fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
     }
-  }
-  catch (err) {
-    yield put(userLoginFailure(err));
-    yield put(setUserMessage(err));
-    yield put(hideLoading());
-  }
-  browserHistory.push('/projects');
+  })
+    .then(function (response) {
+      return response.json();
+    })
+    .catch(function (error) {
+      return error.json();
+    });
 }
 
 function* me() {
   try {
     const response = yield call(meCall);
     if (!response.success) {
+      yield put(authenticatedFailure());
       window.location = response.error.loginUrl
+    } else {
+      yield put(authenticatedSuccess(response.data));
     }
   }
-  catch (err) { }
+  catch (err) {
+    yield put(authenticatedFailure());
+  }
+}
+
+function* getUser(action) {
+  try {
+    const response = yield call(getUserApiCall, action.data);
+    yield put(setChainID(action.data.chainId));
+    yield put(getUserSuccess(response));
+  }
+  catch (err) {
+    yield put(getUserFailure());
+  }
 }
 
 export default function* watchLoginSubmit() {
-  yield takeLatest(USER_LOGIN_SUBMIT, submitLogin);
   yield takeLatest(ME, me);
+  yield takeLatest(GET_USER, getUser);
 }

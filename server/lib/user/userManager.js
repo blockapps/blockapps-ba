@@ -1,5 +1,5 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const util = ba.common.util;
 const BigNumber = ba.common.BigNumber;
 const config = ba.common.config;
@@ -21,14 +21,17 @@ function setContract(admin, contract, chainId) {
   contract.getState = function* () {
     return yield rest.getState(contract);
   }
-  contract.createUser = function* (args, chainId, address) {
-    return yield createUser(admin, contract, args, chainId, address);
+  contract.createUser = function* (args, chainId) {
+    return yield createUser(admin, contract, args, chainId);
   }
   contract.exists = function* (username, chainId) {
     return yield exists(admin, contract, username, chainId);
   }
   contract.getUser = function* (username, chainId) {
     return yield getUser(admin, contract, username, chainId);
+  }
+  contract.getUserByAccount = function* (address, chainId) {
+    return yield getUserByAccount(address, chainId);
   }
   contract.getUsers = function* (chainId) {
     return yield getUsers(admin, contract, chainId);
@@ -37,7 +40,7 @@ function setContract(admin, contract, chainId) {
     return yield login(admin, contract, args, chainId);
   }
   contract.getBalance = function* (username, chainId, node) {
-    return yield getBalance(admin, contract, username, chainId, node);
+    return yield getBalance(username, chainId, node);
   }
   return contract;
 }
@@ -53,41 +56,30 @@ function* compileSearch(contract) {
   yield rest.compileSearch(searchable, contractName, contractFilename);
 }
 
-function* getBalance(admin, contract, username, chainId, node) {
-  rest.verbose('getBalance', username);
-  const baUser = yield getUser(admin, contract, username, chainId);
-  const accounts = yield rest.getAccount(baUser.account);
+function* getBalance(address, chainId, node) {
+  rest.verbose('getBalance', address);
+  const accounts = yield rest.getAccount(address, {chainId});
   const balance = new BigNumber(accounts[0].balance);
   return balance;
 }
 
 // throws: ErrorCodes
 // returns: user record from search
-function* createUser(admin, contract, args, chainId, address) {
-  rest.verbose('createUser', args, chainId);
-  args.account = address;
-  args.pwHash = util.toBytes32(args.password); // FIXME this is not a hash
+function* createUser(admin, contract, args, chainId) {
+  rest.verbose('createUser', admin, args, chainId);
 
-  // FIX: uncomment if you need wheather username exists or not
-  const isExists = yield exists(admin, contract, args.username, chainId);
-
-  if (isExists) {
-    throw new Error('Account already exists');
-  } else {
-    // function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
+    // function createUser(address account, string username, UserRole role) returns (ErrorCodes) {
     const method = 'createUser';
 
     // create the user, with the eth account
-    const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+    const result = yield rest.callMethod(admin, contract, method, args, {chainId});
     const errorCode = parseInt(result[0]);
     if (errorCode != ErrorCodes.SUCCESS) {
       throw new Error(errorCode);
     }
     // block until the user shows up in search
     const baUser = yield getUser(admin, contract, args.username, chainId);
-    baUser.password = args.password;
     return baUser;
-  }
 }
 
 function* exists(admin, contract, username, chainId) {
@@ -111,7 +103,7 @@ function* getUser(admin, contract, username, chainId) {
   };
 
   // get the use address
-  const userAddress = (yield rest.callMethod(admin, contract, method, args, undefined, chainId))[0];
+  const userAddress = (yield rest.callMethod(admin, contract, method, args, { chainId }))[0];
   if (userAddress == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
@@ -119,6 +111,13 @@ function* getUser(admin, contract, username, chainId) {
   const userJs = require('./user');
   const baUser = yield userJs.getUserByAddress(userAddress, chainId);
   return baUser;
+}
+
+function* getUserByAccount(address, chainId) {
+  rest.verbose('userManager: getUserByAccount', { address, chainId });
+  const userJs = require('./user');
+  const results = yield userJs.getUserByAccount(address, chainId);
+  return results;
 }
 
 function* getUsers(admin, contract, chainId) {
@@ -130,6 +129,7 @@ function* getUsers(admin, contract, chainId) {
   return results;
 }
 
+// TODO: Remove it is not in use
 function* login(admin, contract, args, chainId) {
   rest.verbose('login', args);
 

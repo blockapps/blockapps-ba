@@ -28,6 +28,7 @@ class BidTable extends Component {
 
   render() {
     const bids = this.props.bids;
+    console.log("bids ------------------------", bids)
     bids.sort(function (a, b) {
       return a.amount - b.amount;
     });

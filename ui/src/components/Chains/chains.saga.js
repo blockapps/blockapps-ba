@@ -6,11 +6,15 @@ import {
 import {
   FETCH_CHAINS_REQUEST,
   fetchChainsSuccess,
-  fetchChainsFailure
+  fetchChainsFailure,
+  CREATE_CHAIN_REQUEST,
+  createChainSuccess,
+  createChainFailure
 } from './chains.actions';
-import { strato_url } from '../../environment';
+import { strato_url, bloc_url, API_URL } from '../../environment';
 
 const chainUrl = strato_url + "/chain";
+const url = API_URL + "/uploadContracts/createData";
 
 export function getChainsApi() {
   return fetch(
@@ -29,6 +33,27 @@ export function getChainsApi() {
     })
 }
 
+export function createChainApiCall(args) {
+  return fetch(
+    url,
+    {
+      method: 'POST',
+      credentials: "include",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({chain: args})
+    }
+  )
+    .then(function (response) {
+      return response;
+    })
+    .catch(function (error) {
+      throw error;
+    });
+}
+
+
 export function* getChains() {
   try {
     const response = yield call(getChainsApi);
@@ -39,8 +64,23 @@ export function* getChains() {
   }
 }
 
+export function* createChain(action) {
+  try {
+    let response = yield call(createChainApiCall, action.args);
+    if (response.status === 200) {
+      yield put(createChainSuccess(response));
+    } else {
+      yield put(createChainFailure(response.statusText));
+    }
+  }
+  catch (err) {
+    yield put(createChainFailure(err));
+  }
+}
+
 export default function* watchFetchChains() {
   yield [
-    takeLatest(FETCH_CHAINS_REQUEST, getChains)
+    takeLatest(FETCH_CHAINS_REQUEST, getChains),
+    takeLatest(CREATE_CHAIN_REQUEST, createChain)
   ];
 }

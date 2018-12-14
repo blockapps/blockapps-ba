@@ -1,41 +1,52 @@
-export const USER_LOGIN_SUBMIT = 'USER_LOGIN_SUBMIT';
-export const USER_LOGIN_SUCCESS = 'USER_LOGIN_SUCCESS';
-export const USER_LOGIN_FAILURE = 'USER_LOGIN_FAILURE';
 export const USER_LOGOUT = 'USER_LOGOUT';
 export const ME = 'ME';
+export const AUTHENTICATE_SUCCESS = 'AUTHENTICATE_SUCCESS';
+export const AUTHENTICATE_FAILURE = 'AUTHENTICATE_FAILURE';
 
-export const userLoginSubmit = function(username, password, chainId) {
+export const GET_USER = 'GET_USER';
+export const GET_USER_SUCCESS = 'GET_USER_SUCCESS';
+export const GET_USER_FAILURE = 'GET_USER_FAILURE';
+
+export const authenticatedSuccess = function (data) {
   return {
-    type: USER_LOGIN_SUBMIT,
-    username,
-    password,
-    chainId
+    type: AUTHENTICATE_SUCCESS,
+    data
   }
-};
+}
 
-export const userLoginSuccess = function(username, role, account) {
+export const authenticatedFailure = function () {
   return {
-    type: USER_LOGIN_SUCCESS,
-    username: username,
-    role: role,
-    account: account
+    type: AUTHENTICATE_FAILURE
   }
-};
+}
 
-export const userLoginFailure = function(error) {
+export const getUser = function (data) {
   return {
-    type: USER_LOGIN_FAILURE,
-    error: error
+    type: GET_USER,
+    data
   }
-};
+}
 
-export const me = function() {
+export const getUserSuccess = function (result) {
+  return {
+    type: GET_USER_SUCCESS,
+    result
+  }
+}
+
+export const getUserFailure = function () {
+  return {
+    type: GET_USER_FAILURE
+  }
+}
+
+export const me = function () {
   return {
     type: ME
   }
 };
 
-export const userLogout = function() {
+export const userLogout = function () {
   return {
     type: USER_LOGOUT,
   }

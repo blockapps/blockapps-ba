@@ -1,6 +1,6 @@
 const co = require('co');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const common = ba.common;
 const fsutil = ba.common.fsutil;
 const config = common.config;
@@ -12,18 +12,20 @@ const BigNumber = common.BigNumber
 const constants = common.constants
 const yaml = require('js-yaml');
 const fs = require('fs');
+const utils = require('../../../utils');
 
 const usersController = {
   getBalance: function (req, res) {
     const chainId = req.query['chainId'];
+    const accessToken = utils.getAccessTokenFromCookie(req);
 
     const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
     const data = deploy[chainId];
-    const username = decodeURI(req.params['username']);
+    const address = decodeURI(req.params['address']);
 
     co(function* () {
-      const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
-      const balance = yield dapp.getBalance(username, chainId);
+      const dapp = yield dappJs.setContract(accessToken, data.contract, chainId);
+      const balance = yield dapp.getBalance(address, chainId);
 
       util.response.status200(res, {
         // this is a bignumber

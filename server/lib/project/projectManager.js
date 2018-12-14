@@ -1,5 +1,5 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const util = ba.common.util;
 const config = ba.common.config;
 const Promise = ba.common.Promise;
@@ -96,8 +96,9 @@ function* createProject(admin, contract, args, chainId) {
   // ) returns (ErrorCodes) {
   const method = 'createProject';
 
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, { chainId });
   const errorCode = parseInt(result[0]);
+  console.log("---------------------------------------- result", result)
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
   }
@@ -118,7 +119,7 @@ function* createBid(admin, contract, name, supplier, amount, chainId) {
     amount: amount,
   };
 
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, { chainId } );
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -132,7 +133,7 @@ function* createBid(admin, contract, name, supplier, amount, chainId) {
 // throws: ErrorCodes
 function* acceptBid(admin, contract, buyer, bidId, name, chainId) {   // FIXME should go into the contract
   rest.verbose('acceptBid', { admin, buyer, bidId, name, chainId });
-  const bids = yield getBidsByName(name);
+  const bids = yield getBidsByName(name, chainId);
   if (bids.length < 1) {
     throw new Error(ErrorCodes.NOT_FOUND);
   }
@@ -142,7 +143,7 @@ function* acceptBid(admin, contract, buyer, bidId, name, chainId) {   // FIXME s
   })[0];
   // accept the bid (will transfer funds from buyer to bid contract)
   try {
-    const temp = yield setBidState(buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount, chainId);
+    const temp = yield setBidState(admin, buyer, winningBid.address, BidState.ACCEPTED, winningBid.amount, chainId);
   } catch (error) {
     // check insufficient balance
     if (error.status == 400) {
@@ -153,15 +154,15 @@ function* acceptBid(admin, contract, buyer, bidId, name, chainId) {   // FIXME s
   // reject all other bids
   for (let bid of bids) {
     if (bid.id != bidId) {
-      yield setBidState(buyer, bid.address, BidState.REJECTED, 0, chainId); // REJECT
+      yield setBidState(admin, buyer, bid.address, BidState.REJECTED, 0, chainId); // REJECT
     }
   }
   const result = yield handleEvent(admin, contract, name, ProjectEvent.ACCEPT, chainId);
   return result;
 }
 
-function* setBidState(buyer, bidAddress, state, valueEther, chainId) {
-  rest.verbose('setBidState', { buyer, bidAddress, state, valueEther, chainId });
+function* setBidState(admin, buyer, bidAddress, state, valueEther, chainId) {
+  rest.verbose('setBidState', { admin, buyer, bidAddress, state, valueEther, chainId });
   const contract = {
     name: 'Bid',
     address: bidAddress,
@@ -171,16 +172,16 @@ function* setBidState(buyer, bidAddress, state, valueEther, chainId) {
   const method = 'setBidState';
   const args = {
     newState: state,
+    address: buyer.account
   };
   // the api is expecting the buyers bloc-account address (not the app-user address)
-  const buyerAccount = {
-    name: buyer.username,
-    password: buyer.password,
-    address: buyer.account,
-  };
+  // const buyerAccount = {
+  //   name: buyer.username,
+  //   address: buyer.account,
+  // };
 
-  const valueWei = new BigNumber(valueEther).mul(constants.ETHER);
-  const result = yield rest.callMethod(buyerAccount, contract, method, args, valueWei, chainId);
+  const value = new BigNumber(valueEther).mul(constants.ETHER);
+  const result = yield rest.callMethod(admin, contract, method, args, { chainId, value });
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -197,7 +198,7 @@ function* settleProject(admin, contract, projectName, supplierAddress, bidAddres
     bidAddress: bidAddress,
   };
 
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, { chainId });
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);
@@ -211,7 +212,7 @@ function* getBid(bidId) {
 
 function* getBidsByName(name, chainId) {
   rest.verbose('getBidsByName', name);
-  return yield rest.query(`Bid?name=eq.${encodeURIComponent(name)}`);
+  return yield rest.query(`Bid?name=eq.${encodeURIComponent(name)}&chainId=eq.${chainId}`);
 }
 
 function* getBidsBySupplier(supplier, chainId) {
@@ -260,7 +261,7 @@ function* getProject(admin, contract, name, chainId) {
   };
 
   // returns address
-  const address = (yield rest.callMethod(admin, contract, method, args, undefined, chainId))[0];
+  const address = (yield rest.callMethod(admin, contract, method, args, { chainId }))[0];
   // if not found - throw
   if (address == 0) {
     throw new Error(ErrorCodes.NOT_FOUND);
@@ -272,7 +273,7 @@ function* getProject(admin, contract, name, chainId) {
 
 function* getProjects(contract, chainId) {
   rest.verbose('getProjects', chainId);
-  const state = yield rest.getState(contract, chainId);
+  const state = yield rest.getState(contract, { chainId });
   const projects = state.projects.slice(1); // remove the first '0000' project
   const csv = util.toCsv(projects); // generate csv string
   const results = yield rest.query(`${projectContractName}?address=in.${csv}&chainId=eq.${chainId}`);
@@ -336,7 +337,8 @@ function* handleEvent(admin, contract, name, projectEvent, chainId) {
     projectAddress: project.address,
     projectEvent: projectEvent,
   };
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+
+  const result = yield rest.callMethod(admin, contract, method, args, { chainId });
   const errorCode = parseInt(result[0]);
   if (errorCode != ErrorCodes.SUCCESS) {
     throw new Error(errorCode);

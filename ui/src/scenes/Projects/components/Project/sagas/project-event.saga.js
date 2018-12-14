@@ -49,7 +49,7 @@ function* projectEvent(action) {
     yield put(showLoading());
     yield call(projectEventCall, action.projectName, action.projectEvent, action.username, action.chainId, action.account);
     yield put(projectEventSuccess());
-    yield put(userBalanceSubmit(action.username, action.chainId));
+    yield put(userBalanceSubmit(action.account, action.chainId));
     yield put(hideLoading());
     yield put(setUserMessage('Item ' + PROJECT_EVENTS[action.projectEvent]));
     yield put(resetUserMessage());

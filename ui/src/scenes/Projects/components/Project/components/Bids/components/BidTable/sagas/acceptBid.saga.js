@@ -47,7 +47,7 @@ function* acceptBid(action) {
     yield call(acceptBidCall, action.username, action.projectName, action.id, action.chainId, action.account);
     yield put(hideLoading());
     yield put(acceptBidSuccess());
-    yield put(userBalanceSubmit(action.username, action.chainId));
+    yield put(userBalanceSubmit(action.account, action.chainId));
     yield put(setUserMessage('Bid Accepted'));
     browserHistory.goBack(); // todo: update current project data on the page instead?
   }

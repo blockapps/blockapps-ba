@@ -4,7 +4,6 @@ import {
   userBalanceSuccess,
   userBalanceFailure
 } from './user-badge.actions';
-import { browserHistory } from 'react-router';
 import { API_URL, API_MOCK } from '../../../../environment';
 import { handleApiError } from '../../../../lib/apiErrorHandler';
 
@@ -23,6 +22,7 @@ function balanceApiCall(username, chainId) {
   else {
     return fetch(balanceUrl.replace(':username', username).replace(':chainId', chainId), {
       method: 'GET',
+      credentials: "include",
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
         'Accept': 'application/json'
@@ -46,7 +46,7 @@ function* submitGetBalance(action) {
   catch (err) {
     yield put(userBalanceFailure(err));
   }
-  browserHistory.push('/projects');
+  // browserHistory.push('/projects');
 }
 
 export default function* watchBalanceSubmit() {

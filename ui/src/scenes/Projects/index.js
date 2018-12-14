@@ -5,7 +5,7 @@ import Button from 'react-md/lib/Buttons/Button';
 import Toolbar from 'react-md/lib/Toolbars';
 import ProjectList from './components/ProjectList';
 import mixpanel from 'mixpanel-browser';
-import {ROLES} from '../../constants.js';
+import { ROLES } from '../../constants.js';
 
 class Projects extends Component {
 
