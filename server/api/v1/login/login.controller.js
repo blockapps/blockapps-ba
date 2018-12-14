@@ -1,6 +1,6 @@
 const co = require('co');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const common = ba.common;
 const fsutil = ba.common.fsutil;
 const config = common.config;
@@ -54,8 +54,8 @@ const loginController = {
       }
 
     }).catch(err => {
-      console.log('Login Error:', err);
-      util.response.status(401, res, 'Login failed');
+      console.log('Failed:', err);
+      util.response.status(401, res, 'Failed to fetch user');
     });    
   }
 }

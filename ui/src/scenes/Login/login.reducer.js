@@ -22,8 +22,6 @@ const reducer = function loginReducer (state = initialState, action) {
       return {
         ...state,
         error: null,
-        // TODO: unchecked when you work on login
-        // authenticated: false,
         address: action.data.address
       };
     case AUTHENTICATE_FAILURE: 
@@ -33,7 +31,6 @@ const reducer = function loginReducer (state = initialState, action) {
         address: null
       };
     case GET_USER_SUCCESS: 
-      console.log("user -------------------", action)
       return {
         ...state,
         error: null,

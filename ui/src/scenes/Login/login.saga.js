@@ -5,13 +5,15 @@ import {
   authenticatedFailure,
   GET_USER,
   getUserFailure,
-  getUserSuccess
+  getUserSuccess,
+  USER_LOGOUT
 } from './login.actions';
 import { API_URL } from '../../environment';
 import { setChainID } from '../../components/Chains/chains.actions';
 
 const meUrl = API_URL + '/me';
 const getUserUrl = API_URL + '/login/getUser';
+const logoutUrl = API_URL + '/authentication/logout';
 
 function meCall() {
   return fetch(meUrl, {
@@ -33,6 +35,23 @@ function meCall() {
 function getUserApiCall(data) {
   const url = `${getUserUrl}?chainId=${data.chainId}&address=${data.address}`;
   return fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  })
+    .then(function (response) {
+      return response.json();
+    })
+    .catch(function (error) {
+      return error.json();
+    });
+}
+
+function logoutApiCall() {
+  return fetch(logoutUrl, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -74,7 +93,19 @@ function* getUser(action) {
   }
 }
 
+function* userLogout() {
+  try {
+    const response = yield call(logoutApiCall);
+    if (response.success)
+      window.location = response.data.logoutUrl
+  }
+  catch (err) {
+    console.error("Error logout:", err);
+  }
+}
+
 export default function* watchLoginSubmit() {
   yield takeLatest(ME, me);
   yield takeLatest(GET_USER, getUser);
+  yield takeLatest(USER_LOGOUT, userLogout);
 }

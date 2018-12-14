@@ -51,7 +51,6 @@ const uploadContractsController = {
 
   createData: function (req, res) {
     const accessToken = utils.getAccessTokenFromCookie(req);
-    const email = utils.getEmailIdFromToken(accessToken);
     let isChainIdExists = false;
 
     co(function* () {
@@ -61,14 +60,13 @@ const uploadContractsController = {
       // create chain. TODO: add error handling
       const chainID = yield rest.createChain(label, members, balances, src, args, contract, enode);
 
-      // 
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const keys = deploy ? Object.keys(deploy) : [];
 
       keys.forEach((value) => {
         if (value === chainID) {
           isChainIdExists = true;
-          util.response.status500(res, 'Contracts are already deployed!');
+          util.response.status500(res, 'Chain already exists');
         }
       })
 

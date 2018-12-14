@@ -46,7 +46,6 @@ function* submitGetBalance(action) {
   catch (err) {
     yield put(userBalanceFailure(err));
   }
-  // browserHistory.push('/projects');
 }
 
 export default function* watchBalanceSubmit() {

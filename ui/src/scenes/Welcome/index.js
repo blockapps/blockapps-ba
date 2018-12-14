@@ -10,7 +10,7 @@ import CardTitle from 'react-md/lib/Cards/CardTitle';
 import Media, { MediaOverlay } from 'react-md/lib/Media';
 import { browserHistory } from 'react-router';
 import { me, getUser } from '../Login/login.actions';
-
+import './welcome.css';
 class Welcome extends Component {
 
   componentDidMount() {
@@ -51,12 +51,16 @@ class Welcome extends Component {
             <Paper className="login-paper">
               <form onSubmit={handleSubmit(this.submit)} className="form-width">
                 <div className="md-grid">
-                  <div className="md-cell md-cell--12-desktop md-cell--1-tablet md-cell--1-phone">
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--8-desktop md-cell--1-tablet md-cell--1-phone">
                     <h1> Welcome, </h1>
                   </div>
-                  <div className="md-cell md-cell--12-desktop md-cell--1-tablet md-cell--1-phone">
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--8-desktop md-cell--1-tablet md-cell--1-phone">
                     <h4> Your address {this.props.address} </h4>
                   </div>
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <Field
                     id="chainId"
@@ -69,11 +73,12 @@ class Welcome extends Component {
                   />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
-                  <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--5-phone md-text-right login-cell">
-                    <Button raised primary label="Next" type="submit" />
+                  <div className="md-cell md-cell--3-desktop md-cell--5-tablet md-cell--5-phone login-cell">
+                    <Button raised primary label="Create Chain" onClick={this.navigate} className="button-width"/>
                   </div>
-                  <div className="md-cell md-cell--4-desktop md-cell--5-tablet md-cell--5-phone md-text-right login-cell">
-                    <Button raised primary label="Create Chain" onClick={this.navigate} />
+                  <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
+                  <div className="md-cell md-cell--3-desktop md-cell--5-tablet md-cell--5-phone md-text-right login-cell">
+                    <Button raised primary label="Next" type="submit" className="button-width"/>
                   </div>
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                 </div>
