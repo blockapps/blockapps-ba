@@ -17,6 +17,12 @@ $md-secondary-color: $md-pink-a-200 !default;
   padding-left: 10px;
 }
 
+.ellipses-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 840px) { 
   #app-title {
     font-size: medium !important;

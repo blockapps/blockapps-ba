@@ -36,7 +36,7 @@ class BidTable extends Component {
       (bid, i) =>
         <TableRow key={"bid" + i}>
           <TableColumn data-th="Supplier">
-            <span className="md-subheading-2">
+            <span className="md-subheading-2 ellipses-content">
               {bid.supplier}
             </span>
           </TableColumn>

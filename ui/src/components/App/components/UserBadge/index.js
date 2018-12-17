@@ -31,8 +31,8 @@ class UserBadge extends Component {
       <div>
         <div className="md-grid user-balance userbadge-desk-view">
           {userIcon}
-          <div className="md-cell md-cell--8 md-cell--middle">
-            <span className="md-font-bold">{this.props.address}</span>
+          <div className="md-cell md-cell--8 md-cell--middle ellipses-content">
+            <span className="md-font-bold" title={this.props.address}>{this.props.address}</span>
             <br />
             <span className="md-font-light">Balance: {this.props.balance}</span>
           </div>
