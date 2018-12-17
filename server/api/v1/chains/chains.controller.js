@@ -2,6 +2,7 @@ const co = require('co');
 const ba = require('blockapps-rest');
 const rest = ba.rest6;
 const common = ba.common;
+const api = common.api;
 const config = common.config;
 const util = common.util;
 const fsutil = common.fsutil;
@@ -42,6 +43,15 @@ const chains = {
     }).catch(err => {
       console.log('Create Chain Error:', err);
       util.response.status(401, res, 'Failed to create');
+    });
+  },
+  get: function (req, res) {
+    co(function* () {
+      const chains = yield api.strato.chain();
+      util.response.status200(res, chains);
+    }).catch(err => {
+      console.log('Create Chain Error:', err);
+      util.response.status(401, res, 'Failed to fetch chain');
     });
   }
 };

@@ -5,7 +5,7 @@ const { validateCookie } = require('./middleware/validateCookie');
 const heartbeat = require('./api/v1/heartbeat');
 const projects = require('./api/v1/projects');
 const users = require('./api/v1/users');
-const chains = require('./api/v1/chain');
+const chains = require('./api/v1/chains');
 const authentication = require('./api/v1/authentication');
 const me = require('./api/v1/me');
 

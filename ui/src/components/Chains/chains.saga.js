@@ -12,16 +12,16 @@ import {
   createChainFailure
 } from './chains.actions';
 import { setUserMessage } from '../../components/UserMessage/user-message.action';
-import { strato_url, API_URL } from '../../environment';
+import { API_URL } from '../../environment';
 import { showLoading, hideLoading } from 'react-redux-loading-bar';
 import { browserHistory } from 'react-router';
 
-const chainUrl = strato_url + "/chain";
-const url = API_URL + "/chains";
+const getChainUrl = API_URL + "/chains";
+const createChainUrl = API_URL + "/chains";
 
 export function getChainsApi() {
   return fetch(
-    chainUrl,
+    getChainUrl,
     {
       method: 'GET',
       headers: {
@@ -38,7 +38,7 @@ export function getChainsApi() {
 
 export function createChainApiCall(args) {
   return fetch(
-    url,
+    createChainUrl,
     {
       method: 'POST',
       credentials: "include",
@@ -60,7 +60,7 @@ export function createChainApiCall(args) {
 export function* getChains() {
   try {
     const response = yield call(getChainsApi);
-    yield put(fetchChainsSuccess(response));
+    yield put(fetchChainsSuccess(response.data.chains));
   }
   catch (err) {
     yield put(fetchChainsFailure(err));
