@@ -37,80 +37,27 @@ const usersController = {
       util.response.status500(res, 'Could not get user balance');
     });
   },
+  get: function (req, res) {
+    const { chainId } = req.query;
+    const { address } = req.params;
+    const accessToken = utils.getAccessTokenFromCookie(req);
 
-  create: function (req, res) {
-    const chainId = req.body.chainId;
-    const payload = {
-      username: req.body.username,
-      address: req.body.address,
-      password: req.body.password,
-      role: req.body.role
-    }
     co(function* () {
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const data = deploy[chainId];
-      
-      const deployedAddress = fsutil.yamlSafeLoadSync(config.usersFilename, config.apiDebug);
-      
-      if (data) {
-        const chain = yield rest.getChainInfo(chainId);
-        let isMemberExists = false;
-        
-        for (let member of chain.members) {
-          if (payload.address === member.address) {
-            isMemberExists = true;
-          }
-        }
 
-        if (isMemberExists) {
-          // Remove when we have actual password checking API
-          const fromandToUser = {
-            name: req.body.username,
-            address: req.body.address,
-            password: req.body.password
-          }
-          const send = yield rest.send(fromandToUser, fromandToUser, 0);
-          // ---------------------------------------------------
-
-          const dapp = yield dappJs.setContract(data.admin, data.contract, chainId);
-          const userData = yield dapp.createUser(payload, chainId);
-
-          // TODO: remove this if it is not needed in future
-          const user = {
-            [userData.account]: {
-              password: userData.password,
-              role: userData.role
-            }
-          };
-
-          if (deployedAddress) {
-            const isAddressExists = deployedAddress[userData.account];
-            if (!isAddressExists) {
-              console.log('deploy user:', config.usersFilename);
-              console.log(fsutil.yamlSafeDumpSync(user));
-              fs.appendFileSync(config.usersFilename, yaml.safeDump(user));
-            }
-          } else {
-            console.log('deploy user:', config.usersFilename);
-            console.log(fsutil.yamlSafeDumpSync(user));
-            fs.appendFileSync(config.usersFilename, yaml.safeDump(user));
-          }
-
-          util.response.status(200, res, 'User created successfully');
-        } else {
-          util.response.status(401, res, 'this account is not a part of the chain');
-        }
-
-      } else {
+      if (!data) {
         util.response.status(401, res, 'Contracts are not deployed on this chain! please deploy contracts first');
+      } else {
+        const dapp = yield dappJs.setContract(accessToken, data.contract, chainId);
+        const result = yield dapp.getUserByAccount(address, chainId);
+        util.response.status200(res, result);
       }
+
     }).catch(err => {
-      console.log('Create User Error:', err);
-      if (err.data === '"incorrect password"') {
-        util.response.status(401, res, 'Incorrect password');
-      }
-      util.response.status(401, res, 'Failed to create user');
-    });
+      console.log('Failed:', err);
+      util.response.status(401, res, 'Failed to fetch user');
+    });    
   }
 }
 

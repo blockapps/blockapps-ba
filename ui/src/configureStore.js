@@ -20,8 +20,6 @@ import projectCreateReducer from './scenes/Projects/components/ProjectCreate/red
 import bidModalReducer from './scenes/Projects/components/BidModal/bidModal.reducer';
 import userBalanceReducer from './components/App/components/UserBadge/user-badge.reducer';
 import chainsReducer from './components/Chains/chains.reducer';
-import uploadContractsReducer from './components/UploadContracts/uploadContracts.reducer';
-import accountsReducer from './components/Accounts/accounts.reducer';
 import userReducer from './scenes/User/user.reducer';
 
 import watchExplorerUrl from './components/ExplorerUrl/explorer.saga';
@@ -35,8 +33,6 @@ import watchBidAccept from './scenes/Projects/components/Project/components/Bids
 import watchFetchProjectBids from './scenes/Projects/components/Project/components/Bids/components/BidTable/sagas/projectBids.saga.js';
 import watchBalanceSubmit from './components/App/components/UserBadge/user-badge.saga';
 import watchFetchChains from './components/Chains/chains.saga';
-import watchUploadContracts from './components/UploadContracts/uploadContracts.saga';
-import watcAccounts from './components/Accounts/accounts.saga';
 import watchCreateUser from './scenes/User/user.saga';
 
 const rootReducer = combineReducers({
@@ -53,8 +49,6 @@ const rootReducer = combineReducers({
   loadingBar: loadingBarReducer,
   balance: userBalanceReducer,
   chains: chainsReducer,
-  uploadContract: uploadContractsReducer,
-  account: accountsReducer,
   user: userReducer
 });
 
@@ -71,8 +65,6 @@ const rootSaga = function* startForeman() {
     fork(watchFetchProjectBids),
     fork(watchBalanceSubmit),
     fork(watchFetchChains),
-    fork(watchUploadContracts),
-    fork(watcAccounts),
     fork(watchCreateUser),
   ]
 };

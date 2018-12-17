@@ -1,4 +1,4 @@
-import { takeLatest, put, call, wait } from 'redux-saga/effects';
+import { takeLatest, put, call } from 'redux-saga/effects';
 import {
   ME,
   authenticatedSuccess,
@@ -12,7 +12,7 @@ import { API_URL } from '../../environment';
 import { setChainID } from '../../components/Chains/chains.actions';
 
 const meUrl = API_URL + '/me';
-const getUserUrl = API_URL + '/login/getUser';
+const getUserUrl = API_URL + '/users/:address';
 const logoutUrl = API_URL + '/authentication/logout';
 
 function meCall() {
@@ -33,7 +33,7 @@ function meCall() {
 }
 
 function getUserApiCall(data) {
-  const url = `${getUserUrl}?chainId=${data.chainId}&address=${data.address}`;
+  const url = `${getUserUrl.replace(':address', data.address)}?chainId=${data.chainId}`;
   return fetch(url, {
     method: 'GET',
     credentials: 'include',

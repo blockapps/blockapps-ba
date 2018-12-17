@@ -125,7 +125,7 @@ class CreateChain extends Component {
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--3-desktop md-cell--5-tablet md-cell--5-phone login-cell">
-                    <Button raised primary label="back" onClick={() => { browserHistory.replace('/welcome') }} />
+                    <Button raised primary label="back" disabled={this.props.isSpinning} onClick={() => { browserHistory.replace('/welcome') }} />
                   </div>
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--3-desktop md-cell--10-tablet md-cell--10-phone md-text-right login-cell">

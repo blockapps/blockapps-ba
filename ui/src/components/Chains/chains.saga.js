@@ -11,10 +11,13 @@ import {
   createChainSuccess,
   createChainFailure
 } from './chains.actions';
-import { strato_url, bloc_url, API_URL } from '../../environment';
+import { setUserMessage } from '../../components/UserMessage/user-message.action';
+import { strato_url, API_URL } from '../../environment';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
+import { browserHistory } from 'react-router';
 
 const chainUrl = strato_url + "/chain";
-const url = API_URL + "/uploadContracts/createData";
+const url = API_URL + "/chains";
 
 export function getChainsApi() {
   return fetch(
@@ -42,11 +45,11 @@ export function createChainApiCall(args) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({chain: args})
+      body: JSON.stringify({ chain: args })
     }
   )
     .then(function (response) {
-      return response;
+      return response.json();
     })
     .catch(function (error) {
       throw error;
@@ -66,15 +69,22 @@ export function* getChains() {
 
 export function* createChain(action) {
   try {
+    yield put(showLoading());
     let response = yield call(createChainApiCall, action.args);
-    if (response.status === 200) {
+    yield put(hideLoading());
+    if (response.success) {
       yield put(createChainSuccess(response));
+      yield put(setUserMessage(response.data));
+      browserHistory.replace('/welcome');
     } else {
-      yield put(createChainFailure(response.statusText));
+      yield put(createChainFailure(response.error));
+      yield put(setUserMessage(response.error));
     }
   }
   catch (err) {
+    yield put(hideLoading());
     yield put(createChainFailure(err));
+    yield put(setUserMessage(err.data));
   }
 }
 
