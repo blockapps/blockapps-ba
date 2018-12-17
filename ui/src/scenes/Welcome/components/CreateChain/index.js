@@ -27,7 +27,7 @@ class CreateChain extends Component {
     let balances = [], members = [], users = [];
 
     values.users.forEach((user) => {
-      balances.push({ address: user.address, balance: parseInt(user.balance) })
+      balances.push({ address: user.address, balance: parseInt(user.balance, 10) })
       members.push({ address: user.address, enode: ENODE })
       users.push({ address: user.address, role: user.role })
     })
