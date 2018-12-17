@@ -51,7 +51,7 @@ const chains = {
       util.response.status200(res, chains);
     }).catch(err => {
       console.log('Create Chain Error:', err);
-      util.response.status(401, res, 'Failed to fetch chain');
+      util.response.status(401, res, 'Failed to fetch chain list');
     });
   }
 };

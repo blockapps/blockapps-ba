@@ -60,7 +60,7 @@ export function createChainApiCall(args) {
 export function* getChains() {
   try {
     const response = yield call(getChainsApi);
-    yield put(fetchChainsSuccess(response.data.chains));
+    yield put(fetchChainsSuccess(response.data));
   }
   catch (err) {
     yield put(fetchChainsFailure(err));

@@ -12,7 +12,7 @@ export default (
   <Route path="/" component={App}>
     <IndexRedirect to="/welcome" />
     <Route path="/welcome" component={Welcome} />
-      <Route path="/create-chain" component={CreateChain} />
+    <Route path="/create-chain" component={CreateChain} />
     <Route component={EnsureAuthenticated}>
       <Route path="/projects" name="My Projects" icon="playlist_add_check">
         <IndexRoute component={Projects} />
