@@ -25,6 +25,7 @@ class EnsureAuthenticated extends Component {
 function mapStateToProps(state) {
   return {
     authenticated: state.login.authenticated,
+    address: state.login.address,
     role: state.login.role
   }
 }

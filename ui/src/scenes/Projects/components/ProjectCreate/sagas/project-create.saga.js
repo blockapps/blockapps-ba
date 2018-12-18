@@ -37,7 +37,6 @@ function* submitProjectCreate(action) {
     yield put(hideLoading());
     if(response.data.project) {
       yield put(projectCreateSuccess(response.data.project));
-      yield put(setUserMessage('Contract Created Successfully'));
       browserHistory.push('/projects');
       yield put(setUserMessage('Contract Created Successfully'));
     }

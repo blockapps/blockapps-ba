@@ -43,7 +43,7 @@ const reducer = function loginReducer (state = initialState, action) {
     case GET_USER_FAILURE: 
       return {
         error: null,
-        authenticated: true,
+        authenticated: false,
         username: null,
         account: null,
         role: null

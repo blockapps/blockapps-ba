@@ -16,15 +16,12 @@ nodes:
     searchUrl: 'http://localhost:8080/cirrus'
 
 oauth:
-  appTokenCookieName: "candor_session"
+  appTokenCookieName: "ba_session"
   scope: 'email openid'
   appTokenCookieMaxAge: 7776000000 # 90 days: 90 * 24 * 60 * 60 * 1000
   stratoUrl: "http://localhost:8080"
-  # clientId: "5c1f5cd9-6439-4f17-8fea-5f845ccefc8b"
-  # clientSecret: "Clj0V5fPjtj6qb002vqIjIrtHrpn1P8Tjl7Yqm4M3tk="
-  # openIdDiscoveryUrl: "https://login.microsoftonline.com/2ec6965f-17c7-47c0-80c8-98e1a0c7b66a/.well-known/openid-configuration"
   clientId: "react-blockapps-ba"
   clientSecret: "744c694f-8263-4de0-8504-4af08d904e2a"
   openIdDiscoveryUrl: "https://keycloak.blockapps.net/auth/realms/blockapps-ba/.well-known/openid-configuration"
   redirectUri: "http://localhost/api/v1/authentication/callback"
-  logoutRedirectUri: "http://localhost" # url to redirect after OAuth logout (e.g. app's login screen)
+  logoutRedirectUri: "http://localhost"
