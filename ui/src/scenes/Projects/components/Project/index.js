@@ -127,9 +127,12 @@ class Project extends Component {
         />
         <BidModal name={project.name} />
         <div className="md-grid">
-          <div className="md-cell md-cell--4 md-cell--12-phone">
-            <Status state={project.state} />
+          <div className="md-cell md-cell--12 md-cell--12-phone">
+            <Status state={project.state} isSupplier={this.isSupplier} />
           </div>
+        </div>
+        <div className="md-grid">
+          <div className="md-cell md-cell--2 md-cell--12-phone" />
           <div className="md-cell md-cell--4 md-cell--12-phone">
             <Detail project={project} />
           </div>
@@ -137,6 +140,7 @@ class Project extends Component {
             <Bids project={project} bids={this.props.bids} />
             {this.renderAction(project)}
           </div>
+          <div className="md-cell md-cell--2 md-cell--12-phone" />
         </div>
       </section>
     );

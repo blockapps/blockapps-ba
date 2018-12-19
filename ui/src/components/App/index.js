@@ -52,7 +52,7 @@ class App extends Component {
           desktopDrawerType={NavigationDrawer.DrawerTypes.PERSISTENT}
           toolbarTitle={<span id="app-title"> {title} </span>}
           toolbarActions={<UserBadge account={this.props.login.account} role={this.props.login.role} />}
-          className={this.isSupplier && "navigation-drawer"}
+          className={this.isSupplier ? "navigation-drawer" : ''}
         >
           <LoadingBar style={{ position: 'fixed', zIndex: 15 }} />
           {this.props.children}

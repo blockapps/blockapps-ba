@@ -1,46 +1,39 @@
+const plainPng = require('./png/plain.png')
+const settingPng = require('./png/setting.png')
+const smilyPng = require('./png/smily.png')
+const viewPng = require('./png/View.png')
 import React, { Component } from 'react';
 import Card from 'react-md/lib/Cards/Card';
 import Toolbar from 'react-md/lib/Toolbars';
-import {Timeline, TimelineEvent} from 'react-event-timeline';
 import { STATES } from '../../../../../../constants';
-
+import Stepper from 'react-stepper-horizontal';
+import './status.css';
 
 class Status extends Component {
   render() {
-    const timelineEvents =
-    Object.getOwnPropertyNames(STATES)
-      .filter((val) => {
-         return val.length === 1;
-       })
-       .map(
-        (state,i) =>
-          <TimelineEvent
-            key={'timeline' + i}
-            title=""
-            createdAt=""
-            icon={<i className="material-icons" style={{fontSize: '16px'}}>{STATES[state].icon}</i>}
-            contentStyle={{ border:0, boxShadow: 'none' }}
-            iconColor={ parseInt(state, 10) === parseInt(this.props.state, 10) ? '#3F51B5' : '#ccc' }
-            container="p"
-          >
-            <div
-              className={ parseInt(state, 10) === parseInt(this.props.state, 10) ? 'md-title' : 'md-subheading-2' }
-              style={{marginTop: '-5px', color: parseInt(state, 10) === parseInt(this.props.state, 10) ? '#3F51B5' : '#ccc'}}
-            >
-              {STATES[state].state}
-            </div>
-          </TimelineEvent>
-      );
-
+    const projectState = parseInt(this.props.state, 10) - 1;
     return (
       <Card>
         <Toolbar
           themed
           title={"Status"}
         />
-        <Timeline>
-          {timelineEvents}
-        </Timeline>
+        <div className="status-stepper">
+          <Stepper
+            size={40}
+            steps={
+              [
+                { title: STATES[1].state, icon: viewPng },
+                { title: STATES[2].state, icon: settingPng },
+                { title: STATES[3].state, icon: plainPng },
+                { title: STATES[4].state, icon: smilyPng }
+              ]}
+            activeStep={projectState}
+            activeColor={this.props.isSupplier ? "#3982C9" : "#3f51b5"}
+            completeColor="#3f76c0"
+            completeOpacity="0.7"
+          />
+        </div>
       </Card>
     )
   }

@@ -276,11 +276,19 @@ function* getProjects(contract, chainId) {
 
 function* getProjectsByBuyer(contract, buyer, chainId) {
   rest.verbose('getProjectsByBuyer', buyer);
+
   const projects = yield getProjects(contract, chainId);
-  const filtered = projects.filter(function (project) {
-    return project.buyer === buyer;
-  });
-  return filtered;
+  const projectArray = [];
+  
+  for (i=0; i<projects.length; i++) {
+    const project = projects[i];
+    if(project.buyer === buyer) {
+      const bids = yield getBidsByName(project.name, chainId);
+      projectArray.push({...project, bidsCount: bids.length})
+    }
+  };
+  
+  return projectArray;
 }
 
 function* getProjectsByState(contract, state, chainId) {

@@ -63,6 +63,9 @@ class ProjectList extends Component {
             }
 
           </TableColumn>
+          {this.props.listType === 'buyer' && <TableColumn data-th="No. of bids">
+            {project.bidsCount}
+          </TableColumn>}
           <TableColumn data-th="Deliver by">
             {
               project.targetDelivery
@@ -102,6 +105,7 @@ class ProjectList extends Component {
               <TableColumn>Name</TableColumn>
               <TableColumn>Created</TableColumn>
               <TableColumn>Desired Price</TableColumn>
+              {this.props.listType === 'buyer' && <TableColumn>No. of bids</TableColumn>}
               <TableColumn>Deliver by</TableColumn>
               {/*<TableColumn>Location</TableColumn>*/}
               <TableColumn>Status</TableColumn>
