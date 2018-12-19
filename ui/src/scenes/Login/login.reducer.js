@@ -48,8 +48,6 @@ const reducer = function loginReducer (state = initialState, action) {
         account: null,
         role: null
       };
-    case USER_LOGOUT:
-      return initialState;
     default:
       return state;
   }

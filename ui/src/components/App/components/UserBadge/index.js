@@ -19,7 +19,7 @@ class UserBadge extends Component {
     e.stopPropagation();
     mixpanel.track('logout click');
     this.props.userLogout();
-    this.props.setUserMessage('You logged out');
+    this.props.setUserMessage('You are logging out');
   };
 
   render() {
