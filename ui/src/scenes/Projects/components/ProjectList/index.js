@@ -13,7 +13,8 @@ import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import mixpanel from 'mixpanel-browser';
 import { STATES } from '../../../../constants';
 import { fetchProjectList } from './project-list.actions';
-import '../../Responsive-Grid.css'
+import '../../Responsive-Grid.css';
+import './ProjectList.css';
 
 class ProjectList extends Component {
 
@@ -38,6 +39,9 @@ class ProjectList extends Component {
           onClick={(e) => this.handleProjectClick(e, project.name)}
           style={{ cursor: 'pointer' }}
         >
+          <TableColumn data-th="Name">
+            <span>{project.name ? project.name : ''}</span>
+          </TableColumn>
           <TableColumn data-th="Created">
             {
               project.created
@@ -48,9 +52,6 @@ class ProjectList extends Component {
                   year="numeric" />
                 : ''
             }
-          </TableColumn>
-          <TableColumn data-th="Name">
-            <span>{project.name ? project.name : ''}</span>
           </TableColumn>
           <TableColumn data-th="Desired Price">
             {project.price
@@ -81,7 +82,7 @@ class ProjectList extends Component {
           {/*}*/}
           {/*</TableColumn>*/}
           <TableColumn data-th="Status">
-            <span>{parseInt(project.state, 10) ? STATES[parseInt(project.state, 10)].state : ''}</span>
+            <span className={parseInt(project.state, 10) === 4 ? "received-status" : ''}>{parseInt(project.state, 10) ? STATES[parseInt(project.state, 10)].state : ''}</span>
           </TableColumn>
         </TableRow>
     ) :
@@ -98,8 +99,8 @@ class ProjectList extends Component {
         <DataTable className="rwd-table" plain>
           <TableHeader>
             <TableRow autoAdjust={false}>
-              <TableColumn>Created</TableColumn>
               <TableColumn>Name</TableColumn>
+              <TableColumn>Created</TableColumn>
               <TableColumn>Desired Price</TableColumn>
               <TableColumn>Deliver by</TableColumn>
               {/*<TableColumn>Location</TableColumn>*/}

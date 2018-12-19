@@ -24,7 +24,8 @@ class Projects extends Component {
     const actions = this.isBuyer
       ?
       <Button
-        flat
+        raised
+        primary
         key="add_circle_outline"
         label="Create New Project"
         onClick={(e) => this.handleNewProjectClick(e)}>

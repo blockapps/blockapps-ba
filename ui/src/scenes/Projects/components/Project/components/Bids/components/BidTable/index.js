@@ -12,7 +12,8 @@ import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
 import { FormattedNumber } from 'react-intl';
 import { ROLES, STATES, BID_STATES } from '../../../../../../../../constants';
-import '../../../../../../Responsive-Grid.scss'
+import '../../../../../../Responsive-Grid.scss';
+import './BidTable.css';
 
 class BidTable extends Component {
 
@@ -35,8 +36,8 @@ class BidTable extends Component {
     const bidRows = bids.length !== 0 ? bids.map(
       (bid, i) =>
         <TableRow key={"bid" + i}>
-          <TableColumn data-th="Supplier">
-            <span className="md-subheading-2 ellipses-content">
+          <TableColumn data-th="Supplier" tooltipLabel={bid.supplier} tooltipPosition="top">
+            <span className="md-subheading-2 max-supplier">
               {bid.supplier}
             </span>
           </TableColumn>
@@ -54,7 +55,8 @@ class BidTable extends Component {
               parseInt(this.props['projectState'], 10) === STATES.OPEN && this.isBuyer ?
                 
                 <Button
-                  flat
+                  raised
+                  primary
                   label="Accept bid"
                   onClick={
                     (e) => this.handleBidAcceptClick(e, bid)
@@ -83,7 +85,7 @@ class BidTable extends Component {
       </TableRow>;
 
     return (
-      <DataTable plain className="rwd-table">
+      <DataTable plain className="rwd-table bid-table">
         <TableHeader>
           <TableRow
             autoAdjust={false}

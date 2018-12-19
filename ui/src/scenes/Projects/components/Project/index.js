@@ -40,6 +40,52 @@ class Project extends Component {
     this.props.projectEvent(projectName, projectEvent, this.props.login['username'], this.props.chainId, this.props.login.account);
   };
 
+  renderAction(project) {
+    if (this.isSupplier && (parseInt(project.state, 10) === STATES.OPEN)) {
+      return (
+        <Button
+          raised
+          primary
+          label="Place Bid"
+          className="button-style"
+          onClick={(e) => {
+            e.stopPropagation();
+            mixpanel.track('open_bid_modal_click');
+            this.props.openBidModal();
+          }} />
+      )
+    }
+
+    if (this.isBuyer && (parseInt(project.state, 10) === STATES.INTRANSIT)) {
+      return (
+        <Button
+          raised
+          primary
+          className="button-mark-received"
+          onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
+          label="Mark as Received"
+        />
+      );
+    }
+
+    if (this.isSupplier && (parseInt(project.state, 10) === STATES.PRODUCTION)) {
+      const myBidAccepted = this.props.bids.some(
+        bid =>
+          BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED' && bid.supplier === this.props.login.address
+      );
+      if (myBidAccepted) {
+        return(<Button
+          raised
+          primary
+          label="Mark as Shipped"
+          className="button-style"
+          onClick={(e) => this.handleProjectEventClick(e, project.name, 2)}
+        />)
+      }
+    }
+
+  }
+
   render() {
     const project = this.props.project;
     const actions = [];
@@ -53,62 +99,6 @@ class Project extends Component {
           className="state-chip"
         />
       );
-
-      //actions
-      if (this.isBuyer) {
-
-        if (parseInt(project.state, 10) === STATES.INTRANSIT) {
-          actions.push(
-            <Button
-              icon
-              primary
-              onClick={(e) => this.handleProjectEventClick(e, project.name, 3)}
-              tooltipLabel="Mark as Received"
-              key="mood"
-            >
-              mood
-              </Button>
-          );
-        }
-      }
-
-      if (this.isSupplier) {
-        if (parseInt(project.state, 10) === STATES.PRODUCTION) {
-          const myBidAccepted = this.props.bids.some(
-            bid =>
-              BID_STATES[parseInt(bid.state, 10)] === 'ACCEPTED' && bid.supplier === this.props.login.address
-          );
-          if (myBidAccepted) {
-            actions.push(
-              <Button
-                icon
-                onClick={(e) => this.handleProjectEventClick(e, project.name, 2)}
-                tooltipLabel="Mark as Shipped"
-                key="flight_takeoff"
-              >
-                flight_takeoff
-              </Button>
-            );
-          }
-        }
-
-        if (parseInt(project.state, 10) === STATES.OPEN) {
-          actions.push(
-            <Button
-              icon
-              key="gavel"
-              tooltipLabel="Bid"
-              onClick={(e) => {
-                e.stopPropagation();
-                mixpanel.track('open_bid_modal_click');
-                this.props.openBidModal();
-              }
-              }>
-              gavel
-              </Button>
-          );
-        }
-      }
 
       actions.push(
         <Button
@@ -145,6 +135,7 @@ class Project extends Component {
           </div>
           <div className="md-cell md-cell--4  md-cell--12-phone">
             <Bids project={project} bids={this.props.bids} />
+            {this.renderAction(project)}
           </div>
         </div>
       </section>

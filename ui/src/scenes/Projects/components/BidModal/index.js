@@ -58,7 +58,7 @@ class BidModal extends Component {
             className="md-cell--12 md-cell--right"
           />*/}
           <div className="md-cell--12">
-            <Button raised primary label="Bid" type="submit" className="bid-button"/>
+            <Button raised primary className="bid-button" label="Bid" type="submit" className="bid-button"/>
           </div>
 
         </div>

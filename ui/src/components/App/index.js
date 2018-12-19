@@ -13,10 +13,19 @@ import { resetUserMessage, setUserMessage } from '../UserMessage/user-message.ac
 import { getExplorerUrl } from '../ExplorerUrl/explorer.actions';
 import { userLogout } from '../../scenes/Login/login.actions';
 import './App.css';
+import { ROLES } from '../../constants';
 
 mixpanel.init('17bfafc2d7d8643cfe775c63898f4ced');
 
 class App extends Component {
+
+  get isBuyer() {
+    return parseInt(this.props.login['role'], 10) === ROLES.BUYER
+  }
+
+  get isSupplier() {
+    return parseInt(this.props.login['role'], 10) === ROLES.SUPPLIER;
+  }
 
   componentWillMount() {
     this.props.getExplorerUrl();
@@ -43,6 +52,7 @@ class App extends Component {
           desktopDrawerType={NavigationDrawer.DrawerTypes.PERSISTENT}
           toolbarTitle={<span id="app-title"> {title} </span>}
           toolbarActions={<UserBadge account={this.props.login.account} role={this.props.login.role} />}
+          className={this.isSupplier && "navigation-drawer"}
         >
           <LoadingBar style={{ position: 'fixed', zIndex: 15 }} />
           {this.props.children}

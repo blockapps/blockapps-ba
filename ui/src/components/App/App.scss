@@ -5,7 +5,7 @@ $md-primary-color: $md-indigo-500 !default;
 $md-secondary-color: $md-pink-a-200 !default;
 
 .md-avatar--color {
-  background: $md-primary-color !important;
+  background: transparent !important;
   color: #fff !important;
 }
 
@@ -21,6 +21,10 @@ $md-secondary-color: $md-pink-a-200 !default;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.navigation-drawer>.md-toolbar--fixed, .navigation-drawer>.md-background--primary {
+  background-color: #36404B !important;
 }
 
 @media (max-width: 840px) { 
