@@ -23,6 +23,15 @@ $md-secondary-color: $md-pink-a-200 !default;
   text-overflow: ellipsis;
 }
 
+.explorer-toolbar {
+  display: inline-block;
+  margin: 0px !important;
+}
+
+.explorer-toolbar a {
+  line-height: 45px;
+}
+
 .navigation-drawer>.md-toolbar--fixed, .navigation-drawer>.md-background--primary {
   background-color: #36404B !important;
 }

@@ -67,11 +67,14 @@ class App extends Component {
             title={title}
             className="md-paper md-paper--2"
             actions={
-              <Button flat
-                href={this.props.explorerUrl}
-                target="_blank"
-                label="Explorer">explore
-              </Button>
+              <div className="explorer-toolbar">
+                <Button flat
+                  href={this.props.explorerUrl}
+                  target="_blank"
+                  label="Explorer">explore
+                </Button>
+                <a className="md-avatar--color" href="#" onClick={(e) => this.handleLogoutClick(e)}><FontIcon>exit_to_app</FontIcon></a>
+              </div>
             }
           />
           <LoadingBar />

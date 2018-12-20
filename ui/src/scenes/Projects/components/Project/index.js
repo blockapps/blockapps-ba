@@ -132,15 +132,15 @@ class Project extends Component {
           </div>
         </div>
         <div className="md-grid">
-          <div className="md-cell md-cell--2 md-cell--12-phone" />
-          <div className="md-cell md-cell--4 md-cell--12-phone">
+          <div className="md-cell md-cell--1 md-cell--12-phone" />
+          <div className="md-cell md-cell--5 md-cell--12-phone">
             <Detail project={project} />
           </div>
-          <div className="md-cell md-cell--4  md-cell--12-phone">
+          <div className="md-cell md-cell--5  md-cell--12-phone">
             <Bids project={project} bids={this.props.bids} />
             {this.renderAction(project)}
           </div>
-          <div className="md-cell md-cell--2 md-cell--12-phone" />
+          <div className="md-cell md-cell--1 md-cell--12-phone" />
         </div>
       </section>
     );

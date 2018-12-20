@@ -1,5 +1,4 @@
 import {
-  USER_LOGOUT,
   AUTHENTICATE_SUCCESS,
   AUTHENTICATE_FAILURE,
   GET_USER_FAILURE,
@@ -30,18 +29,19 @@ const reducer = function loginReducer (state = initialState, action) {
         authenticated: false,
         address: null
       };
-    case GET_USER_SUCCESS: 
+    case GET_USER_SUCCESS:
       return {
         ...state,
         error: null,
         authenticated: true,
-        username: action.result.data.user.username,
-        account: action.result.data.user.account,
-        role: action.result.data.user.role,
+        username: action.result.user.account,
+        account: action.result.user.account,
+        role: action.result.user.role,
         loginFailed: false
       };
     case GET_USER_FAILURE: 
       return {
+        ...state,
         error: null,
         authenticated: false,
         username: null,

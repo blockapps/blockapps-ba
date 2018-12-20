@@ -10,8 +10,6 @@ const serverPath = './server';
 const dappJs = require(`${path.join(process.cwd(), serverPath)}/dapp/dapp.js`);
 const BigNumber = common.BigNumber
 const constants = common.constants
-const yaml = require('js-yaml');
-const fs = require('fs');
 const utils = require('../../../utils');
 
 const usersController = {
@@ -42,22 +40,41 @@ const usersController = {
     const { address } = req.params;
     const accessToken = utils.getAccessTokenFromCookie(req);
 
+    if (!chainId) {
+      util.response.status(400, res, 'chainId is missing');
+    }
+
+    if (!address) {
+      util.response.status(400, res, 'wrong params');
+    }
+
     co(function* () {
+      //  check wheather chain exists or not. so that we can get admin contract address
       const deploy = fsutil.yamlSafeLoadSync(config.deployFilename, config.apiDebug);
       const data = deploy[chainId];
 
       if (!data) {
         util.response.status(401, res, 'Contracts are not deployed on this chain! please deploy contracts first');
-      } else {
+      }
+
+      const chain = yield rest.getChainInfo(chainId);
+      
+      const member = chain.members.find((value) => {
+        return value.address === address
+      })
+
+      if (member) {
         const dapp = yield dappJs.setContract(accessToken, data.contract, chainId);
         const result = yield dapp.getUserByAccount(address, chainId);
         util.response.status200(res, result);
+      } else {
+        util.response.status(401, res, 'You are not a member of this chain');
       }
 
     }).catch(err => {
       console.log('Failed:', err);
       util.response.status(401, res, 'Failed to fetch user');
-    });    
+    });
   }
 }
 

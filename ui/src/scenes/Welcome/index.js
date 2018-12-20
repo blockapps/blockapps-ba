@@ -16,7 +16,7 @@ class Welcome extends Component {
   componentDidMount() {
     this.props.fetchChains();
     this.props.me();
-    if(this.props.authenticated) 
+    if (this.props.authenticated)
       browserHistory.replace('/projects');
   }
 
@@ -74,11 +74,11 @@ class Welcome extends Component {
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--3-desktop md-cell--5-tablet md-cell--5-phone login-cell">
-                    <Button raised primary label="Create Chain" onClick={this.navigate} className="button-width"/>
+                    <Button raised primary label="Create Chain" onClick={this.navigate} className="button-width" />
                   </div>
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                   <div className="md-cell md-cell--3-desktop md-cell--5-tablet md-cell--5-phone md-text-right login-cell">
-                    <Button raised primary label="Next" type="submit" className="button-width"/>
+                    <Button raised primary label="Next" type="submit" disabled={!this.props.address} className="button-width" />
                   </div>
                   <div className="md-cell md-cell--2-desktop md-cell--1-tablet md-cell--1-phone" />
                 </div>
@@ -91,6 +91,16 @@ class Welcome extends Component {
   }
 }
 
+function validate(value) {
+  let errors = {};
+
+  if (!value.chainId) {
+    errors.chainId = "Required"
+  }
+
+  return errors;
+}
+
 function mapStateToProps(state) {
   return {
     chains: state.chains.chainIds,
@@ -100,6 +110,6 @@ function mapStateToProps(state) {
 }
 
 const connected = connect(mapStateToProps, { fetchChains, me, getUser })(Welcome);
-const formedComponent = reduxForm({ form: 'welcome' })(connected);
+const formedComponent = reduxForm({ form: 'welcome', validate })(connected);
 
 export default formedComponent

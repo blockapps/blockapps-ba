@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import Dialog from 'react-md/lib/Dialogs';
 import ReduxedTextField from '../../../../components/ReduxedTextField/';
 import { reduxForm, Field } from 'redux-form';
-//import FileInput from 'react-md/lib/FileInputs';
 import Button from 'react-md/lib/Buttons';
 import { bidSubmit, closeBidModal } from './bidModal.actions';
 import mixpanel from 'mixpanel-browser';
@@ -58,7 +57,7 @@ class BidModal extends Component {
             className="md-cell--12 md-cell--right"
           />*/}
           <div className="md-cell--12">
-            <Button raised primary className="bid-button" label="Bid" type="submit" className="bid-button"/>
+            <Button raised primary className="bid-button" label="Bid" type="submit"/>
           </div>
 
         </div>

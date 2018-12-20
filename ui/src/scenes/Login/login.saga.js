@@ -10,6 +10,8 @@ import {
 } from './login.actions';
 import { API_URL } from '../../environment';
 import { setChainID } from '../../components/Chains/chains.actions';
+import { setUserMessage } from '../../components/UserMessage/user-message.action';
+import { showLoading, hideLoading } from 'react-redux-loading-bar';
 
 const meUrl = API_URL + '/me';
 const getUserUrl = API_URL + '/users/:address';
@@ -84,12 +86,21 @@ function* me() {
 
 function* getUser(action) {
   try {
+    yield put(showLoading());
     const response = yield call(getUserApiCall, action.data);
     yield put(setChainID(action.data.chainId));
-    yield put(getUserSuccess(response));
+    if (response.success) {
+      yield put(getUserSuccess(response.data));
+      yield put(hideLoading());
+    } else {
+      yield put(getUserFailure());
+      yield put(setUserMessage(response.error))
+      yield put(hideLoading());
+    }
   }
   catch (err) {
     yield put(getUserFailure());
+    yield put(hideLoading());
   }
 }
 
