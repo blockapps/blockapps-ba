@@ -3,7 +3,6 @@ password: '1234'
 timeout: 600000
 libPath: ./server/lib
 contractsPath: ./contracts/
-dataFilename: ./server/dapp/dapp.presets.yaml
 deployFilename: ./server/config/chains.deploy.yaml
 usersFilename: ./server/config/users.deploy.yaml
 
@@ -15,3 +14,14 @@ nodes:
     stratoUrl: 'http://localhost:8080/strato-api'
     blocUrl: 'http://localhost:8080/bloc/v2.2'
     searchUrl: 'http://localhost:8080/cirrus'
+
+oauth:
+  appTokenCookieName: "ba_session"
+  scope: 'email openid'
+  appTokenCookieMaxAge: 7776000000 # 90 days: 90 * 24 * 60 * 60 * 1000
+  stratoUrl: "http://localhost:8080"
+  clientId: "react-blockapps-ba"
+  clientSecret: "744c694f-8263-4de0-8504-4af08d904e2a"
+  openIdDiscoveryUrl: "https://keycloak.blockapps.net/auth/realms/blockapps-ba/.well-known/openid-configuration"
+  redirectUri: "http://localhost/api/v1/authentication/callback"
+  logoutRedirectUri: "http://localhost"

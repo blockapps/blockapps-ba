@@ -12,7 +12,8 @@
     "test:routes": "mocha tests/v1/ -b",
     "test-windows": "npm run test-windows:user && npm run test-windows:project && npm run test:routes",
     "test-windows:project": "mocha server/lib/project/test/ --config server/config/%SERVER%.config.yaml -b",
-    "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b"
+    "test-windows:user": "mocha server/lib/user/test/ --config server/config/%SERVER%.config.yaml -b",
+    "token-getter": "PORT=${PORT:-443} node node_modules/blockapps-rest/oauth-token-getter/index.js"
   },
   "dependencies": {
     "blockapps-rest": "git://github.com/blockapps/blockapps-rest.git#v6.2.0",

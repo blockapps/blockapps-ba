@@ -1,40 +1,41 @@
 require('co-mocha');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const common = ba.common;
-const api = common.api;
 const config = common.config;
-const util = common.util;
-const fsutil = common.fsutil;
-const should = common.should;
 const assert = common.assert;
-const Promise = common.Promise;
+const fsutil = common.fsutil;
+const util = common.util;
 
 const dappJs = require('../dapp');
+const jwtDecode = require('jwt-decode');
+const utils = require('../../utils');
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
+const accessToken = process.env.ADMIN_TOKEN;
 
 describe('User tests', function () {
   this.timeout(config.timeout);
 
-  let admin, chainID;
+  let chainID;
   const deployFilename = 'testdeploy.' + util.uid() + '.yaml';
 
   before(function* () {
-    admin = yield rest.createUser(adminName, adminPassword);
+    // decode and create new account
+    const decodedToken = jwtDecode(accessToken);
+    const userEmail = decodedToken['email'];
+    const userCreated = yield utils.createUser(accessToken, userEmail);
 
     const chain = {
       label: 'My chain label',
       src: 'contract Governance { }',
       args: {},
       members: [{
-        address: admin.address,
+        address: userCreated.address,
         enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
       }],
       balances: [{
-        address: admin.address,
-        balance: 1000000000000000000000
+        address: userCreated.address,
+        balance: 500000000000000000000000000000000000000000000000000000000000
       }]
     }
 
@@ -42,19 +43,19 @@ describe('User tests', function () {
   });
 
   it('get dapp', function* () {
-    const contract = yield dappJs.uploadContract(admin, config.libPath, chainID);
+    yield dappJs.uploadContract(accessToken, config.libPath, chainID);
   });
 
   it('deploy dapp', function* () {
-    const dapp = yield dappJs.uploadContract(admin, config.libPath, chainID);
-    const deployment = yield dapp.deploy(config.dataFilename, deployFilename, chainID);
+    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, chainID);
+    yield dapp.deploy(config.dataFilename, deployFilename, chainID);
   });
 
   it('deploy dapp', function* () {
     const deployment = fsutil.yamlSafeLoadSync(deployFilename);
     assert.isDefined(deployment);
     const chainDetails = deployment[chainID];
-    const dapp = yield dappJs.setContract(chainDetails.admin, chainDetails.contract, chainID);
+    yield dappJs.setContract(chainDetails.admin, chainDetails.contract, chainID);
   });
 
 });

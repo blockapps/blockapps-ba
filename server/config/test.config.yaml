@@ -1,0 +1,27 @@
+apiDebug: true
+password: '1234'
+timeout: 600000
+libPath: ./server/lib
+contractsPath: ./contracts/
+deployFilename: ./server/config/chains.deploy.yaml
+usersFilename: ./server/config/users.deploy.yaml
+
+# WARNING - extra strict syntax
+# DO NOT change the nodes order
+# node 0 is the default url for all single node api calls
+nodes:
+  - id: 0
+    stratoUrl: 'http://localhost:8080/strato-api'
+    blocUrl: 'http://localhost:8080/bloc/v2.2'
+    searchUrl: 'http://localhost:8080/cirrus'
+
+oauth:
+  appTokenCookieName: "ba_session"
+  scope: 'email openid'
+  appTokenCookieMaxAge: 7776000000 # 90 days: 90 * 24 * 60 * 60 * 1000
+  stratoUrl: "http://localhost:8080"
+  clientId: "test-blockapps-ba"
+  clientSecret: "043c03c5-916f-4569-98ad-21222136c636"
+  openIdDiscoveryUrl: "https://keycloak.blockapps.net/auth/realms/open-blockapps-ba/.well-known/openid-configuration"
+  redirectUri: "http://localhost/api/v1/authentication/callback"
+  logoutRedirectUri: "http://localhost"
