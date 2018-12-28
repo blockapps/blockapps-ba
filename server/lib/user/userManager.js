@@ -11,7 +11,7 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 function* uploadContract(admin, args, chainId) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, { chainId });
   yield compileSearch(contract);
   contract.src = 'removed';
   return setContract(admin, contract, chainId);
@@ -36,11 +36,8 @@ function setContract(admin, contract, chainId) {
   contract.getUsers = function* (chainId) {
     return yield getUsers(admin, contract, chainId);
   }
-  contract.login = function* (args, chainId) {
-    return yield login(admin, contract, args, chainId);
-  }
-  contract.getBalance = function* (username, chainId, node) {
-    return yield getBalance(username, chainId, node);
+  contract.getBalance = function* (address, chainId, node) {
+    return yield getBalance(address, chainId, node);
   }
   return contract;
 }
@@ -68,11 +65,11 @@ function* getBalance(address, chainId, node) {
 function* createUser(admin, contract, args, chainId) {
   rest.verbose('createUser', admin, args, chainId);
 
-    // function createUser(address account, string username, UserRole role) returns (ErrorCodes) {
+    // function createUser(address account, UserRole role) returns (ErrorCodes) {
     const method = 'createUser';
 
     // create the user, with the eth account
-    const result = yield rest.callMethod(admin, contract, method, args, {chainId});
+    const result = yield rest.callMethod(admin, contract, method, args, { chainId });
     const errorCode = parseInt(result[0]);
     if (errorCode != ErrorCodes.SUCCESS) {
       throw new Error(errorCode);
@@ -82,14 +79,14 @@ function* createUser(admin, contract, args, chainId) {
     return baUser;
 }
 
-function* exists(admin, contract, username, chainId) {
-  rest.verbose('exists', username);
-  // function exists(string username) returns (bool) {
+function* exists(admin, contract, account, chainId) {
+  rest.verbose('exists', account);
+  // function exists(address account) returns (bool) {
   const method = 'exists';
   const args = {
-    username: username,
+    account: account,
   };
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, { chainId });
   const exist = (result[0] === true);
   return exist;
 }
@@ -122,23 +119,11 @@ function* getUserByAccount(address, chainId) {
 
 function* getUsers(admin, contract, chainId) {
   rest.verbose('getUsers');
-  const state = yield rest.getState(contract, chainId);
+  const state = yield rest.getState(contract, { chainId });
   const users = state.users;
   const userJs = require('./user');
   const results = yield userJs.getUsers(users, chainId);
   return results;
-}
-
-// TODO: Remove it is not in use
-function* login(admin, contract, args, chainId) {
-  rest.verbose('login', args);
-
-  // function login(string username, bytes32 pwHash) returns (bool) {
-  const method = 'login';
-  args.pwHash = util.toBytes32(args.password);
-  const result = (yield rest.callMethod(admin, contract, method, args, undefined, chainId))[0];
-  const isOK = (result == true);
-  return isOK;
 }
 
 module.exports = {

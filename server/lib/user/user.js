@@ -1,5 +1,5 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const util = ba.common.util;
 const config = ba.common.config;
 
@@ -10,7 +10,7 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 function* uploadContract(admin, args, chainId) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, { chainId });
   yield compileSearch(contract);
   contract.src = 'removed';
   return setContract(admin, contract, chainId);
@@ -18,7 +18,7 @@ function* uploadContract(admin, args, chainId) {
 
 function setContract(admin, contract, chainId) {
   contract.getState = function* (chainId) {
-    return yield rest.getState(contract, chainId);
+    return yield rest.getState(contract, { chainId });
   }
   return contract;
 }
@@ -40,7 +40,7 @@ function* getUsers(addresses) {
 }
 
 function* getUserById(id, chainId) {
-  const baUser = (yield rest.waitQuery(`${contractName}?id=eq.${id}&chainId=eq.${chainId}`, 1))[0];
+  const baUser = (yield rest.waitQuery(`${contractName}?chainId=eq.${chainId}&id=eq.${id}`, 1))[0];
   return baUser;
 }
 
