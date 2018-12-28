@@ -1,5 +1,5 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const util = ba.common.util;
 const config = ba.common.config;
 
@@ -9,12 +9,12 @@ const contractFilename = `${config.libPath}/project/contracts/Project.sol`;
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
 function* uploadContract(admin, args, chainId) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, { chainId });
   yield compileSearch(contract);
   contract.src = 'removed';
 
   contract.getState = function* (chainId) {
-    return yield rest.getState(contract, chainId);
+    return yield rest.getState(contract, {chainId});
   }
 
   return contract;

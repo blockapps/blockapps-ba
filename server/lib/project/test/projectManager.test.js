@@ -1,14 +1,10 @@
 require('co-mocha');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
-const should = common.should;
 const assert = common.assert;
-const constants = common.constants;
-const Promise = common.Promise;
-const BigNumber = common.BigNumber;
 
 const projectJs = require('../project');
 const projectManagerJs = require('../projectManager');
@@ -19,19 +15,30 @@ const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectE
 const BidState = rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
+const jwtDecode = require('jwt-decode');
+const utils = require('../../../utils');
+
+const accessToken = process.env.ADMIN_TOKEN;
+const token2 = process.env.ADMIN_TOKEN1;
 
 describe('ProjectManager tests', function () {
   this.timeout(config.timeout);
 
-  let admin;
+  let stratoUser1, stratoUser2;
   let contract;
   let userManagerContract;
   let chainID;
   // get ready:  admin-user and manager-contract
   before(function* () {
-    admin = yield rest.createUser(adminName, adminPassword);
+    // decode and create new account
+    const decodedToken = jwtDecode(accessToken);
+    const userEmail = decodedToken['email'];
+    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+
+    // decode and create new account
+    const decodedToken1 = jwtDecode(token2);
+    const userEmail1 = decodedToken1['email'];
+    stratoUser2 = yield utils.createUser(token2, userEmail1);
 
     const chain = {
       label: 'test airline',
@@ -39,22 +46,30 @@ describe('ProjectManager tests', function () {
       args: {},
       members: [
         {
-          address: admin.address,
+          address: stratoUser1.address,
+          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
+        },
+        {
+          address: stratoUser2.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         }
       ],
       balances: [
         {
-          address: admin.address,
-          balance: 1000000000000000000000000
+          address: stratoUser1.address,
+          balance: 100000000000000000000000000000000000000
+        },
+        {
+          address: stratoUser2.address,
+          balance: 100000000000000000000000000000000000000
         }
       ]
     }
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
-    contract = yield projectManagerJs.uploadContract(admin, {}, chainID);
-    userManagerContract = yield userManagerJs.uploadContract(admin, {}, chainID);
+    contract = yield projectManagerJs.uploadContract(accessToken, {}, chainID);
+    userManagerContract = yield userManagerJs.uploadContract(accessToken, {}, chainID);
   });
 
   it('Create Project', function* () {
@@ -286,316 +301,7 @@ describe('ProjectManager tests', function () {
     const newState = yield contract.handleEvent(projectArgs.name, ProjectEvent.ACCEPT, chainID);
     assert.equal(newState, ProjectState.PRODUCTION, 'handleEvent should return ProjectState.PRODUCTION');
     // check the new state
-    const project = (yield rest.waitQuery(`${projectJs.contractName}?name=eq.${encodeURIComponent(projectArgs.name)}`, 1))[0];
+    const project = yield contract.getProject(projectArgs.name, chainID);
     assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
-
-describe('ProjectManager Life Cycle tests', function () {
-  this.timeout(config.timeout);
-
-  let admin;
-  let contract;
-  let userManagerContract;
-  let chainID;
-
-  // get ready:  admin-user and manager-contract
-  before(function* () {
-    admin = yield rest.createUser(adminName, adminPassword);
-
-    const chain = {
-      label: 'test airline',
-      src: 'contract Governance { }',
-      args: {},
-      members: [
-        {
-          address: admin.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        }
-      ],
-      balances: [
-        {
-          address: admin.address,
-          balance: 1000000000000000000000
-        }
-      ]
-    }
-
-    chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
-
-    contract = yield projectManagerJs.uploadContract(admin, {}, chainID);
-    userManagerContract = yield userManagerJs.uploadContract(admin, {}, chainID);
-  });
-
-  it('Create new Bid', function* () {
-    const supplier = util.uid('Supplier1');
-    const amount = 5678;
-    const projectArgs = createProjectArgs();
-
-    // create project
-    const project = yield contract.createProject(projectArgs, chainID);
-    // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
-    assert.equal(bid.name, project.name, 'name');
-    assert.equal(bid.supplier, supplier, 'supplier');
-    assert.equal(bid.amount, amount, 'amount');
-
-    // search by bid id
-    const bidId = bid.id;
-    {
-      const bid = yield projectManagerJs.getBid(bidId);
-      assert.equal(bid.name, project.name, 'name');
-      assert.equal(bid.supplier, supplier, 'supplier');
-      assert.equal(bid.amount, amount, 'amount');
-    }
-    // search by project name
-    const bids = yield projectManagerJs.getBidsByName(project.name);
-    assert.equal(bids.length, 1, 'one and only one');
-
-    const projects = yield contract.getProjectsBySupplier(supplier, chainID);
-    assert.equal(projects.length, 1, 'one and only one');
-
-    const notFound = yield contract.getProjectsBySupplier(supplier + 'z', chainID);
-    assert.equal(notFound.length, 0, 'should not find any');
-  });
-
-  it('Accept a Bid.', function* () {
-    const projectArgs = createProjectArgs();
-    const supplier = 'Supplier1';
-    const amount = 67;
-
-    // create project
-    const project = yield contract.createProject(projectArgs, chainID);
-    // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
-    // check that state is OPEN
-    assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
-    // accept the bid
-    const buyer = { // pretend the admin is the buyer
-      username: admin.name,
-      password: admin.password,
-      account: admin.address,
-    }
-    const results = yield contract.acceptBid(buyer, bid.id, project.name, chainID);
-    // get the bid again
-    const newBid = yield projectManagerJs.getBid(bid.id);
-    // check that state is ACCEPTED
-    assert.equal(parseInt(newBid.state), BidState.ACCEPTED, 'state ACCEPTED');
-    // check that query gets it
-    const queryBid = yield projectManagerJs.getAcceptedBid(project.name, chainID);
-    assert.equal(parseInt(queryBid.state), BidState.ACCEPTED, 'state ACCEPTED');
-  });
-
-  it('Accept a Bid - insufficient balance', function* () {
-    const projectArgs = createProjectArgs();
-    const supplier = 'Supplier1';
-    const amount = 1000 + 67; // faucet allowance + more
-
-    // create project
-    const project = yield contract.createProject(projectArgs, chainID);
-    // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
-    // check that state is OPEN
-    assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
-    // accept the bid
-    const buyer = { // pretend the admin is the buyer
-      username: admin.name,
-      password: admin.password,
-      account: admin.address,
-    }
-    let errorCode;
-    try {
-      yield contract.acceptBid(buyer, bid.id, project.name, chainID);
-    } catch (error) {
-      errorCode = parseInt(error.message);
-    }
-    // did not FAIL - that is an error
-    assert.isDefined(errorCode, 'accepting a bid with insufficient balance should fail');
-    // error should be INSUFFICIENT_BALANCE
-    assert.equal(errorCode, ErrorCodes.INSUFFICIENT_BALANCE, 'error should be INSUFFICIENT_BALANCE.');
-    // check that none was affected
-    const bids = yield projectManagerJs.getBidsByName(project.name);
-    bids.map(bid => {
-      assert.equal(bid.state, BidState.OPEN);
-    });
-  });
-
-  it('Accept a Bid and rejects the others', function* () {
-    const uid = util.uid();
-    const projectArgs = createProjectArgs(uid);
-    const password = '1234';
-    const amount = 32;
-
-    // create project
-    const project = yield contract.createProject(projectArgs, chainID);
-    // create suppliers
-    const suppliers = yield createSuppliers(3, password, uid);
-    // create bids
-    let bids = yield createMultipleBids(projectArgs.name, suppliers, amount);
-    // accept one bid
-    const buyer = { // pretend the admin is the buyer
-      username: admin.name,
-      password: admin.password,
-      account: admin.address,
-    }
-    const acceptedBidId = bids[0].id;
-    const result = yield contract.acceptBid(buyer, acceptedBidId, projectArgs.name, chainID);
-    // get the bids
-    bids = yield projectManagerJs.getBidsByName(projectArgs.name);
-    assert.equal(bids.length, suppliers.length, 'should have created all bids');
-    // check that the accepted bid is ACCEPTED and all others are REJECTED
-    bids.map(bid => {
-      if (bid.id === acceptedBidId) {
-        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
-      } else {
-        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
-      };
-    });
-  });
-
-  it('Get bids by supplier', function* () {
-    const projectArgs = createProjectArgs(util.uid());
-    const supplier = 'Supplier1';
-    const amount = 5678;
-
-    // create project
-    const project = yield contract.createProject(projectArgs, chainID);
-    // create bid
-    const bid = yield contract.createBid(project.name, supplier, amount, chainID);
-    // get bids by supplier
-    const bids = yield projectManagerJs.getBidsBySupplier(supplier, chainID);
-    const filtered = bids.filter(function (bid) {
-      return bid.supplier === supplier && bid.name == projectArgs.name;
-    });
-    assert.equal(filtered.length, 1, 'one and only one');
-  });
-
-  it.skip('Accept a Bid (send funds into accepted bid), rejects the others, receive project, settle (send bid funds to supplier)', function* () {
-    const uid = util.uid();
-    const projectArgs = createProjectArgs(uid);
-    const password = '1234';
-    const amount = 23;
-    const amountWei = new BigNumber(amount).times(constants.ETHER);
-    const FAUCET_AWARD = new BigNumber(1000).times(constants.ETHER);
-    const GAS_LIMIT = new BigNumber(100000000); // default in bockapps-rest
-
-    // create buyer and suppliers
-    const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
-    const buyer = yield userManagerContract.createUser(buyerArgs);
-    buyer.password = password; // IRL this will be a prompt to the buyer
-    // create suppliers
-    const suppliers = yield createSuppliers(3, password, uid);
-
-    // create project
-    const project = yield contract.createProject(projectArgs, chainID);
-    // create bids
-    const createdBids = yield createMultipleBids(projectArgs.name, suppliers, amount);
-    { // test
-      const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
-      assert.equal(createdBids.length, bids.length, 'should find all the created bids');
-    }
-    // get the buyers balance before accepting a bid
-    buyer.initialBalance = yield userManagerContract.getBalance(buyer.username, chainID);
-    buyer.initialBalance.should.be.bignumber.eq(FAUCET_AWARD);
-    // accept one bid (the first)
-    const acceptedBid = createdBids[0];
-    yield contract.acceptBid(buyer, acceptedBid.id, projectArgs.name);
-    // get the buyers balance after accepting a bid
-    buyer.balance = yield userManagerContract.getBalance(buyer.username, chainID);
-    const delta = buyer.initialBalance.minus(buyer.balance);
-    delta.should.be.bignumber.gte(amountWei); // amount + fee
-    delta.should.be.bignumber.lte(amountWei.plus(GAS_LIMIT)); // amount + max fee (gas-limit)
-    // get the bids
-    const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
-    // check that the expected bid is ACCEPTED and all others are REJECTED
-    bids.map(bid => {
-      if (bid.id === acceptedBid.id) {
-        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
-      } else {
-        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
-      };
-    });
-    // deliver the project
-    const projectState = yield contract.handleEvent(projectArgs.name, ProjectEvent.DELIVER, chainID);
-    assert.equal(projectState, ProjectState.INTRANSIT, 'delivered project should be INTRANSIT ');
-    // receive the project
-    yield receiveProject(projectArgs.name);
-
-    // get the suppliers balances
-    for (let supplier of suppliers) {
-      supplier.balance = yield userManagerContract.getBalance(supplier.username, chainID);
-      if (supplier.username == acceptedBid.supplier) {
-        // the winning supplier should have the bid amount minus the tx fee
-        const delta = supplier.balance.minus(FAUCET_AWARD);
-        const fee = new BigNumber(10000000);
-        delta.should.be.bignumber.eq(amountWei.minus(fee));
-      } else {
-        // everyone else should have the otiginal value
-        supplier.balance.should.be.bignumber.eq(FAUCET_AWARD);
-      }
-    }
-  });
-
-  // throws: ErrorCodes
-  function* receiveProject(projectName) {
-    rest.verbose('receiveProject', projectName);
-    // get the accepted bid
-    const bid = yield projectManagerJs.getAcceptedBid(projectName, chainID);
-    // get the supplier for the accepted bid
-    const supplier = yield userManagerContract.getUser(bid.supplier, chainID);
-    // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
-    yield contract.settleProject(projectName, supplier.account, bid.address, chainID);
-  }
-
-  function* createSuppliers(count, password, uid) {
-    const suppliers = [];
-    for (let i = 0; i < count; i++) {
-      const name = `Supplier${i}_${uid}`;
-      const supplierArgs = createUserArgs(name, password, UserRole.SUPPLIER);
-      const supplier = yield userManagerContract.createUser(supplierArgs, chainID, 'fe7880e5ca54f5abef32fb600a6bd2fda6b66ce8');
-      suppliers.push(supplier);
-    }
-    return suppliers;
-  }
-
-  function* createMultipleBids(projectName, suppliers, amount) {
-    const bids = [];
-    for (let supplier of suppliers) {
-      const bid = yield contract.createBid(projectName, supplier.username, amount, chainID);
-      bids.push(bid);
-    }
-    return bids;
-  }
-
-});
-
-function createProjectArgs(_uid) {
-  const uid = _uid || util.uid();
-  const projectArgs = {
-    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length - 5),
-    buyer: 'Buyer_ ?%#@!:* ' + uid,
-    description: 'description_ ?%#@!:* ' + uid,
-    spec: 'spec_ ?%#@!:* ' + uid,
-    price: 234,
-
-    created: new Date().getTime(),
-    targetDelivery: new Date().getTime() + 3 * 24 * 60 * 60 * 1000, // 3 days
-
-    addressStreet: 'addressStreet_ ? ' + uid,
-    addressCity: 'addressCity_ ? ' + uid,
-    addressState: 'addressState_ ? ' + uid,
-    addressZip: 'addressZip_ ? ' + uid,
-  };
-
-  return projectArgs;
-}
-
-// function createUser(address account, string username, bytes32 pwHash, UserRole role) returns (ErrorCodes) {
-function createUserArgs(name, password, role) {
-  const args = {
-    username: name,
-    password: password,
-    role: role,
-  }
-  return args;
-}

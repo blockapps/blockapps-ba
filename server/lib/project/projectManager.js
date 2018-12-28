@@ -16,7 +16,7 @@ const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`
 const projectContractName = require('./project').contractName;
 
 function* uploadContract(admin, args, chainId) {
-  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, chainId);
+  const contract = yield rest.uploadContract(admin, contractName, contractFilename, args, { chainId });
   yield compileSearch(contract);
   contract.src = 'removed';
   return setContract(admin, contract, chainId);
@@ -24,7 +24,7 @@ function* uploadContract(admin, args, chainId) {
 
 function setContract(admin, contract, chainId) {
   contract.getState = function* (chainId) {
-    return yield rest.getState(contract, chainId);
+    return yield rest.getState(contract, {chainId});
   }
   contract.createProject = function* (args, chainId) {
     return yield createProject(admin, contract, args, chainId);
@@ -241,7 +241,7 @@ function* exists(admin, contract, name, chainId) {
   const args = {
     name: name,
   };
-  const result = yield rest.callMethod(admin, contract, method, args, undefined, chainId);
+  const result = yield rest.callMethod(admin, contract, method, args, {chainId});
   const exists = (result[0] === true);
   return exists;
 }

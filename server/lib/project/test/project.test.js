@@ -9,18 +9,22 @@ const assert = common.assert;
 const Promise = common.Promise;
 
 const projectJs = require('../project');
+const jwtDecode = require('jwt-decode');
+const utils = require('../../../utils');
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
+const accessToken = process.env.ADMIN_TOKEN;
 
-describe('Project tests', function() {
+describe('Project tests', function () {
   this.timeout(config.timeout);
 
-  let admin;
+  let userCreated;
   let chainID;
 
   before(function* () {
-    admin = yield rest.createUser(adminName, adminPassword);
+    // decode and create new account
+    const decodedToken = jwtDecode(accessToken);
+    const userEmail = decodedToken['email'];
+    userCreated = yield utils.createUser(accessToken, userEmail);
 
     const chain = {
       label: 'test airline',
@@ -28,13 +32,13 @@ describe('Project tests', function() {
       args: {},
       members: [
         {
-          address: admin.address,
+          address: userCreated.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         }
       ],
       balances: [
         {
-          address: admin.address,
+          address: userCreated.address,
           balance: 1000000000000000000000000
         }
       ]
@@ -85,7 +89,7 @@ describe('Project tests', function() {
     const price = 1234;
 
     const created = new Date().getTime();
-    const targetDelivery = created + 3 * 24*60*60*1000; // 3 days
+    const targetDelivery = created + 3 * 24 * 60 * 60 * 1000; // 3 days
 
     const addressStreet = 'addressStreet';
     const addressCity = 'addressCity';
@@ -108,7 +112,7 @@ describe('Project tests', function() {
       // _addressZip: addressZip,
     };
 
-    const contract = yield projectJs.uploadContract(admin, args, chainID);
+    const contract = yield projectJs.uploadContract(accessToken, args, chainID);
     // state
     {
       const project = yield contract.getState(chainID);
