@@ -1,27 +1,15 @@
 require('co-mocha');
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
-const should = common.should;
 const assert = common.assert;
-const constants = common.constants;
-const Promise = common.Promise;
-const BigNumber = common.BigNumber
 
 const bidJs = require('../bid');
-const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
+const accessToken = process.env.ADMIN_TOKEN;
 
-const adminName = util.uid('Admin');
-const adminPassword = '1234';
-let admin;
-
-describe('Bid tests', function() {
-
-  before(function* () {
-    admin = yield rest.createUser(adminName, adminPassword);
-  })
+describe('Bid tests', function () {
 
   it('Create Contract', function* () {
     const id = new Date().getTime();
@@ -36,7 +24,7 @@ describe('Bid tests', function() {
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(admin, args);
+    const contract = yield bidJs.uploadContract(accessToken, args);
     {
       const bid = yield contract.getState();
       assert.equal(bid.id, id, 'id');
@@ -58,12 +46,12 @@ describe('Bid tests', function() {
 
 
   it.only('Create many contract', function* () {
-    this.timeout(config.timeout*10);
+    this.timeout(config.timeout * 10);
 
     const id = new Date().getTime();
-    for (let i = 0; i < 500; i++) {
-      const args = createContractArgs(id,i);
-      const contract = yield bidJs.uploadContract(admin, args);
+    for (let i = 0; i < 10; i++) {
+      const args = createContractArgs(id, i);
+      const contract = yield bidJs.uploadContract(accessToken, args);
       {
         const bid = yield contract.getState();
         assert.equal(bid.id, args._id, 'id');
@@ -83,7 +71,7 @@ describe('Bid tests', function() {
 
     function createContractArgs(id, index) {
       const args = {
-        _id: id+index,
+        _id: id + index,
         _name: `Project_${id}_${index}`,
         _supplier: `Supplier1`,
         _amount: index,

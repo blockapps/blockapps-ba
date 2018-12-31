@@ -1,5 +1,5 @@
 const ba = require('blockapps-rest');
-const rest = ba.rest;
+const rest = ba.rest6;
 const util = ba.common.util;
 const config = ba.common.config;
 
