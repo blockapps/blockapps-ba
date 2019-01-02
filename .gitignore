@@ -41,5 +41,8 @@ server/config/*.deploy.yaml
 
 .idea
 
+# config
+config.yaml
+
 # mock
 tests/mock/*
