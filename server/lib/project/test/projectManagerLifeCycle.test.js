@@ -12,7 +12,6 @@ const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).Erro
 const BidState = rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
@@ -28,14 +27,12 @@ describe('ProjectManager Life Cycle tests', function () {
   // get ready:  admin-user and manager-contract
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(userAccessToken1);
-    const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
+    const userEmail1 = utils.getEmailIdFromToken(userAccessToken1);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail1);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(userAccessToken2);
-    const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
+    const userEmail2 = utils.getEmailIdFromToken(userAccessToken1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail2);
 
     const chain = {
       label: 'test airline',

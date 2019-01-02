@@ -6,7 +6,6 @@ const config = common.config;
 const assert = common.assert;
 
 const userJs = require('../user');
-const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
@@ -18,8 +17,7 @@ describe('User tests', function () {
 
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(userAccessToken1);
-    const userEmail = decodedToken['email'];
+    const userEmail = utils.getEmailIdFromToken(userAccessToken1);
     userCreated = yield utils.createUser(userAccessToken1, userEmail);
 
     const chain = {

@@ -14,7 +14,6 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 
 const dappJs = require('../../../server/dapp/dapp');
 const poster = require('../../poster');
-const jwtDecode = require('jwt-decode');
 const utils = require('../../../server/utils');
 
 chai.use(chaiHttp);
@@ -33,14 +32,12 @@ describe("Projects Test", function () {
 
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(userAccessToken1);
-    const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
+    const userEmail1 = utils.getEmailIdFromToken(userAccessToken1);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail1);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(userAccessToken2);
-    const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
+    const userEmail2 = utils.getEmailIdFromToken(userAccessToken2);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail2);
 
     const chain = {
       label: `test airline ${util.uid()}`,

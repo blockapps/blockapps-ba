@@ -8,7 +8,6 @@ const assert = common.assert;
 
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
-const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 const userManagerJs = require('../userManager');
 
@@ -24,8 +23,7 @@ describe('UserManager LOAD tests', function() {
   // get ready:  admin-user and manager-contract
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(userAccessToken1);
-    const userEmail = decodedToken['email'];
+    const userEmail = utils.getEmailIdFromToken(userAccessToken1);
     userCreated = yield utils.createUser(userAccessToken1, userEmail);
 
     const chain = {
