@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "configure": "run configure",
     "start": "touch ./server/config/chains.deploy.yaml && PORT=${PORT:-3031} node server/index.js",
     "start:back": "touch ./server/config/chains.deploy.yaml && PORT=${PORT:-3031} node server/index.js > server/stdout.txt 2> server/stderr.txt &",
     "test": "npm run test:user && npm run test:project && npm run test:routes",
@@ -40,6 +41,7 @@
   "homepage": "https://github.com/blockapps/blockapps-ba#readme",
   "devDependencies": {
     "chai-http": "^3.0.0",
-    "mocha": "^3.3.0"
+    "mocha": "^3.3.0",
+    "runjs": "^4.3.2"
   }
 }
