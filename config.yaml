@@ -4,7 +4,7 @@ timeout: 600000
 libPath: ./server/lib
 contractsPath: ./contracts/
 deployFilename: ./server/config/chains.deploy.yaml
-usersFilename: ./server/config/users.deploy.yaml
+apiUrl: /api/v1
 
 # WARNING - extra strict syntax
 # DO NOT change the nodes order
@@ -20,8 +20,11 @@ oauth:
   scope: 'email openid'
   appTokenCookieMaxAge: 7776000000 # 90 days: 90 * 24 * 60 * 60 * 1000
   stratoUrl: "http://localhost:8080"
-  clientId: "react-blockapps-ba"
-  clientSecret: "744c694f-8263-4de0-8504-4af08d904e2a"
-  openIdDiscoveryUrl: "https://keycloak.blockapps.net/auth/realms/blockapps-ba/.well-known/openid-configuration"
+  clientId: "any_client_id"
+  clientSecret: "any_client_secret"
+  openIdDiscoveryUrl: "http://openid-dummy.ci.blockapps.net:5070/.well-known/openid-configuration"
+  # clientId: "test-blockapps-ba"
+  # clientSecret: "043c03c5-916f-4569-98ad-21222136c636"
+  # openIdDiscoveryUrl: "https://keycloak.blockapps.net/auth/realms/open-blockapps-ba/.well-known/openid-configuration"
   redirectUri: "http://localhost/api/v1/authentication/callback"
   logoutRedirectUri: "http://localhost"

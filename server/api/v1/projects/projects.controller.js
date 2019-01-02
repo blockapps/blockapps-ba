@@ -132,7 +132,6 @@ const projectsController = {
 
   handleEvent: function (req, res) {
     const accessToken = utils.getAccessTokenFromCookie(req);
-    const username = req.body.username;
     const account = req.body.account;
     const chainId = req.body.chainId;
 
