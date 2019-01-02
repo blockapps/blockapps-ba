@@ -9,7 +9,7 @@ const should = ba.common.should;
 const assert = ba.common.assert;
 const expect = ba.common.expect;
 const config = common.config;
-const rest = ba.rest;
+const rest = ba.rest6;
 const UserRole = ba.rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
@@ -17,9 +17,14 @@ const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/Proje
 
 const userManagerJs = require('../../../server/lib/user/userManager');
 const dappJs = require('../../../server/dapp/dapp');
-const fs = require("fs");
+const poster = require('../../poster');
+const jwtDecode = require('jwt-decode');
+const utils = require('../../../server/utils');
 
 chai.use(chaiHttp);
+
+const accessToken = process.env.ADMIN_TOKEN;
+const accessToken1 = process.env.ADMIN_TOKEN1;
 
 describe("Projects Test", function () {
   this.timeout(config.timeout);
@@ -29,16 +34,18 @@ describe("Projects Test", function () {
   const amount = 100;
   let bidId;
 
-  const adminName = `Admin_${uid}`;
-  const supplierName = `Supplier_${uid}`;
-  const buyerName = `Buyer_${uid}`;
-  const password = '1234';
-  let admin, buyer, supplier, chainID;
+  let stratoUser1, stratoUser2, chainID, supplier, buyer;
 
   before(function* () {
-    admin = yield rest.createUser(adminName, password);
-    buyer = yield rest.createUser(supplierName, password);
-    supplier = yield rest.createUser(buyerName, password);
+    // decode and create new account
+    const decodedToken = jwtDecode(accessToken);
+    const userEmail = decodedToken['email'];
+    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+
+    // decode and create new account
+    const decodedToken1 = jwtDecode(accessToken1);
+    const userEmail1 = decodedToken1['email'];
+    stratoUser2 = yield utils.createUser(accessToken1, userEmail1);
 
     const chain = {
       label: `test airline ${util.uid()}`,
@@ -46,29 +53,21 @@ describe("Projects Test", function () {
       args: {},
       members: [
         {
-          address: admin.address,
+          address: stratoUser1.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         },
         {
-          address: buyer.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        },
-        {
-          address: supplier.address,
+          address: stratoUser2.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         }
       ],
       balances: [
         {
-          address: admin.address,
+          address: stratoUser1.address,
           balance: 1000000000000000000000000
         },
         {
-          address: buyer.address,
-          balance: 1000000000000000000000000
-        },
-        {
-          address: supplier.address,
+          address: stratoUser2.address,
           balance: 1000000000000000000000000
         }
       ]
@@ -76,217 +75,139 @@ describe("Projects Test", function () {
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
+    // NOTE: This will carry mockdata of chains and user
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
-    config.usersFilename = `./tests/mock/usersMock.deploy.yaml`;
 
-    fs.appendFile(config.usersFilename, '', function (err) {
-      if (err) throw err;
-      console.log('Saved!');
-    });
-
-    const dapp = yield dappJs.uploadContract(admin, config.libPath, chainID);
-    const deployment1 = yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
-
-  });
-
-  it('create user: should create new user (supplier)', function (done) {
     this.timeout(config.timeout);
-    chai.request(server)
-      .post('/api/v1/users/create')
-      .send({ chainId: chainID, username: supplier.name, password: supplier.password, address: supplier.address, role: 'SUPPLIER' })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        assert.equal(data, 'User created successfully', 'create user should contain message');
-        done();
-      });
+    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, chainID);
+    yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
+
+    // Create local users
+    supplier = yield dapp.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, chainID);
+    buyer = yield dapp.createUser({ address: stratoUser2.address, role: 'BUYER' }, chainID);
   });
 
-  it('create user: should create new user (buyer)', function (done) {
-    this.timeout(config.timeout);
-    chai.request(server)
-      .post('/api/v1/users/create')
-      .send({ chainId: chainID, username: buyer.name, password: buyer.password, address: buyer.address, role: 'BUYER' })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        assert.equal(data, 'User created successfully', 'create user should contain message');
-        done();
-      });
-  });
-
-  it('should create a project', function (done) {
+  it('should create a project', function* () {
     this.timeout(config.timeout);
     projectArgs.chainId = chainID;
-    chai.request(server)
-      .post('/api/v1/projects')
-      .send(projectArgs)
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const project = data.project;
-        assert.isDefined(project, 'should return new project');
-        // todo: the created project returns the created project
-        assert.equal(project.name, projectArgs.name, 'new project should contain name');
-        assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
-        assert.equal(project.description, projectArgs.description, 'project desc should be same as in request');
-        assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
-        done();
-      });
+    const url = '/projects';
+    const response = yield poster.post(url, projectArgs, accessToken);
+
+    const project = response.project;
+    assert.isDefined(project, 'should return new project');
+    // todo: the created project returns the created project
+    assert.equal(project.name, projectArgs.name, 'new project should contain name');
+    assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
+    assert.equal(project.description, projectArgs.description, 'project desc should be same as in request');
+    assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
   });
 
-  it('should return a project by its name', function (done) {
-    this.timeout(config.timeout);
-    chai.request(server)
-      .get(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/`)
-      .query({ chainId: chainID })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const project = data.project;
-        assert.isDefined(project, 'should return project');
-        assert.equal(project.name, projectArgs.name, 'project name should be same as in request');
-        assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
-        assert.equal(project.description, projectArgs.description, 'project desc should be same as in request');
-        assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
-        done();
-      });
-  });
-
-  it('should return the list of projects filtered by buyer', function (done) {
+  it('should return a project by its name', function*() {
     this.timeout(config.timeout);
 
-    chai.request(server)
-      .get('/api/v1/projects')
-      .query(
-        {
-          filter: 'buyer',
-          buyer: projectArgs.buyer,
-          chainId: chainID
-        }
-      )
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const projects = data.projects;
-        assert.isDefined(projects, 'should return projects');
-        assert.isArray(projects, 'projects list should be an array');
-        //todo: the returned list should be filtered by buyer (preliminarily create at least one project)
-        done();
-      });
+    const url = `/projects/${encodeURIComponent(projectArgs.name)}?chainId=${chainID}`;
+    const response = yield poster.get(url, accessToken);
+
+    const project = response.project;
+    assert.isDefined(project, 'should return project');
+    assert.equal(project.name, projectArgs.name, 'project name should be same as in request');
+    assert.equal(project.buyer, projectArgs.buyer, 'new project should contain buyer');
+    assert.equal(project.description, projectArgs.description, 'project desc should be same as in request');
+    assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
   });
 
-  it('should return the list of projects filtered by state', function (done) {
+  it('should return the list of projects filtered by buyer', function*() {
+    this.timeout(config.timeout);
+
+    const url = `/projects?chainId=${chainID}&buyer=${projectArgs.buyer}&filter=buyer`;
+    const response = yield poster.get(url, accessToken);
+
+    const projects = response.projects;
+    assert.isDefined(projects, 'should return projects');
+    assert.isArray(projects, 'projects list should be an array');
+  });
+
+  it('should return the list of projects filtered by state', function*() {
     this.timeout(config.timeout);
     const state = ProjectState.OPEN;
-    chai.request(server)
-      .get('/api/v1/projects')
-      .query(
-        {
-          filter: 'state',
-          state: state,
-          chainId: chainID
-        }
-      )
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const projects = data.projects;
-        assert.isDefined(projects, 'should return projects');
-        assert.isArray(projects, 'projects list should be an array');
-        assert.isOk(projects.length > 0, 'projects list should not be empty');
-        //todo: the returned list should be filtered by state (preliminarily create at least one project for buyer)
-        done();
-      });
+
+    const url = `/projects?chainId=${chainID}&state=${state}&filter=state`;
+    const response = yield poster.get(url, accessToken);
+
+    const projects = response.projects;
+    assert.isDefined(projects, 'should return projects');
+    assert.isArray(projects, 'projects list should be an array');
+    assert.isOk(projects.length > 0, 'projects list should not be empty');
   });
 
-  it('should return the list of projects filtered by supplier', function (done) {
+  it('should return the list of projects filtered by supplier', function*() {
     this.timeout(config.timeout);
-    const supplier = "Supplier1";
-    chai.request(server)
-      .get('/api/v1/projects')
-      .query(
-        {
-          filter: 'supplier',
-          supplier: supplier,
-          chainId: chainID
-        }
-      )
-      .end((err, res) => {
-        assert.apiSuccess(res);
-        res.body.should.have.property('data');
-        const data = res.body.data;
-        const projects = data.projects;
-        assert.isDefined(projects, 'should return projects');
-        assert.isArray(projects, 'projects list should be an array');
-        //todo: the returned list should be filtered by supplier (preliminarily create at least one project for supplier)
-        done();
-      });
+
+    const url = `/projects?chainId=${chainID}&supplier=${supplier.address}&filter=supplier`;
+    const response = yield poster.get(url, accessToken);
+
+    const projects = response.projects;
+    assert.isDefined(projects, 'should return projects');
+    assert.isArray(projects, 'projects list should be an array');
   });
 
-  it('Should bid on a project', function (done) {
+  it('Should bid on a project', function*() {
     this.timeout(config.timeout);
-    chai.request(server)
-      .post(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/bids`)
-      .send({ supplier: supplier.name, amount, chainId: chainID })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const bid = data.bid;
-        assert.isDefined(bid, 'should return new bid');
-        assert.equal(bid.supplier, supplier.name, 'new bid should contain supplier');
-        assert.equal(bid.amount, amount, 'new bid should contain amount');
-        bidId = bid.id; // save for the next tests
-        done();
-      });
+
+    const url = `/projects/${encodeURIComponent(projectArgs.name)}/bids`;
+    const response = yield poster.post(url, { supplier: supplier.account, amount, chainId: chainID }, accessToken);
+
+    const bid = response.bid;
+    assert.isDefined(bid, 'should return new bid');
+    assert.equal(bid.supplier, supplier.account, 'new bid should contain supplier');
+    assert.equal(bid.amount, amount, 'new bid should contain amount');
+    bidId = bid.id; // save for the next tests
   });
 
-  it('Should get bids for a project', function (done) {
+  it('Should get bids for a project', function*() {
     this.timeout(config.timeout);
-    chai.request(server)
-      .get(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/bids`)
-      .query({ chainId: chainID })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const bids = data.bids;
-        assert.isArray(bids, 'should be an array');
-        assert.equal(bids.length, 1, 'length of bid array should be 1');
-        const bid = bids[0];
-        assert.isDefined(bid, 'should return new bid');
-        assert.equal(bid.supplier, supplier.name, 'new bid should contain supplier');
-        assert.equal(bid.amount, amount, 'new bid should contain amount');
-        done();
-      });
+
+    const url = `/projects/${encodeURIComponent(projectArgs.name)}/bids?chainId=${chainID}`;
+    const response = yield poster.get(url, accessToken);
+
+    const bids = response.bids;
+    assert.isArray(bids, 'should be an array');
+    assert.equal(bids.length, 1, 'length of bid array should be 1');
+    const bid = bids[0];
+    assert.isDefined(bid, 'should return new bid');
+    assert.equal(bid.supplier, supplier.account, 'new bid should contain supplier');
+    assert.equal(bid.amount, amount, 'new bid should contain amount');
   });
 
-  it('Should accept bid', function (done) {
+  it('Should accept bid', function*() {
     this.timeout(config.timeout);
-    chai.request(server)
-      .post(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/events/`)
-      .send({
-        projectEvent: ProjectEvent.ACCEPT,
-        username: buyer.name,
-        bidId: bidId,
-        chainId: chainID,
-        account: buyer.address
-      })
-      .end((err, res) => {
-        assert.apiSuccess(res);
-        res.body.should.have.property('data');
-        // todo: body data should be empty
-        // todo: check the project changed state to PRODUCTION
-        done();
-      });
+    const body = {
+      projectEvent: ProjectEvent.ACCEPT,
+      bidId: bidId,
+      chainId: chainID,
+      account: buyer.account
+    };
+
+    const url = `/projects/${encodeURIComponent(projectArgs.name)}/events`;
+    const response = yield poster.post(url, body, accessToken);
+    
+    // this will check the updated state
+    assert.equal(response.state, ProjectEvent.DELIVER, "should change the state to DELIVER")
   });
 
-  it('should change project state to INTRANSIT', function (done) {
+  it('should change project state to INTRANSIT', function* () {
     this.timeout(config.timeout);
-    chai.request(server)
-      .post(`/api/v1/projects/${encodeURIComponent(projectArgs.name)}/events/`)
-      .send({
-        projectEvent: ProjectEvent.DELIVER,
-        username: supplier.name,
-        chainId: chainID,
-        account: supplier.address
-      })
-      .end((err, res) => {
-        const data = assert.apiData(err, res); // FIXME -LS return value
-        assert.equal(data.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
-        done();
-      });
+
+    const body = {
+      projectEvent: ProjectEvent.DELIVER,
+      chainId: chainID,
+      account: supplier.account
+    };
+
+    const url = `/projects/${encodeURIComponent(projectArgs.name)}/events`;
+    const response = yield poster.post(url, body, accessToken);
+
+    assert.equal(response.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
   });
 
   // NOTE: in order to receive, a payment must be made.

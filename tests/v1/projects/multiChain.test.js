@@ -5,16 +5,19 @@ const server = require('../../../server');
 const ba = require('blockapps-rest');
 const util = ba.common.util;
 const common = ba.common;
-const should = ba.common.should;
 const assert = ba.common.assert;
-const expect = ba.common.expect;
 const config = common.config;
-const rest = ba.rest;
+const rest = ba.rest6;
 
 const dappJs = require('../../../server/dapp/dapp');
-const fs = require("fs");
+const poster = require('../../poster');
+const jwtDecode = require('jwt-decode');
+const utils = require('../../../server/utils');
 
 chai.use(chaiHttp);
+
+const accessToken = process.env.ADMIN_TOKEN;
+const accessToken1 = process.env.ADMIN_TOKEN1;
 
 describe("Projects MultiChain Test", function () {
   this.timeout(config.timeout);
@@ -23,19 +26,21 @@ describe("Projects MultiChain Test", function () {
   const amount = 100;
 
   const password = '1234';
-  let admin, buyer, supplier;
-  let admin1, buyer1, supplier1;
+  let buyer, supplier;
+  let buyer1, supplier1;
   let firstChainId, secoundChainId;
   let firstProjectArgs, secoundProjectArgs;
 
   before(function* () {
-    admin = yield rest.createUser(`Admin_${uid}`, password);
-    buyer = yield rest.createUser(`Supplier_${uid}`, password);
-    supplier = yield rest.createUser(`Buyer_${uid}`, password);
+    // decode and create new account
+    const decodedToken = jwtDecode(accessToken);
+    const userEmail = decodedToken['email'];
+    stratoUser1 = yield utils.createUser(accessToken, userEmail);
 
-    admin1 = yield rest.createUser(`Admin_${uid}`, password);
-    buyer1 = yield rest.createUser(`Supplier_${uid}`, password);
-    supplier1 = yield rest.createUser(`Buyer_${uid}`, password);
+    // decode and create new account
+    const decodedToken1 = jwtDecode(accessToken1);
+    const userEmail1 = decodedToken1['email'];
+    stratoUser2 = yield utils.createUser(accessToken1, userEmail1);
 
     const chain = {
       label: `test airline ${util.uid()}`,
@@ -43,29 +48,21 @@ describe("Projects MultiChain Test", function () {
       args: {},
       members: [
         {
-          address: admin.address,
+          address: stratoUser1.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         },
         {
-          address: buyer.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        },
-        {
-          address: supplier.address,
+          address: stratoUser2.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         }
       ],
       balances: [
         {
-          address: admin.address,
+          address: stratoUser1.address,
           balance: 1000000000000000000000000
         },
         {
-          address: buyer.address,
-          balance: 1000000000000000000000000
-        },
-        {
-          address: supplier.address,
+          address: stratoUser2.address,
           balance: 1000000000000000000000000
         }
       ]
@@ -77,29 +74,21 @@ describe("Projects MultiChain Test", function () {
       args: {},
       members: [
         {
-          address: admin1.address,
+          address: stratoUser1.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         },
         {
-          address: buyer1.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        },
-        {
-          address: supplier1.address,
+          address: stratoUser2.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         }
       ],
       balances: [
         {
-          address: admin1.address,
+          address: stratoUser1.address,
           balance: 1000000000000000000000000
         },
         {
-          address: buyer1.address,
-          balance: 1000000000000000000000000
-        },
-        {
-          address: supplier1.address,
+          address: stratoUser2.address,
           balance: 1000000000000000000000000
         }
       ]
@@ -108,129 +97,71 @@ describe("Projects MultiChain Test", function () {
     firstChainId = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
     secoundChainId = yield rest.createChain(chain1.label, chain1.members, chain1.balances, chain1.src, chain1.args);
 
+    // NOTE: This will carry mockdata of chains and user
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
-    config.usersFilename = `./tests/mock/usersMock.deploy.yaml`;
 
-    fs.appendFile(config.usersFilename, '', function (err) {
-      if (err) throw err;
-      console.log('Saved!');
-    });
-
-    const dapp = yield dappJs.uploadContract(admin, config.libPath, firstChainId);
+    this.timeout(config.timeout);
+    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, firstChainId);
     yield dapp.deploy(config.dataFilename, config.deployFilename, firstChainId);
 
-    const dapp1 = yield dappJs.uploadContract(admin1, config.libPath, secoundChainId);
+    const dapp1 = yield dappJs.uploadContract(accessToken1, config.libPath, secoundChainId);
     yield dapp1.deploy(config.dataFilename, config.deployFilename, secoundChainId);
+
+    // Create local users
+    supplier = yield dapp.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, firstChainId);
+    buyer = yield dapp.createUser({ address: stratoUser2.address, role: 'BUYER' }, firstChainId);
+
+    // Create local users
+    supplier1 = yield dapp1.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, secoundChainId);
+    buyer2 = yield dapp1.createUser({ address: stratoUser2.address, role: 'BUYER' }, secoundChainId);
   });
 
-  it('create user: should create new user (supplier)', function (done) {
+  it('should create a project (on first chain)', function* () {
     this.timeout(config.timeout);
-    chai.request(server)
-      .post('/api/v1/users/create')
-      .send({ chainId: firstChainId, username: supplier.name, password: supplier.password, address: supplier.address, role: 'SUPPLIER' })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        assert.equal(data, 'User created successfully', 'create user should contain message');
-        done();
-      });
-  });
-
-  it('create user: should create new user (buyer)', function (done) {
-    this.timeout(config.timeout);
-    chai.request(server)
-      .post('/api/v1/users/create')
-      .send({ chainId: firstChainId, username: buyer.name, password: buyer.password, address: buyer.address, role: 'BUYER' })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        assert.equal(data, 'User created successfully', 'create user should contain message');
-        done();
-      });
-  });
-
-  it('create user: should create new user (supplier)', function (done) {
-    this.timeout(config.timeout);
-    chai.request(server)
-      .post('/api/v1/users/create')
-      .send({ chainId: secoundChainId, username: supplier1.name, password: supplier1.password, address: supplier1.address, role: 'SUPPLIER' })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        assert.equal(data, 'User created successfully', 'create user should contain message');
-        done();
-      });
-  });
-
-  it('create user: should create new user (buyer)', function (done) {
-    this.timeout(config.timeout);
-    chai.request(server)
-      .post('/api/v1/users/create')
-      .send({ chainId: secoundChainId, username: buyer1.name, password: buyer1.password, address: buyer1.address, role: 'BUYER' })
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        assert.equal(data, 'User created successfully', 'create user should contain message');
-        done();
-      });
-  });
-
-  it('should create a project (on first chain)', function (done) {
-    this.timeout(config.timeout);
-
     const uid = util.uid();
     firstProjectArgs = createProjectArgs(uid, firstChainId);
 
-    chai.request(server)
-      .post('/api/v1/projects')
-      .send(firstProjectArgs)
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const project = data.project;
-        assert.isDefined(project, 'should return new project');
-        // todo: the created project returns the created project
-        assert.equal(project.name, firstProjectArgs.name, 'new project should contain name');
-        assert.equal(project.buyer, firstProjectArgs.buyer, 'new project should contain buyer');
-        assert.equal(project.description, firstProjectArgs.description, 'project desc should be same as in request');
-        assert.equal(project.spec, firstProjectArgs.spec, 'project spec should be same as in request');
-        done();
-      });
+    const url = `/projects`;
+    const response = yield poster.post(url, firstProjectArgs, accessToken)
+
+    const project = response.project;
+    assert.isDefined(project, 'should return new project');
+    assert.equal(project.name, firstProjectArgs.name, 'new project should contain name');
+    assert.equal(project.buyer, firstProjectArgs.buyer, 'new project should contain buyer');
+    assert.equal(project.description, firstProjectArgs.description, 'project desc should be same as in request');
+    assert.equal(project.spec, firstProjectArgs.spec, 'project spec should be same as in request');
+
   });
 
-  it('should create a project (on secound chain)', function (done) {
+  it('should create a project (on secound chain)', function* () {
     this.timeout(config.timeout);
 
     const uid = util.uid();
     secoundProjectArgs = createProjectArgs(uid, secoundChainId);
 
-    chai.request(server)
-      .post('/api/v1/projects')
-      .send(secoundProjectArgs)
-      .end((err, res) => {
-        const data = assert.apiData(err, res);
-        const project = data.project;
-        assert.isDefined(project, 'should return new project');
-        // todo: the created project returns the created project
-        assert.equal(project.name, secoundProjectArgs.name, 'new project should contain name');
-        assert.equal(project.buyer, secoundProjectArgs.buyer, 'new project should contain buyer');
-        assert.equal(project.description, secoundProjectArgs.description, 'project desc should be same as in request');
-        assert.equal(project.spec, secoundProjectArgs.spec, 'project spec should be same as in request');
-        done();
-      });
+    const url = `/projects`;
+    const response = yield poster.post(url, secoundProjectArgs, accessToken1);
+
+    const project = response.project;
+    assert.isDefined(project, 'should return new project');
+    assert.equal(project.name, secoundProjectArgs.name, 'new project should contain name');
+    assert.equal(project.buyer, secoundProjectArgs.buyer, 'new project should contain buyer');
+    assert.equal(project.description, secoundProjectArgs.description, 'project desc should be same as in request');
+    assert.equal(project.spec, secoundProjectArgs.spec, 'project spec should be same as in request');
+
   });
 
-  it('should check the projects are not same on multiple chain', async function () {
+  it('should check the projects are not same on multiple chain', function* () {
     this.timeout(config.timeout);
 
-    let firstChainResponse = await chai.request(server)
-      .get(`/api/v1/projects/${encodeURIComponent(firstProjectArgs.name)}/`)
-      .query({ chainId: firstChainId })
+    const firstUrl = `/projects/${encodeURIComponent(firstProjectArgs.name)}?chainId=${firstChainId}`;
+    const firstChainResponse = yield poster.get(firstUrl, accessToken)
 
-    let secoundChainResponse = await chai.request(server)
-      .get(`/api/v1/projects/${encodeURIComponent(secoundProjectArgs.name)}/`)
-      .query({ chainId: secoundChainId })
+    const secoundUrl = `/projects/${encodeURIComponent(secoundProjectArgs.name)}?chainId=${secoundChainId}`;
+    const secoundChainResponse = yield poster.get(secoundUrl, accessToken)
 
-    const firstChainData = firstChainResponse.body;
-    const secoundChainData = secoundChainResponse.body;
-
-    let firstChainProject = firstChainData.data.project;
-    let secoundChainProject = secoundChainData.data.project;
+    let firstChainProject = firstChainResponse.project;
+    let secoundChainProject = secoundChainResponse.project;
 
     assert.isDefined(firstChainProject, 'should return project');
     assert.isDefined(secoundChainProject, 'should return project');
