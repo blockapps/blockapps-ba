@@ -1,19 +1,16 @@
 require('co-mocha');
-const chai = require('chai');
-const chaiHttp = require('chai-http');
 const ba = require('blockapps-rest');
 const common = ba.common;
 const config = common.config;
 const util = common.util;
 const assert = ba.common.assert;
+
 const poster = require('../poster');
 const jwtDecode = require('jwt-decode');
 const utils = require('../../server/utils');
 
-const accessToken = process.env.ADMIN_TOKEN;
-const accessToken1 = process.env.ADMIN_TOKEN1;
-
-chai.use(chaiHttp);
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe("User Test", function () {
   this.timeout(config.timeout);
@@ -24,14 +21,14 @@ describe("User Test", function () {
     this.timeout(config.timeout);
 
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(accessToken1);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(accessToken1, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
     chain = {
       label: `test airline ${util.uid()}`,
@@ -68,14 +65,14 @@ describe("User Test", function () {
   it('should create chain and deploy contracts', function* () {
     this.timeout(config.timeout);
     const url = `/chains`;
-    const response = yield poster.post(url, { chain }, accessToken);
+    const response = yield poster.post(url, { chain }, userAccessToken1);
     assert.equal(response, 'Chain Created Successfully', "chain and contracts must be deployed");
   });
 
   it('should return chain list', function* () {
     this.timeout(config.timeout);
     const url = `/chains`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
     assert.isArray(response, "must be array");
   });
 

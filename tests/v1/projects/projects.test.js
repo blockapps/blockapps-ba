@@ -5,17 +5,13 @@ const server = require('../../../server');
 const ba = require('blockapps-rest');
 const util = ba.common.util;
 const common = ba.common;
-const should = ba.common.should;
 const assert = ba.common.assert;
-const expect = ba.common.expect;
 const config = common.config;
 const rest = ba.rest6;
-const UserRole = ba.rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
+
 const ProjectState = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
-const BidState = ba.rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
 const ProjectEvent = ba.rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
 
-const userManagerJs = require('../../../server/lib/user/userManager');
 const dappJs = require('../../../server/dapp/dapp');
 const poster = require('../../poster');
 const jwtDecode = require('jwt-decode');
@@ -23,14 +19,13 @@ const utils = require('../../../server/utils');
 
 chai.use(chaiHttp);
 
-const accessToken = process.env.ADMIN_TOKEN;
-const accessToken1 = process.env.ADMIN_TOKEN1;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe("Projects Test", function () {
   this.timeout(config.timeout);
   const uid = util.uid();
   const projectArgs = createProjectArgs(uid);
-  const supplier1 = "Supplier1";
   const amount = 100;
   let bidId;
 
@@ -38,14 +33,14 @@ describe("Projects Test", function () {
 
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(accessToken1);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(accessToken1, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
     const chain = {
       label: `test airline ${util.uid()}`,
@@ -79,7 +74,7 @@ describe("Projects Test", function () {
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
 
     this.timeout(config.timeout);
-    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, chainID);
+    const dapp = yield dappJs.uploadContract(userAccessToken1, config.libPath, chainID);
     yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
 
     // Create local users
@@ -91,7 +86,7 @@ describe("Projects Test", function () {
     this.timeout(config.timeout);
     projectArgs.chainId = chainID;
     const url = '/projects';
-    const response = yield poster.post(url, projectArgs, accessToken);
+    const response = yield poster.post(url, projectArgs, userAccessToken1);
 
     const project = response.project;
     assert.isDefined(project, 'should return new project');
@@ -102,11 +97,11 @@ describe("Projects Test", function () {
     assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
   });
 
-  it('should return a project by its name', function*() {
+  it('should return a project by its name', function* () {
     this.timeout(config.timeout);
 
     const url = `/projects/${encodeURIComponent(projectArgs.name)}?chainId=${chainID}`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
 
     const project = response.project;
     assert.isDefined(project, 'should return project');
@@ -116,23 +111,23 @@ describe("Projects Test", function () {
     assert.equal(project.spec, projectArgs.spec, 'project spec should be same as in request');
   });
 
-  it('should return the list of projects filtered by buyer', function*() {
+  it('should return the list of projects filtered by buyer', function* () {
     this.timeout(config.timeout);
 
     const url = `/projects?chainId=${chainID}&buyer=${projectArgs.buyer}&filter=buyer`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
 
     const projects = response.projects;
     assert.isDefined(projects, 'should return projects');
     assert.isArray(projects, 'projects list should be an array');
   });
 
-  it('should return the list of projects filtered by state', function*() {
+  it('should return the list of projects filtered by state', function* () {
     this.timeout(config.timeout);
     const state = ProjectState.OPEN;
 
     const url = `/projects?chainId=${chainID}&state=${state}&filter=state`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
 
     const projects = response.projects;
     assert.isDefined(projects, 'should return projects');
@@ -140,22 +135,22 @@ describe("Projects Test", function () {
     assert.isOk(projects.length > 0, 'projects list should not be empty');
   });
 
-  it('should return the list of projects filtered by supplier', function*() {
+  it('should return the list of projects filtered by supplier', function* () {
     this.timeout(config.timeout);
 
     const url = `/projects?chainId=${chainID}&supplier=${supplier.address}&filter=supplier`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
 
     const projects = response.projects;
     assert.isDefined(projects, 'should return projects');
     assert.isArray(projects, 'projects list should be an array');
   });
 
-  it('Should bid on a project', function*() {
+  it('Should bid on a project', function* () {
     this.timeout(config.timeout);
 
     const url = `/projects/${encodeURIComponent(projectArgs.name)}/bids`;
-    const response = yield poster.post(url, { supplier: supplier.account, amount, chainId: chainID }, accessToken);
+    const response = yield poster.post(url, { supplier: supplier.account, amount, chainId: chainID }, userAccessToken1);
 
     const bid = response.bid;
     assert.isDefined(bid, 'should return new bid');
@@ -164,11 +159,11 @@ describe("Projects Test", function () {
     bidId = bid.id; // save for the next tests
   });
 
-  it('Should get bids for a project', function*() {
+  it('Should get bids for a project', function* () {
     this.timeout(config.timeout);
 
     const url = `/projects/${encodeURIComponent(projectArgs.name)}/bids?chainId=${chainID}`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
 
     const bids = response.bids;
     assert.isArray(bids, 'should be an array');
@@ -179,7 +174,7 @@ describe("Projects Test", function () {
     assert.equal(bid.amount, amount, 'new bid should contain amount');
   });
 
-  it('Should accept bid', function*() {
+  it('Should accept bid', function* () {
     this.timeout(config.timeout);
     const body = {
       projectEvent: ProjectEvent.ACCEPT,
@@ -189,8 +184,8 @@ describe("Projects Test", function () {
     };
 
     const url = `/projects/${encodeURIComponent(projectArgs.name)}/events`;
-    const response = yield poster.post(url, body, accessToken);
-    
+    const response = yield poster.post(url, body, userAccessToken1);
+
     // this will check the updated state
     assert.equal(response.state, ProjectEvent.DELIVER, "should change the state to DELIVER")
   });
@@ -205,7 +200,7 @@ describe("Projects Test", function () {
     };
 
     const url = `/projects/${encodeURIComponent(projectArgs.name)}/events`;
-    const response = yield poster.post(url, body, accessToken);
+    const response = yield poster.post(url, body, userAccessToken1);
 
     assert.equal(response.state, ProjectState.INTRANSIT, 'returned state should be INTRANSIT');
   });

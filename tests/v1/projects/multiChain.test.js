@@ -1,7 +1,4 @@
 require('co-mocha');
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const server = require('../../../server');
 const ba = require('blockapps-rest');
 const util = ba.common.util;
 const common = ba.common;
@@ -14,33 +11,25 @@ const poster = require('../../poster');
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../server/utils');
 
-chai.use(chaiHttp);
-
-const accessToken = process.env.ADMIN_TOKEN;
-const accessToken1 = process.env.ADMIN_TOKEN1;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe("Projects MultiChain Test", function () {
   this.timeout(config.timeout);
 
-  const uid = util.uid();
-  const amount = 100;
-
-  const password = '1234';
-  let buyer, supplier;
-  let buyer1, supplier1;
   let firstChainId, secoundChainId;
   let firstProjectArgs, secoundProjectArgs;
 
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(accessToken1);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(accessToken1, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
     const chain = {
       label: `test airline ${util.uid()}`,
@@ -101,19 +90,19 @@ describe("Projects MultiChain Test", function () {
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
 
     this.timeout(config.timeout);
-    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, firstChainId);
+    const dapp = yield dappJs.uploadContract(userAccessToken1, config.libPath, firstChainId);
     yield dapp.deploy(config.dataFilename, config.deployFilename, firstChainId);
 
-    const dapp1 = yield dappJs.uploadContract(accessToken1, config.libPath, secoundChainId);
+    const dapp1 = yield dappJs.uploadContract(userAccessToken2, config.libPath, secoundChainId);
     yield dapp1.deploy(config.dataFilename, config.deployFilename, secoundChainId);
 
     // Create local users
-    supplier = yield dapp.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, firstChainId);
-    buyer = yield dapp.createUser({ address: stratoUser2.address, role: 'BUYER' }, firstChainId);
+    yield dapp.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, firstChainId);
+    yield dapp.createUser({ address: stratoUser2.address, role: 'BUYER' }, firstChainId);
 
     // Create local users
-    supplier1 = yield dapp1.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, secoundChainId);
-    buyer2 = yield dapp1.createUser({ address: stratoUser2.address, role: 'BUYER' }, secoundChainId);
+    yield dapp1.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, secoundChainId);
+    yield dapp1.createUser({ address: stratoUser2.address, role: 'BUYER' }, secoundChainId);
   });
 
   it('should create a project (on first chain)', function* () {
@@ -122,7 +111,7 @@ describe("Projects MultiChain Test", function () {
     firstProjectArgs = createProjectArgs(uid, firstChainId);
 
     const url = `/projects`;
-    const response = yield poster.post(url, firstProjectArgs, accessToken)
+    const response = yield poster.post(url, firstProjectArgs, userAccessToken1)
 
     const project = response.project;
     assert.isDefined(project, 'should return new project');
@@ -140,7 +129,7 @@ describe("Projects MultiChain Test", function () {
     secoundProjectArgs = createProjectArgs(uid, secoundChainId);
 
     const url = `/projects`;
-    const response = yield poster.post(url, secoundProjectArgs, accessToken1);
+    const response = yield poster.post(url, secoundProjectArgs, userAccessToken2);
 
     const project = response.project;
     assert.isDefined(project, 'should return new project');
@@ -155,10 +144,10 @@ describe("Projects MultiChain Test", function () {
     this.timeout(config.timeout);
 
     const firstUrl = `/projects/${encodeURIComponent(firstProjectArgs.name)}?chainId=${firstChainId}`;
-    const firstChainResponse = yield poster.get(firstUrl, accessToken)
+    const firstChainResponse = yield poster.get(firstUrl, userAccessToken1)
 
     const secoundUrl = `/projects/${encodeURIComponent(secoundProjectArgs.name)}?chainId=${secoundChainId}`;
-    const secoundChainResponse = yield poster.get(secoundUrl, accessToken)
+    const secoundChainResponse = yield poster.get(secoundUrl, userAccessToken2)
 
     let firstChainProject = firstChainResponse.project;
     let secoundChainProject = secoundChainResponse.project;

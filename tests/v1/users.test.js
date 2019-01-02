@@ -1,6 +1,4 @@
 require('co-mocha');
-const chai = require('chai');
-const chaiHttp = require('chai-http');
 const ba = require('blockapps-rest');
 const rest = ba.rest6;
 const common = ba.common;
@@ -13,10 +11,8 @@ const poster = require('../poster');
 const jwtDecode = require('jwt-decode');
 const utils = require('../../server/utils');
 
-const accessToken = process.env.ADMIN_TOKEN;
-const accessToken1 = process.env.ADMIN_TOKEN1;
-
-chai.use(chaiHttp);
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe("User Test", function () {
   this.timeout(config.timeout);
@@ -27,14 +23,14 @@ describe("User Test", function () {
     this.timeout(config.timeout);
 
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(accessToken1);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    startoUser2 = yield utils.createUser(accessToken, userEmail1);
+    startoUser2 = yield utils.createUser(userAccessToken1, userEmail1);
 
     const chain = {
       label: `test airline ${util.uid()}`,
@@ -68,7 +64,7 @@ describe("User Test", function () {
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
 
     this.timeout(config.timeout);
-    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, chainID);
+    const dapp = yield dappJs.uploadContract(userAccessToken1, config.libPath, chainID);
     yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
     yield dapp.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, chainID);
   });
@@ -76,14 +72,15 @@ describe("User Test", function () {
   it('should return user balance', function* () {
     this.timeout(config.timeout);
     const url = `/users/${stratoUser1.address}/balance?chainId=${chainID}`;
-    const response = yield poster.get(url, accessToken);
+
+    const response = yield poster.get(url, userAccessToken1);
     assert.exists(response.balance, "balance must be exists");
   });
 
   it('get created user', function* () {
     this.timeout(config.timeout);
     const url = `/users/${stratoUser1.address}?chainId=${chainID}`;
-    const response = yield poster.get(url, accessToken);
+    const response = yield poster.get(url, userAccessToken1);
 
     // 'SUPPLIER' role is 3
     assert.equal(response.user.role, 3, "role must be SUPPLIER (3)");
