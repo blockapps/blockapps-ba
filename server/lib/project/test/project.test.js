@@ -4,15 +4,13 @@ const rest = ba.rest;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
-const should = common.should;
 const assert = common.assert;
-const Promise = common.Promise;
 
 const projectJs = require('../project');
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 
-const accessToken = process.env.ADMIN_TOKEN;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 
 describe('Project tests', function () {
   this.timeout(config.timeout);
@@ -22,9 +20,9 @@ describe('Project tests', function () {
 
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    userCreated = yield utils.createUser(accessToken, userEmail);
+    userCreated = yield utils.createUser(userAccessToken1, userEmail);
 
     const chain = {
       label: 'test airline',
@@ -112,7 +110,7 @@ describe('Project tests', function () {
       // _addressZip: addressZip,
     };
 
-    const contract = yield projectJs.uploadContract(accessToken, args, chainID);
+    const contract = yield projectJs.uploadContract(userAccessToken1, args, chainID);
     // state
     {
       const project = yield contract.getState(chainID);

@@ -4,20 +4,18 @@ const rest = ba.rest6;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
-const should = common.should;
 const assert = common.assert;
 const constants = common.constants;
 const BigNumber = common.BigNumber;
-const Promise = common.Promise;
 
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
-
-const accessToken = process.env.ADMIN_TOKEN;
-const token2 = process.env.ADMIN_TOKEN1;
 const userManagerJs = require('../userManager');
+
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe('UserManager tests', function () {
   this.timeout(config.timeout);
@@ -29,14 +27,14 @@ describe('UserManager tests', function () {
   before(function* () {
     this.timeout(config.timeout);
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(token2);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(token2, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
     const chain = {
       label: 'test airline',
@@ -65,7 +63,7 @@ describe('UserManager tests', function () {
     }
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
-    contract = yield userManagerJs.uploadContract(accessToken, {}, chainID);
+    contract = yield userManagerJs.uploadContract(userAccessToken1, {}, chainID);
   });
 
   it('Create User', function* () {
@@ -162,14 +160,14 @@ describe('UserManager tests', function () {
     const buyerArgs = createUserArgs(stratoUser2.address, UserRole.BUYER);
     const buyerAccount = yield contract.createUser(buyerArgs, chainID);
     buyerAccount.startingBalance = yield contract.getBalance(stratoUser2.address, chainID);
-    
+
     const supplierAccount = yield contract.getUser(stratoUser1.address, chainID);
     supplierAccount.startingBalance = yield contract.getBalance(stratoUser1.address, chainID);
 
     // TRANSACTION
     // function* send(fromUser, toUser, value, nonce, node)
     const value = new BigNumber(12).mul(constants.ETHER);
-    const receipt = yield rest.send(accessToken, { address: supplierAccount.account }, value, { chainId: chainID });
+    const receipt = yield rest.send(userAccessToken1, { address: supplierAccount.account }, value, { chainId: chainID });
     const txResult = yield rest.transactionResult(receipt.hash, { chainId: chainID });
     assert.equal(txResult.status, 'success');
 

@@ -11,10 +11,10 @@ const BigNumber = common.BigNumber
 const bidJs = require('../bid');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 
-const accessToken = process.env.ADMIN_TOKEN;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 let admin;
 
-describe('Bid tests', function() {
+describe('Bid tests', function () {
   this.timeout(config.timeout);
 
   it('Create Contract', function* () {
@@ -30,7 +30,7 @@ describe('Bid tests', function() {
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(accessToken, args);
+    const contract = yield bidJs.uploadContract(userAccessToken1, args);
     const bid = yield contract.getState();
     assert.equal(bid.id, id, 'id');
     assert.equal(bid.name, name, 'name');
@@ -51,7 +51,7 @@ describe('Bid tests', function() {
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(accessToken, args);
+    const contract = yield bidJs.uploadContract(userAccessToken1, args);
 
     const queryResults = yield rest.waitQuery(`${bidJs.contractName}?id=eq.${id}`, 1);
     const bid = queryResults[0];
@@ -76,7 +76,7 @@ describe('Bid tests', function() {
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(accessToken, contractArgs);
+    const contract = yield bidJs.uploadContract(userAccessToken1, contractArgs);
 
     // function setBidState(address bidAddress, BidState state) returns (ErrorCodes) {
     const method = 'setBidState';
@@ -91,12 +91,12 @@ describe('Bid tests', function() {
 
     // send tx - works
     const sendValue = 123;
-    const receipt = yield rest.send(accessToken, bob, sendValue);
+    const receipt = yield rest.send(userAccessToken1, bob, sendValue);
     const txResult = yield rest.transactionResult(receipt.hash);
     assert.equal(txResult[0].status, 'success');
 
     // call method WITHOUT value
-    const result = yield rest.callMethod(accessToken, contract, method, methodArgs);
+    const result = yield rest.callMethod(userAccessToken1, contract, method, methodArgs);
     const errorCode = parseInt(result[0]);
     assert.equal(errorCode, ErrorCodes.SUCCESS);
 
@@ -104,7 +104,7 @@ describe('Bid tests', function() {
     const value = (new BigNumber(23)).mul(constants.ETHER);
     admin.startBalance = yield rest.getBalance(admin.address);
     contract.startBalance = yield rest.getBalance(contract.address);
-    yield rest.callMethod(accessToken, contract, method, methodArgs, value);
+    yield rest.callMethod(userAccessToken1, contract, method, methodArgs, value);
     admin.endBalance = yield rest.getBalance(admin.address);
     admin.delta = admin.endBalance.minus(admin.startBalance).times(-1);
     admin.delta.should.be.bignumber.gt(value);

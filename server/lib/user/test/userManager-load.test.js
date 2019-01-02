@@ -4,20 +4,15 @@ const rest = ba.rest;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
-const should = common.should;
 const assert = common.assert;
-const constants = common.constants;
-const BigNumber = common.BigNumber;
-const Promise = common.Promise;
 
-const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 const userManagerJs = require('../userManager');
 
-const accessToken = process.env.ADMIN_TOKEN;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 
 describe('UserManager LOAD tests', function() {
   this.timeout(config.timeout);
@@ -29,9 +24,9 @@ describe('UserManager LOAD tests', function() {
   // get ready:  admin-user and manager-contract
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    userCreated = yield utils.createUser(accessToken, userEmail);
+    userCreated = yield utils.createUser(userAccessToken1, userEmail);
 
     const chain = {
       label: 'test airline',
@@ -48,7 +43,7 @@ describe('UserManager LOAD tests', function() {
     }
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
-    contract = yield userManagerJs.uploadContract(accessToken, {}, chainID);
+    contract = yield userManagerJs.uploadContract(userAccessToken1, {}, chainID);
   });
 
   it.skip('User address leading zeros - load test - skipped', function *() {

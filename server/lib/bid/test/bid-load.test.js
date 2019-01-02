@@ -7,7 +7,8 @@ const util = common.util;
 const assert = common.assert;
 
 const bidJs = require('../bid');
-const accessToken = process.env.ADMIN_TOKEN;
+
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 
 describe('Bid tests', function () {
 
@@ -24,7 +25,7 @@ describe('Bid tests', function () {
       _amount: amount,
     };
 
-    const contract = yield bidJs.uploadContract(accessToken, args);
+    const contract = yield bidJs.uploadContract(userAccessToken1, args);
     {
       const bid = yield contract.getState();
       assert.equal(bid.id, id, 'id');
@@ -51,7 +52,7 @@ describe('Bid tests', function () {
     const id = new Date().getTime();
     for (let i = 0; i < 10; i++) {
       const args = createContractArgs(id, i);
-      const contract = yield bidJs.uploadContract(accessToken, args);
+      const contract = yield bidJs.uploadContract(userAccessToken1, args);
       {
         const bid = yield contract.getState();
         assert.equal(bid.id, args._id, 'id');

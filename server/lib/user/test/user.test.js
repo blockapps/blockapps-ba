@@ -9,7 +9,7 @@ const userJs = require('../user');
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 
-const accessToken = process.env.ADMIN_TOKEN;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 
 describe('User tests', function () {
   this.timeout(config.timeout);
@@ -18,9 +18,9 @@ describe('User tests', function () {
 
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    userCreated = yield utils.createUser(accessToken, userEmail);
+    userCreated = yield utils.createUser(userAccessToken1, userEmail);
 
     const chain = {
       label: 'test airline',
@@ -52,7 +52,7 @@ describe('User tests', function () {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(accessToken, args, chainID);
+    const contract = yield userJs.uploadContract(userAccessToken1, args, chainID);
     const user = yield contract.getState(chainID);
     assert.equal(user.account, account, 'account');
     assert.equal(user.id, id, 'id');
@@ -72,7 +72,7 @@ describe('User tests', function () {
     };
 
     // create the user with constructor args
-    const contract = yield userJs.uploadContract(accessToken, args, chainID);
+    const contract = yield userJs.uploadContract(userAccessToken1, args, chainID);
     // search
     const user = yield userJs.getUserById(id, chainID);
 

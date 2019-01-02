@@ -6,7 +6,6 @@ const config = common.config;
 const util = common.util;
 const assert = common.assert;
 
-const projectJs = require('../project');
 const projectManagerJs = require('../projectManager');
 const userManagerJs = require('../../user/userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
@@ -16,8 +15,8 @@ const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 
-const accessToken = process.env.ADMIN_TOKEN;
-const token2 = process.env.ADMIN_TOKEN1;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe('ProjectManager Life Cycle tests', function () {
   this.timeout(config.timeout);
@@ -29,14 +28,14 @@ describe('ProjectManager Life Cycle tests', function () {
   // get ready:  admin-user and manager-contract
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(token2);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(token2, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
     const chain = {
       label: 'test airline',
@@ -66,8 +65,8 @@ describe('ProjectManager Life Cycle tests', function () {
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
-    contract = yield projectManagerJs.uploadContract(accessToken, {}, chainID);
-    userManagerContract = yield userManagerJs.uploadContract(accessToken, {}, chainID);
+    contract = yield projectManagerJs.uploadContract(userAccessToken1, {}, chainID);
+    userManagerContract = yield userManagerJs.uploadContract(userAccessToken1, {}, chainID);
   });
 
   it('Create new Bid', function* () {
@@ -114,7 +113,7 @@ describe('ProjectManager Life Cycle tests', function () {
     // check that state is OPEN
     assert.equal(parseInt(bid.state), BidState.OPEN, 'state OPEN');
     // accept the bid
-    const results = yield contract.acceptBid(accessToken, bid.id, project.name, chainID);
+    const results = yield contract.acceptBid(userAccessToken1, bid.id, project.name, chainID);
     // get the bid again
     const newBid = yield projectManagerJs.getBid(bid.id);
     // check that state is ACCEPTED
@@ -138,7 +137,7 @@ describe('ProjectManager Life Cycle tests', function () {
     // accept the bid
     let errorCode;
     try {
-      yield contract.acceptBid(accessToken, bid.id, project.name, chainID);
+      yield contract.acceptBid(userAccessToken1, bid.id, project.name, chainID);
     } catch (error) {
       errorCode = parseInt(error.message);
     }
@@ -167,7 +166,7 @@ describe('ProjectManager Life Cycle tests', function () {
     let bids = yield createRandomBids(project.name, amount, 3, supplier);
     const acceptedBidId = bids[0].id;
     // accept one bid
-    const result = yield contract.acceptBid(accessToken, acceptedBidId, projectArgs.name, chainID);
+    const result = yield contract.acceptBid(userAccessToken1, acceptedBidId, projectArgs.name, chainID);
     // get the bids
     bids = yield projectManagerJs.getBidsByName(projectArgs.name, chainID);
     assert.equal(bids.length, 3, 'should have created all bids');

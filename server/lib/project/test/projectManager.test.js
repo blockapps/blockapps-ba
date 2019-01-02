@@ -6,39 +6,34 @@ const config = common.config;
 const util = common.util;
 const assert = common.assert;
 
-const projectJs = require('../project');
 const projectManagerJs = require('../projectManager');
 const userManagerJs = require('../../user/userManager');
 const ErrorCodes = rest.getEnums(`${config.libPath}/common/ErrorCodes.sol`).ErrorCodes;
 const ProjectState = rest.getEnums(`${config.libPath}/project/contracts/ProjectState.sol`).ProjectState;
 const ProjectEvent = rest.getEnums(`${config.libPath}/project/contracts/ProjectEvent.sol`).ProjectEvent;
-const BidState = rest.getEnums(`${config.libPath}/bid/contracts/BidState.sol`).BidState;
-const UserRole = rest.getEnums(`${config.libPath}/user/contracts/UserRole.sol`).UserRole;
 
 const jwtDecode = require('jwt-decode');
 const utils = require('../../../utils');
 
-const accessToken = process.env.ADMIN_TOKEN;
-const token2 = process.env.ADMIN_TOKEN1;
+const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
+const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 
 describe('ProjectManager tests', function () {
   this.timeout(config.timeout);
 
-  let stratoUser1, stratoUser2;
-  let contract;
-  let userManagerContract;
-  let chainID;
+  let stratoUser1, stratoUser2, contract, chainID;
+
   // get ready:  admin-user and manager-contract
   before(function* () {
     // decode and create new account
-    const decodedToken = jwtDecode(accessToken);
+    const decodedToken = jwtDecode(userAccessToken1);
     const userEmail = decodedToken['email'];
-    stratoUser1 = yield utils.createUser(accessToken, userEmail);
+    stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
 
     // decode and create new account
-    const decodedToken1 = jwtDecode(token2);
+    const decodedToken1 = jwtDecode(userAccessToken2);
     const userEmail1 = decodedToken1['email'];
-    stratoUser2 = yield utils.createUser(token2, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
     const chain = {
       label: 'test airline',
@@ -68,8 +63,8 @@ describe('ProjectManager tests', function () {
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
-    contract = yield projectManagerJs.uploadContract(accessToken, {}, chainID);
-    userManagerContract = yield userManagerJs.uploadContract(accessToken, {}, chainID);
+    contract = yield projectManagerJs.uploadContract(userAccessToken1, {}, chainID);
+    yield userManagerJs.uploadContract(userAccessToken1, {}, chainID);
   });
 
   it('Create Project', function* () {
@@ -305,3 +300,24 @@ describe('ProjectManager tests', function () {
     assert.equal(parseInt(project.state), ProjectState.PRODUCTION, 'ACCEPTED project should be in PRODUCTION');
   });
 });
+
+function createProjectArgs(_uid) {
+  const uid = _uid || util.uid();
+  const projectArgs = {
+    name: 'P_ ?%#@!:* ' + uid.toString().substring(uid.length - 5),
+    buyer: 'Buyer_ ?%#@!:* ' + uid,
+    description: 'description_ ?%#@!:* ' + uid,
+    spec: 'spec_ ?%#@!:* ' + uid,
+    price: 234,
+
+    created: new Date().getTime(),
+    targetDelivery: new Date().getTime() + 3 * 24 * 60 * 60 * 1000, // 3 days
+
+    addressStreet: 'addressStreet_ ? ' + uid,
+    addressCity: 'addressCity_ ? ' + uid,
+    addressState: 'addressState_ ? ' + uid,
+    addressZip: 'addressZip_ ? ' + uid,
+  };
+
+  return projectArgs;
+}
