@@ -2,13 +2,10 @@ require('co-mocha');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const ba = require('blockapps-rest');
-const rest = ba.rest6;
 const common = ba.common;
 const config = common.config;
 const util = common.util;
 const assert = ba.common.assert;
-
-const dappJs = require('../../server/dapp/dapp');
 const poster = require('../poster');
 const jwtDecode = require('jwt-decode');
 const utils = require('../../server/utils');
@@ -21,7 +18,7 @@ chai.use(chaiHttp);
 describe("User Test", function () {
   this.timeout(config.timeout);
 
-  let chainID, stratoUser1, startoUser2;
+  let stratoUser1, stratoUser2, chain;
 
   before(function* () {
     this.timeout(config.timeout);
@@ -34,9 +31,9 @@ describe("User Test", function () {
     // decode and create new account
     const decodedToken1 = jwtDecode(accessToken1);
     const userEmail1 = decodedToken1['email'];
-    startoUser2 = yield utils.createUser(accessToken, userEmail1);
+    stratoUser2 = yield utils.createUser(accessToken1, userEmail1);
 
-    const chain = {
+    chain = {
       label: `test airline ${util.uid()}`,
       src: 'contract Governance { }',
       args: {},
@@ -46,47 +43,40 @@ describe("User Test", function () {
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         },
         {
-          address: startoUser2.address,
+          address: stratoUser2.address,
           enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
         }
       ],
       balances: [
         {
           address: stratoUser1.address,
-          balance: 1000000000000000000000000
+          balance: 100000000000000000000000000000000000000
         },
         {
-          address: startoUser2.address,
-          balance: 1000000000000000000000000
+          address: stratoUser2.address,
+          balance: 100000000000000000000000000000000000000
         }
+      ],
+      users: [
+        { address: stratoUser1.address, role: 'SUPPLIER' },
+        { address: stratoUser2.address, role: 'BUYER' }
       ]
     }
-
-    chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
-
-    // NOTE: This will carry mockdata of chains and user
-    config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
-
     this.timeout(config.timeout);
-    const dapp = yield dappJs.uploadContract(accessToken, config.libPath, chainID);
-    yield dapp.deploy(config.dataFilename, config.deployFilename, chainID);
-    yield dapp.createUser({ address: stratoUser1.address, role: 'SUPPLIER' }, chainID);
   });
 
-  it('should return user balance', function* () {
+  it('should create chain and deploy contracts', function* () {
     this.timeout(config.timeout);
-    const url = `/users/${stratoUser1.address}/balance?chainId=${chainID}`;
+    const url = `/chains`;
+    const response = yield poster.post(url, { chain }, accessToken);
+    assert.equal(response, 'Chain Created Successfully', "chain and contracts must be deployed");
+  });
+
+  it('should return chain list', function* () {
+    this.timeout(config.timeout);
+    const url = `/chains`;
     const response = yield poster.get(url, accessToken);
-    assert.exists(response.balance, "balance must be exists");
+    assert.isArray(response, "must be array");
   });
 
-  it('get created user', function* () {
-    this.timeout(config.timeout);
-    const url = `/users/${stratoUser1.address}?chainId=${chainID}`;
-    const response = yield poster.get(url, accessToken);
-
-    // 'SUPPLIER' role is 3
-    assert.equal(response.user.role, 3, "role must be SUPPLIER (3)");
-    assert.equal(response.user.account, stratoUser1.address, "address must be same as strato user");
-  });
 });
