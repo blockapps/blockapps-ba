@@ -25,7 +25,7 @@ const createUser = function* (accessToken, emailId) {
     }
   }
   do {
-    yield new Promise(resolve => setTimeout(resolve, 1000))
+    yield new Promise(resolve => setTimeout(resolve, 3000))
   } while ((yield rest.getBalance(address)) < 1);
   return { status: 200, message: 'success', address: address };
 }

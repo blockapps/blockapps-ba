@@ -86,7 +86,6 @@ describe("Projects MultiChain Test", function () {
     // NOTE: This will carry mockdata of chains and user
     config.deployFilename = `./tests/mock/chainsMock.deploy.yaml`;
 
-    this.timeout(config.timeout);
     const dapp = yield dappJs.uploadContract(userAccessToken1, config.libPath, firstChainId);
     yield dapp.deploy(config.dataFilename, config.deployFilename, firstChainId);
 

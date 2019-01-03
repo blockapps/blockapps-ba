@@ -10,16 +10,16 @@ const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 
 describe('Me Controller Test', function () {
   this.timeout(config.timeout);
-  
-  before(function* () {
-    this.timeout(config.timeout);
 
+  before(function* () {
     // decode and create new account
     const userEmail = utils.getEmailIdFromToken(userAccessToken1);
     stratoUser1 = yield utils.createUser(userAccessToken1, userEmail);
   });
 
   it('should return strato user address of accesstoken', function* () {
+    this.timeout(config.timeout);
+
     const url = `/me`;
     const data = yield poster.get(url, userAccessToken1);
 

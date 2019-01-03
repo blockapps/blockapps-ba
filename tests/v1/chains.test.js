@@ -56,7 +56,6 @@ describe("User Test", function () {
         { address: stratoUser2.address, role: 'BUYER' }
       ]
     }
-    this.timeout(config.timeout);
   });
 
   it('should create chain and deploy contracts', function* () {
