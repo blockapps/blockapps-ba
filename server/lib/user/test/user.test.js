@@ -7,6 +7,7 @@ const assert = common.assert;
 
 const userJs = require('../user');
 const utils = require('../../../utils');
+const { createChainArgs } = require('../../utils/chain');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 
@@ -20,19 +21,7 @@ describe('User tests', function () {
     const userEmail = utils.getEmailIdFromToken(userAccessToken1);
     userCreated = yield utils.createUser(userAccessToken1, userEmail);
 
-    const chain = {
-      label: 'test airline',
-      src: 'contract Governance { }',
-      args: {},
-      members: [{
-        address: userCreated.address,
-        enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-      }],
-      balances: [{
-        address: userCreated.address,
-        balance: 100000000000000000000000000000000000000000
-      }]
-    }
+    const chain = createChainArgs([userCreated.address]);
 
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
   });
