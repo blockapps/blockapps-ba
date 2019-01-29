@@ -8,7 +8,7 @@ const assert = ba.common.assert;
 const dappJs = require('../../server/dapp/dapp');
 const poster = require('../poster');
 const utils = require('../../server/utils');
-const { createChainWithArgs } = require('../utils/chain');
+const { createChainArgs } = require('../utils/chain');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
@@ -29,7 +29,7 @@ describe("User Test", function () {
     const userEmail1 = utils.getEmailIdFromToken(userAccessToken2);
     stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
-    const chain = createChainWithArgs([stratoUser1.address, stratoUser2.address]);
+    const chain = createChainArgs([stratoUser1.address, stratoUser2.address]);
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
     // NOTE: This will carry mockdata of chains and user

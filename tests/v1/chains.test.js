@@ -6,7 +6,7 @@ const assert = ba.common.assert;
 
 const poster = require('../poster');
 const utils = require('../../server/utils');
-const { createChainWithArgs } = require('../utils/chain');
+const { createChainArgs } = require('../utils/chain');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
@@ -27,7 +27,7 @@ describe("User Test", function () {
     const userEmail1 = utils.getEmailIdFromToken(userAccessToken2);
     stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
-    chain = createChainWithArgs([stratoUser1.address, stratoUser2.address]);
+    chain = createChainArgs([stratoUser1.address, stratoUser2.address]);
     chain.users = [
       { address: stratoUser1.address, role: 'SUPPLIER' },
       { address: stratoUser2.address, role: 'BUYER' }
