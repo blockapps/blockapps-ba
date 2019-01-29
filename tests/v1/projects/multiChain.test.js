@@ -9,6 +9,8 @@ const rest = ba.rest6;
 const dappJs = require('../../../server/dapp/dapp');
 const poster = require('../../poster');
 const utils = require('../../../server/utils');
+const { createChainArgs } = require('../../utils/chain');
+const { createProjectArgs } = require('../../utils/project');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
@@ -28,57 +30,9 @@ describe("Projects MultiChain Test", function () {
     const userEmail2 = utils.getEmailIdFromToken(userAccessToken2);
     stratoUser2 = yield utils.createUser(userAccessToken2, userEmail2);
 
-    const chain = {
-      label: `test airline ${util.uid()}`,
-      src: 'contract Governance { }',
-      args: {},
-      members: [
-        {
-          address: stratoUser1.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        },
-        {
-          address: stratoUser2.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        }
-      ],
-      balances: [
-        {
-          address: stratoUser1.address,
-          balance: 1000000000000000000000000
-        },
-        {
-          address: stratoUser2.address,
-          balance: 1000000000000000000000000
-        }
-      ]
-    }
-
-    const chain1 = {
-      label: `test airline ${util.uid()}`,
-      src: 'contract Governance { }',
-      args: {},
-      members: [
-        {
-          address: stratoUser1.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        },
-        {
-          address: stratoUser2.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        }
-      ],
-      balances: [
-        {
-          address: stratoUser1.address,
-          balance: 1000000000000000000000000
-        },
-        {
-          address: stratoUser2.address,
-          balance: 1000000000000000000000000
-        }
-      ]
-    }
+    // create args for diffrent chains
+    const chain = createChainArgs([stratoUser1.address, stratoUser2.address]);
+    const chain1 = createChainArgs([stratoUser1.address, stratoUser2.address]);
 
     firstChainId = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
     secoundChainId = yield rest.createChain(chain1.label, chain1.members, chain1.balances, chain1.src, chain1.args);
@@ -158,17 +112,3 @@ describe("Projects MultiChain Test", function () {
 
 });
 
-function createProjectArgs(uid, chainId) {
-  const projectArgs = {
-    name: 'Project_ ? ' + uid,
-    buyer: 'Buyer1',
-    description: 'description_ ? % ' + uid,
-    spec: 'spec_ ? % ' + uid,
-    price: 1234,
-    created: new Date().getTime(),
-    targetDelivery: new Date().getTime() + 3 * 24 * 60 * 60 * 1000, // 3 days
-    chainId: chainId
-  };
-
-  return projectArgs;
-}

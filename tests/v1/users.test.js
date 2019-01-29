@@ -3,12 +3,12 @@ const ba = require('blockapps-rest');
 const rest = ba.rest6;
 const common = ba.common;
 const config = common.config;
-const util = common.util;
 const assert = ba.common.assert;
 
 const dappJs = require('../../server/dapp/dapp');
 const poster = require('../poster');
 const utils = require('../../server/utils');
+const { createChainWithArgs } = require('../utils/chain');
 
 const userAccessToken1 = process.env.USER_ACCESS_TOKEN_1;
 const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
@@ -16,7 +16,7 @@ const userAccessToken2 = process.env.USER_ACCESS_TOKEN_2;
 describe("User Test", function () {
   this.timeout(config.timeout);
 
-  let chainID, stratoUser1, startoUser2;
+  let chainID, stratoUser1, stratoUser2;
 
   before(function* () {
     this.timeout(config.timeout);
@@ -27,34 +27,9 @@ describe("User Test", function () {
 
     // decode and create new account
     const userEmail1 = utils.getEmailIdFromToken(userAccessToken2);
-    startoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
+    stratoUser2 = yield utils.createUser(userAccessToken2, userEmail1);
 
-    const chain = {
-      label: `test airline ${util.uid()}`,
-      src: 'contract Governance { }',
-      args: {},
-      members: [
-        {
-          address: stratoUser1.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        },
-        {
-          address: startoUser2.address,
-          enode: "enode://6d8a80d14311c39f35f516fa664deaaaa13e85b2f7493f37f6144d86991ec012937307647bd3b9a82abe2974e1407241d54947bbb39763a4cac9f77166ad92a0@171.16.0.4:30303?discport=30303"
-        }
-      ],
-      balances: [
-        {
-          address: stratoUser1.address,
-          balance: 1000000000000000000000000
-        },
-        {
-          address: startoUser2.address,
-          balance: 1000000000000000000000000
-        }
-      ]
-    }
-
+    const chain = createChainWithArgs([stratoUser1.address, stratoUser2.address]);
     chainID = yield rest.createChain(chain.label, chain.members, chain.balances, chain.src, chain.args);
 
     // NOTE: This will carry mockdata of chains and user
