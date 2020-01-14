@@ -1,6 +1,11 @@
+# Deprecation warning
+
+**This demo application is deprecated in favor of https://github.com/blockapps/track-and-trace**
+
+
 Blockapps BA
 ------------
-[![BlockApps logo](http://blockapps.net/img/logo_cropped.png)](http://blockapps.net)
+[![BlockApps logo](https://blockapps.net/wp-content/uploads/2019/07/blockapps-logo-super-small.png)](http://blockapps.net)
 
 ### Supply Chain Demo App
 This demo app uses STRATO blockchain platform and Smart Contracts to demonstrate a solution for a basic 2-party Supply Chain Workflow.
